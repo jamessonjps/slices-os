@@ -3,6 +3,10 @@ import { cva } from "class-variance-authority";
 
 import { cn } from "@/lib/utils"
 
+/** @typedef {{
+ *   variant?: 'default' | 'secondary' | 'destructive' | 'outline';
+ * } & import('react').ComponentPropsWithoutRef<'div'>} BadgeProps */
+
 const badgeVariants = cva(
   "inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
   {
@@ -23,6 +27,7 @@ const badgeVariants = cva(
   }
 )
 
+/** @param {BadgeProps} props */
 function Badge({
   className,
   variant,

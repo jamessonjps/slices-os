@@ -22,10 +22,10 @@ import { cn } from '@/lib/utils';
  * @property {Array<{ name?: string; quantity?: number; price: number; ready?: boolean }>} [drinks]
  * @property {string} [customer_name]
  * @property {string} [customer_phone]
- * @property {string} [delivery_type]
+ * @property {'delivery'|'pickup'} [delivery_type]
  * @property {string} [address_text]
- * @property {string} [payment_method]
- * @property {string} [status]
+ * @property {'cash'|'card'|'pix'} [payment_method]
+ * @property {'pending'|'preparing'|'ready'|'delivering'|'completed'} [status]
  * @property {string} [notes]
  * @property {string} [created_date]
  * @property {string} [id]
@@ -35,14 +35,16 @@ const statusFlow = {
   pending: 'preparing',
   preparing: 'ready',
   ready: 'delivering',
-  delivering: 'completed'
+  delivering: 'completed',
+  completed: 'completed'
 };
 
 const statusConfig = {
   pending: { label: 'Pendente', color: 'bg-amber-500', nextLabel: 'Iniciar Preparo' },
   preparing: { label: 'Preparando', color: 'bg-blue-500', nextLabel: 'Marcar Pronto' },
   ready: { label: 'Pronto', color: 'bg-green-500', nextLabel: 'Saiu p/ Entrega' },
-  delivering: { label: 'Em Entrega', color: 'bg-purple-500', nextLabel: 'Concluir' }
+  delivering: { label: 'Em Entrega', color: 'bg-purple-500', nextLabel: 'Concluir' },
+  completed: { label: 'Concluído', color: 'bg-slate-500', nextLabel: 'Concluído' }
 };
 
 /**
@@ -217,25 +219,38 @@ function EditOrderDialog({ order, open, onClose, onSave, waPhone }) {
 function KitchenContent() {
   const queryClient = useQueryClient();
   const [lastOrderCount, setLastOrderCount] = useState(0);
-  const [editingOrder, setEditingOrder] = useState(null);
+  const [editingOrder, setEditingOrder] = useState(/** @type {KitchenOrderItem | null} */ (null));
 
-  const { data: settings = [] } = useQuery({
+  const settingsQuery = useQuery({
     queryKey: ['settings'],
     queryFn: () => base44.entities.Settings.list()
   });
-  const waPhone = settings.find(s => s.key === 'whatsapp_number')?.value || '5511999999999';
+  const settings = /** @type {{ key: string; value: string }[]} */ (
+    settingsQuery.data ?? []
+  );
+  const waPhone = settings.find(
+    /** @param {{ key: string; value: string }} s */
+    (s) => s.key === 'whatsapp_number'
+  )?.value || '5511999999999';
 
-  const { data: orders = [], isLoading } = useQuery({
+  const ordersQuery = useQuery({
     queryKey: ['kitchen-orders'],
     queryFn: async () => {
       const all = await base44.entities.Order.list('-created_date', 100);
-      return all.filter(o => ['pending', 'preparing', 'ready', 'delivering'].includes(o.status));
+      return all.filter(
+        /** @param {KitchenOrderItem} o */
+        (o) => ['pending', 'preparing', 'ready', 'delivering'].includes(o.status ?? '')
+      );
     },
     refetchInterval: 10000
   });
+  const orders = /** @type {KitchenOrderItem[]} */ (ordersQuery.data ?? []);
+  const isLoading = ordersQuery.isLoading;
 
   useEffect(() => {
-    const unsubscribe = base44.entities.Order.subscribe((event) => {
+    const unsubscribe = base44.entities.Order.subscribe(
+      /** @param {any} event */
+      (event) => {
       if (event.type === 'create') {
         // Play notification sound
         const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBiWLz/LDdykGIm6+8N6URAwSWK3n8KRYE');
@@ -258,13 +273,22 @@ function KitchenContent() {
   }, [orders.length]);
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Order.update(id, data),
+    mutationFn: /** @param {{ id: string; data: any }} params */
+      ({ id, data }) => base44.entities.Order.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries(['kitchen-orders']);
       toast.success('Atualizado');
     }
   });
 
+  /**
+   * @param {KitchenOrderItem} order
+   * @param {any} updatedData
+   */
+  /**
+   * @param {KitchenOrderItem} order
+   * @param {any} updatedData
+   */
   const handleSaveEdit = (order, updatedData) => {
     updateMutation.mutate({ id: order.id, data: updatedData }, {
       onSuccess: () => {
@@ -274,6 +298,10 @@ function KitchenContent() {
     });
   };
 
+  /**
+   * @param {KitchenOrderItem} order
+   * @param {'preparing'|'ready'|'delivering'|'completed'} newStatus
+   */
   const sendStatusWhatsApp = (order, newStatus) => {
     const phone = order.customer_phone?.replace(/\D/g, '');
     if (!phone) return;
@@ -289,8 +317,10 @@ function KitchenContent() {
     }
   };
 
+  /** @param {KitchenOrderItem} order */
+  /** @param {KitchenOrderItem} order */
   const handleAdvanceStatus = (order) => {
-    const nextStatus = statusFlow[order.status];
+    const nextStatus = /** @type {'preparing'|'ready'|'delivering'|'completed'} */ (statusFlow[order.status ?? 'pending']);
     if (nextStatus) {
       updateMutation.mutate({ id: order.id, data: { status: nextStatus } }, {
         onSuccess: () => {
@@ -300,6 +330,14 @@ function KitchenContent() {
     }
   };
 
+  /**
+   * @param {KitchenOrderItem} order
+   * @param {number} pizzaIndex
+   */
+  /**
+   * @param {KitchenOrderItem} order
+   * @param {number} pizzaIndex
+   */
   const togglePizzaReady = (order, pizzaIndex) => {
     const updatedPizzas = [...(order.pizzas || [])];
     updatedPizzas[pizzaIndex] = {
@@ -309,6 +347,10 @@ function KitchenContent() {
     updateMutation.mutate({ id: order.id, data: { pizzas: updatedPizzas } });
   };
 
+  /**
+   * @param {KitchenOrderItem} order
+   * @param {number} drinkIndex
+   */
   const toggleDrinkReady = (order, drinkIndex) => {
     const updatedDrinks = [...(order.drinks || [])];
     updatedDrinks[drinkIndex] = {
@@ -319,13 +361,15 @@ function KitchenContent() {
   };
 
   const sortedOrders = [...orders].sort((a, b) => {
-    // Priority: pending > preparing > ready > delivering
-    const statusPriority = { pending: 0, preparing: 1, ready: 2, delivering: 3 };
-    const statusDiff = statusPriority[a.status] - statusPriority[b.status];
+    // Priority: pending > preparing > ready > delivering > completed
+    const statusPriority = { pending: 0, preparing: 1, ready: 2, delivering: 3, completed: 4 };
+    const statusDiff = statusPriority[a.status ?? 'pending'] - statusPriority[b.status ?? 'pending'];
     if (statusDiff !== 0) return statusDiff;
     
     // Within same status, sort by time (oldest first)
-    return new Date(a.created_date) - new Date(b.created_date);
+    return (
+      new Date(a.created_date || 0).getTime() - new Date(b.created_date || 0).getTime()
+    );
   });
 
   const groupedOrders = {
@@ -341,7 +385,7 @@ function KitchenContent() {
         order={editingOrder}
         open={!!editingOrder}
         onClose={() => setEditingOrder(null)}
-        onSave={(data) => handleSaveEdit(editingOrder, data)}
+        onSave={(data) => editingOrder && handleSaveEdit(editingOrder, data)}
         waPhone={waPhone}
       />
       {/* Header */}
@@ -474,14 +518,24 @@ export default function Kitchen() {
   );
 }
 
+/**
+ * @param {{
+ *   order: KitchenOrderItem;
+ *   onAdvance: (order: KitchenOrderItem) => void;
+ *   onTogglePizza: (order: KitchenOrderItem, pizzaIndex: number) => void;
+ *   onToggleDrink: (order: KitchenOrderItem, drinkIndex: number) => void;
+ *   onEdit: (order: KitchenOrderItem | null) => void;
+ *   updating: boolean;
+ * }} props
+ */
 function OrderCard({ order, onAdvance, onTogglePizza, onToggleDrink, onEdit, updating }) {
-  const config = statusConfig[order.status];
-  const timeAgo = format(new Date(order.created_date), 'HH:mm', { locale: ptBR });
-  const minutesAgo = differenceInMinutes(new Date(), new Date(order.created_date));
+  const config = statusConfig[order.status ?? 'pending'];
+  const timeAgo = format(new Date(order.created_date || 0), 'HH:mm', { locale: ptBR });
+  const minutesAgo = differenceInMinutes(new Date(), new Date(order.created_date || 0));
   
   const allItemsReady = 
-    (order.pizzas?.every(p => p.ready) ?? true) && 
-    (order.drinks?.every(d => d.ready) ?? true);
+    (order.pizzas?.every((p) => p.ready) ?? true) && 
+    (order.drinks?.every((d) => d.ready) ?? true);
 
   const openGoogleMaps = () => {
     if (order.delivery_type === 'delivery' && order.address_text) {
@@ -564,11 +618,11 @@ function OrderCard({ order, onAdvance, onTogglePizza, onToggleDrink, onEdit, upd
       </div>
 
       {/* Drinks */}
-      {order.drinks?.length > 0 && (
+      {(order.drinks?.length ?? 0) > 0 && (
         <div className="mb-4 border-t border-slate-700 pt-3">
           <p className="text-xs text-slate-400 mb-2">Bebidas:</p>
           <div className="space-y-2">
-            {order.drinks.map((drink, i) => (
+            {(order.drinks ?? []).map((drink, i) => (
               <div
                 key={i}
                 onClick={() => order.status === 'preparing' && onToggleDrink(order, i)}

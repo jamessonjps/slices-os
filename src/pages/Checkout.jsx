@@ -39,12 +39,19 @@ import { toast } from 'sonner';
 export default function Checkout() {
   const [cart, setCart] = useState(/** @type {CartItem[]} */ ([]));
 
-  const { data: settings = /** @type {{ key: string; value: string }[]} */ ([]) } = useQuery({
+  const settingsQuery = useQuery({
     queryKey: ['settings'],
     queryFn: () => base44.entities.Settings.list()
   });
 
-  const waPhone = settings.find((s) => s.key === 'whatsapp_number')?.value || '5511999999999';
+  const settings = /** @type {{ key: string; value: string }[]} */ (
+    settingsQuery.data ?? []
+  );
+
+  const waPhone = settings.find(
+    /** @param {{ key: string; value: string }} s */
+    (s) => s.key === 'whatsapp_number'
+  )?.value || '5511999999999';
 
   const [formData, setFormData] = useState(/** @type {CheckoutForm} */ ({
     customer_name: '',
@@ -90,6 +97,32 @@ export default function Checkout() {
     }));
   }, [addressFields]);
 
+  /**
+   * @param {'customer_name'|'customer_phone'|'delivery_type'|'address_text'|'payment_method'|'notes'} field
+   * @returns {(event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void}
+   */
+  const handleFormDataFieldChange = (field) =>
+    /** @param {React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>} event */
+    (event) => {
+      setFormData((current) => ({
+        ...current,
+        [field]: event.target.value
+      }));
+    };
+
+  /**
+   * @param {'rua'|'numero'|'bairro'|'complemento'} field
+   * @returns {(event: React.ChangeEvent<HTMLInputElement>) => void}
+   */
+  const handleAddressFieldChange = (field) =>
+    /** @param {React.ChangeEvent<HTMLInputElement>} event */
+    (event) => {
+      setAddressFields((current) => ({
+        ...current,
+        [field]: event.target.value
+      }));
+    };
+
   const createOrderMutation = useMutation({
     /** @param {any} data */
     mutationFn: (data) => base44.entities.Order.create(data),
@@ -132,10 +165,7 @@ export default function Checkout() {
     }
   });
 
-  /** @param {React.FormEvent<HTMLFormElement>} e */
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
+  const handleSubmit = () => {
     const pizzas = cart
       .filter((item) => item.type === 'pizza')
       .map((p) => ({
@@ -213,7 +243,7 @@ export default function Checkout() {
                 <Input
                   id="customer_name"
                   value={formData.customer_name}
-                  onChange={(event) => setFormData((current) => ({ ...current, customer_name: event.target.value }))}
+                  onChange={handleFormDataFieldChange('customer_name')}
                 />
               </div>
               <div className="space-y-2">
@@ -221,7 +251,7 @@ export default function Checkout() {
                 <Input
                   id="customer_phone"
                   value={formData.customer_phone}
-                  onChange={(event) => setFormData((current) => ({ ...current, customer_phone: event.target.value }))}
+                  onChange={handleFormDataFieldChange('customer_phone')}
                 />
               </div>
             </div>
@@ -255,7 +285,7 @@ export default function Checkout() {
                   <Input
                     id="rua"
                     value={addressFields.rua}
-                    onChange={(event) => setAddressFields((current) => ({ ...current, rua: event.target.value }))}
+                    onChange={handleAddressFieldChange('rua')}
                   />
                 </div>
                 <div className="space-y-2">
@@ -263,7 +293,7 @@ export default function Checkout() {
                   <Input
                     id="numero"
                     value={addressFields.numero}
-                    onChange={(event) => setAddressFields((current) => ({ ...current, numero: event.target.value }))}
+                    onChange={handleAddressFieldChange('numero')}
                   />
                 </div>
                 <div className="space-y-2">
@@ -271,7 +301,7 @@ export default function Checkout() {
                   <Input
                     id="bairro"
                     value={addressFields.bairro}
-                    onChange={(event) => setAddressFields((current) => ({ ...current, bairro: event.target.value }))}
+                    onChange={handleAddressFieldChange('bairro')}
                   />
                 </div>
                 <div className="space-y-2">
@@ -279,7 +309,7 @@ export default function Checkout() {
                   <Input
                     id="complemento"
                     value={addressFields.complemento}
-                    onChange={(event) => setAddressFields((current) => ({ ...current, complemento: event.target.value }))}
+                    onChange={handleAddressFieldChange('complemento')}
                   />
                 </div>
               </div>
@@ -321,7 +351,7 @@ export default function Checkout() {
             <Textarea
               id="notes"
               value={formData.notes}
-              onChange={(event) => setFormData((current) => ({ ...current, notes: event.target.value }))}
+              onChange={handleFormDataFieldChange('notes')}
               placeholder="Adicione notas adicionais para o pedido"
               rows={4}
             />
@@ -332,7 +362,7 @@ export default function Checkout() {
               <p className="text-sm text-slate-500">Total do pedido</p>
               <p className="text-2xl font-semibold text-slate-900">R$ {total.toFixed(2)}</p>
             </div>
-            <Button onClick={handleSubmit} disabled={createOrderMutation.isLoading}>
+            <Button type="button" onClick={handleSubmit} disabled={createOrderMutation.isLoading}>
               <CreditCard className="h-4 w-4" /> Confirmar pedido
             </Button>
           </div>
