@@ -1,14 +1,40 @@
-import { createClient } from '@base44/sdk';
-import { appParams } from '@/lib/app-params';
+const createEntityProxy = () => {
+  return new Proxy({}, {
+    get(target, entityName) {
+      if (!target[entityName]) {
+        const entity = {
+          list: async () => [],
+          filter: async () => [],
+          create: async () => ({}),
+          update: async () => ({}),
+          delete: async () => ({}),
+          subscribe: () => ({ unsubscribe: () => {} }),
+          get: async () => ({}),
+        };
+        target[entityName] = entity;
+      }
+      return target[entityName];
+    }
+  });
+};
 
-const { appId, token, functionsVersion, appBaseUrl } = appParams;
-
-//Create a client with authentication required
-export const base44 = createClient({
-  appId,
-  token,
-  functionsVersion,
-  serverUrl: '',
-  requiresAuth: false,
-  appBaseUrl
-});
+export const base44 = {
+  auth: {
+    me: async () => ({ id: 'guest', name: 'Guest' }),
+    logout: async () => {},
+    redirectToLogin: () => {},
+    isAuthenticated: async () => true,
+  },
+  entities: createEntityProxy(),
+  users: {
+    inviteUser: async () => ({})
+  },
+  integrations: {
+    Core: {
+      SendEmail: async () => ({})
+    }
+  },
+  appLogs: {
+    logUserInApp: async () => ({})
+  }
+};
