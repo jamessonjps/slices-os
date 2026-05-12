@@ -16,6 +16,8 @@ import { toast } from 'sonner';
 export default function Stock() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
+  const [formCategory, setFormCategory] = useState('ingrediente');
+  const [formUnit, setFormUnit] = useState('kg');
   const queryClient = useQueryClient();
 
   const { data: products = [] } = useQuery({
@@ -56,9 +58,9 @@ export default function Stock() {
     const formData = new FormData(e.target);
     const data = {
       name: formData.get('name'),
-      category: formData.get('category'),
+      category: formCategory,
       quantity: parseFloat(formData.get('quantity')),
-      unit: formData.get('unit'),
+      unit: formUnit,
       min_quantity: parseFloat(formData.get('min_quantity')) || 0,
       price: parseFloat(formData.get('price')) || 0
     };
@@ -91,7 +93,11 @@ export default function Stock() {
             </div>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
-                <Button className="bg-slate-900 hover:bg-slate-800" onClick={() => setEditingProduct(null)}>
+                <Button className="bg-slate-900 hover:bg-slate-800" onClick={() => {
+                  setEditingProduct(null);
+                  setFormCategory('ingrediente');
+                  setFormUnit('kg');
+                }}>
                   <Plus className="w-4 h-4 mr-2" />
                   Adicionar
                 </Button>
@@ -107,7 +113,7 @@ export default function Stock() {
                   </div>
                   <div>
                     <Label>Categoria</Label>
-                    <Select name="category" defaultValue={editingProduct?.category || 'ingrediente'}>
+                    <Select value={formCategory} onValueChange={setFormCategory}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
@@ -125,7 +131,7 @@ export default function Stock() {
                     </div>
                     <div>
                       <Label>Unidade</Label>
-                      <Select name="unit" defaultValue={editingProduct?.unit || 'kg'}>
+                      <Select value={formUnit} onValueChange={setFormUnit}>
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
@@ -217,6 +223,8 @@ export default function Stock() {
                         size="icon"
                         onClick={() => {
                           setEditingProduct(product);
+                          setFormCategory(product.category || 'ingrediente');
+                          setFormUnit(product.unit || 'kg');
                           setIsDialogOpen(true);
                         }}
                       >

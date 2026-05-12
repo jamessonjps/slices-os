@@ -8,6 +8,8 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
+import { Button } from '@/components/ui/button';
+import { ShieldAlert } from 'lucide-react';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -16,6 +18,46 @@ const MainPage = mainPageKey ? Pages[mainPageKey] : <></>;
 const LayoutWrapper = ({ children, currentPageName }) => Layout ?
   <Layout currentPageName={currentPageName}>{children}</Layout>
   : <>{children}</>;
+
+const ADMIN_PAGES = new Set([
+  'AdminHome',
+  'Orders',
+  'NewOrder',
+  'OrderDetail',
+  'Kitchen',
+  'Customers',
+  'Reports',
+  'Stock',
+  'Settings',
+  'MenuManagement',
+  'UserManagement'
+]);
+
+const AccessDenied = () => (
+  <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
+    <div className="max-w-md w-full bg-white border border-slate-200 rounded-3xl p-8 text-center shadow-sm">
+      <ShieldAlert className="w-14 h-14 text-slate-400 mx-auto mb-4" />
+      <h1 className="text-2xl font-semibold text-slate-900 mb-2">Acesso restrito</h1>
+      <p className="text-slate-600 mb-6">Esta area exige permissao administrativa.</p>
+      <Button onClick={() => window.location.assign('/')}>Voltar ao inicio</Button>
+    </div>
+  </div>
+);
+
+const RouteElement = ({ pageName, Page }) => {
+  const { user, isAuthenticated } = useAuth();
+  const requiresAdmin = ADMIN_PAGES.has(pageName);
+
+  if (requiresAdmin && (!isAuthenticated || user?.role !== 'admin')) {
+    return <AccessDenied />;
+  }
+
+  return (
+    <LayoutWrapper currentPageName={pageName}>
+      <Page />
+    </LayoutWrapper>
+  );
+};
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -43,19 +85,13 @@ const AuthenticatedApp = () => {
   return (
     <Routes>
       <Route path="/" element={
-        <LayoutWrapper currentPageName={mainPageKey}>
-          <MainPage />
-        </LayoutWrapper>
+        <RouteElement pageName={mainPageKey} Page={MainPage} />
       } />
       {Object.entries(Pages).map(([path, Page]) => (
         <Route
           key={path}
           path={`/${path}`}
-          element={
-            <LayoutWrapper currentPageName={path}>
-              <Page />
-            </LayoutWrapper>
-          }
+          element={<RouteElement pageName={path} Page={Page} />}
         />
       ))}
       <Route path="*" element={<PageNotFound />} />

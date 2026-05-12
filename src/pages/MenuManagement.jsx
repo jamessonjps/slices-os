@@ -26,6 +26,8 @@ const categories = [
 export default function MenuManagement() {
   const [showDialog, setShowDialog] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
+  const [formCategory, setFormCategory] = useState('pizza_tradicional');
+  const [formType, setFormType] = useState('pizza');
   const queryClient = useQueryClient();
 
   const { data: items = [] } = useQuery({
@@ -73,8 +75,8 @@ export default function MenuManagement() {
     const formData = new FormData(e.target);
     const data = {
       name: formData.get('name'),
-      category: formData.get('category'),
-      type: formData.get('type'),
+      category: formCategory,
+      type: formType,
       description: formData.get('description'),
       available: editingItem?.available ?? true,
       prep_time: parseInt(formData.get('prep_time')) || 30
@@ -117,7 +119,12 @@ export default function MenuManagement() {
                 <p className="text-sm text-slate-500">{items.length} itens cadastrados</p>
               </div>
             </div>
-            <Button onClick={() => { setEditingItem(null); setShowDialog(true); }}>
+            <Button onClick={() => {
+              setEditingItem(null);
+              setFormCategory('pizza_tradicional');
+              setFormType('pizza');
+              setShowDialog(true);
+            }}>
               <Plus className="w-4 h-4 mr-2" />
               Novo Item
             </Button>
@@ -167,7 +174,12 @@ export default function MenuManagement() {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => { setEditingItem(item); setShowDialog(true); }}
+                      onClick={() => {
+                        setEditingItem(item);
+                        setFormCategory(item.category || 'pizza_tradicional');
+                        setFormType(item.type || 'pizza');
+                        setShowDialog(true);
+                      }}
                     >
                       <Edit2 className="w-4 h-4" />
                     </Button>
@@ -203,7 +215,7 @@ export default function MenuManagement() {
               </div>
               <div>
                 <Label>Categoria</Label>
-                <Select name="category" defaultValue={editingItem?.category} required>
+                <Select value={formCategory} onValueChange={setFormCategory} required>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -224,7 +236,7 @@ export default function MenuManagement() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Tipo</Label>
-                <Select name="type" defaultValue={editingItem?.type} required>
+                <Select value={formType} onValueChange={setFormType} required>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>

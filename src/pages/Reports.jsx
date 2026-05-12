@@ -52,7 +52,7 @@ export default function Reports() {
   
   const filteredOrders = orders.filter(o => {
     const orderDate = new Date(o.created_date);
-    return isWithinInterval(orderDate, { start, end }) && o.status === 'completed';
+    return isWithinInterval(orderDate, { start, end }) && o.status !== 'cancelled';
   });
 
   const totalRevenue = filteredOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
