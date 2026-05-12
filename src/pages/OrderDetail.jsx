@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { orderService } from '@/services/orderService';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -31,14 +31,14 @@ export default function OrderDetail() {
   const { data: order, isLoading } = useQuery({
     queryKey: ['order', orderId],
     queryFn: async () => {
-      const orders = await base44.entities.Order.filter({ id: orderId });
-      return orders[0];
+      const order = await orderService.getOrderById(orderId);
+      return order;
     },
     enabled: !!orderId
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Order.update(id, data),
+    mutationFn: ({ id, data }) => orderService.updateOrder(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries(['order', orderId]);
       queryClient.invalidateQueries(['orders']);

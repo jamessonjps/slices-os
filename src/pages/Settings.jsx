@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { settingsService } from '@/services/settingsService';
+import { authService } from '@/services/authService';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -110,23 +111,23 @@ export default function Settings() {
   const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
-    base44.auth.me().then(setCurrentUser).catch(() => {
+    authService.getCurrentUser().then(setCurrentUser).catch(() => {
       setCurrentUser(null);
     });
   }, []);
 
   const { data: settings = [] } = useQuery({
     queryKey: ['settings'],
-    queryFn: () => base44.entities.Settings.list()
+    queryFn: () => settingsService.listSettings()
   });
 
   const saveMutation = useMutation({
     mutationFn: async ({ key, value }) => {
       const existing = settings.find(s => s.key === key);
       if (existing) {
-        return base44.entities.Settings.update(existing.id, { value });
+        return settingsService.updateSetting(existing.id, { value });
       } else {
-        return base44.entities.Settings.create({ key, value });
+        return settingsService.createSetting({ key, value });
       }
     },
     onSuccess: () => {

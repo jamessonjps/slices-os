@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { settingsService } from '@/services/settingsService';
+import { orderService } from '@/services/orderService';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { createPageUrl } from '@/utils';
 import { safeJsonParse, safeLocalStorage } from '@/utils/storage';
@@ -43,7 +44,7 @@ export default function Checkout() {
 
   const settingsQuery = useQuery({
     queryKey: ['settings'],
-    queryFn: () => base44.entities.Settings.list()
+    queryFn: () => settingsService.listSettings()
   });
 
   const settings = /** @type {{ key: string; value: string }[]} */ (
@@ -131,7 +132,7 @@ export default function Checkout() {
 
   const createOrderMutation = useMutation({
     /** @param {any} data */
-    mutationFn: (data) => base44.entities.Order.create(data),
+    mutationFn: (data) => orderService.createOrder(data),
     /** @param {any} order */
     onSuccess: (order) => {
       safeLocalStorage.remove('cart');

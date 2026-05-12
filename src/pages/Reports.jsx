@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { orderService } from '@/services/orderService';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -22,7 +22,7 @@ export default function Reports() {
 
   const { data: orders = [] } = useQuery({
     queryKey: ['orders-report'],
-    queryFn: () => base44.entities.Order.list('-created_date', 1000)
+    queryFn: () => orderService.listOrders('-created_date', 1000)
   });
 
   const getDateRange = () => {

@@ -6,7 +6,7 @@ import { Pizza, ClipboardList, Phone, MapPin, Clock, CheckCircle, XCircle } from
 import SliceOSFooter from '@/components/SliceOSFooter';
 import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { settingsService } from '@/services/settingsService';
 import { motion } from 'framer-motion';
 
 const DAY_NAMES = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
@@ -66,7 +66,7 @@ function getHoursDisplay(hours) {
 export default function Home() {
   const { data: settings = [] } = useQuery({
     queryKey: ['settings'],
-    queryFn: () => base44.entities.Settings.list()
+    queryFn: () => settingsService.listSettings()
   });
 
   const hours = useMemo(() => {

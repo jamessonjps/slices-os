@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { menuService } from '@/services/menuService';
+import { orderService } from '@/services/orderService';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -33,7 +34,7 @@ export default function NewOrder() {
   // Load menu items from DB
   const { data: menuItems = [] } = useQuery({
     queryKey: ['menu-items-neworder'],
-    queryFn: () => base44.entities.MenuItem.list()
+    queryFn: () => menuService.listMenuItems()
   });
 
   const pizzaItems = menuItems.filter(i => i.type === 'pizza' && i.available);
@@ -116,7 +117,7 @@ export default function NewOrder() {
     const addressText = deliveryType === 'delivery'
       ? `${rua}, ${numero}${complemento ? ', ' + complemento : ''} - ${bairro}${referencia ? ' (Ref: ' + referencia + ')' : ''}`
       : null;
-    await base44.entities.Order.create({
+    await orderService.createOrder({
       customer_name: customerName,
       customer_phone: customerPhone,
       delivery_type: deliveryType,
