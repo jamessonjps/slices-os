@@ -1,7 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 
-const AuthContext = createContext();
+const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -12,27 +12,27 @@ export const AuthProvider = ({ children }) => {
   const [appPublicSettings, setAppPublicSettings] = useState(null);
 
   useEffect(() => {
-    checkAppState();
-  }, []);
+    const startup = async () => {
+      setIsLoadingPublicSettings(true);
+      setAuthError(null);
+      try {
+        const currentUser = await base44.auth.me();
+        setUser(currentUser);
+        setIsAuthenticated(true);
+        setAppPublicSettings({ id: 'local', public_settings: {} });
+      } catch (error) {
+        console.warn('Fake auth fallback:', error);
+        setUser({ id: 'guest', name: 'Guest' });
+        setIsAuthenticated(true);
+        setAppPublicSettings({ id: 'local', public_settings: {} });
+      } finally {
+        setIsLoadingPublicSettings(false);
+        setIsLoadingAuth(false);
+      }
+    };
 
-  const checkAppState = async () => {
-    setIsLoadingPublicSettings(true);
-    setAuthError(null);
-    try {
-      const currentUser = await base44.auth.me();
-      setUser(currentUser);
-      setIsAuthenticated(true);
-      setAppPublicSettings({ id: 'local', public_settings: {} });
-    } catch (error) {
-      console.warn('Fake auth fallback:', error);
-      setUser({ id: 'guest', name: 'Guest' });
-      setIsAuthenticated(true);
-      setAppPublicSettings({ id: 'local', public_settings: {} });
-    } finally {
-      setIsLoadingPublicSettings(false);
-      setIsLoadingAuth(false);
-    }
-  };
+    startup();
+  }, []);
 
   const logout = () => {
     setUser(null);
@@ -44,17 +44,19 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{
-      user,
-      isAuthenticated,
-      isLoadingAuth,
-      isLoadingPublicSettings,
-      authError,
-      appPublicSettings,
-      logout,
-      navigateToLogin,
-      checkAppState
-    }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isAuthenticated,
+        isLoadingAuth,
+        isLoadingPublicSettings,
+        authError,
+        appPublicSettings,
+        logout,
+        navigateToLogin,
+        checkAppState: () => {},
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
