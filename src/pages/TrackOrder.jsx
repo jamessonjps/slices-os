@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Clock, ChefHat, CheckCircle, Truck, Home, Package, MessageCircle, ArrowLeft } from 'lucide-react';
 import SliceOSFooter from '@/components/SliceOSFooter';
@@ -19,7 +19,8 @@ const statusFlow = [
 ];
 
 export default function TrackOrder() {
-  const urlParams = new URLSearchParams(window.location.search);
+  const location = useLocation();
+  const urlParams = new URLSearchParams(location.search);
   const orderId = urlParams.get('id');
 
   const { data: order, isLoading } = useQuery({

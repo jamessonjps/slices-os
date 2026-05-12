@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { createPageUrl } from '@/utils';
+import { safeJsonParse, safeLocalStorage } from '@/utils/storage';
 import { ArrowLeft, CreditCard, Smartphone, Banknote } from 'lucide-react';
 import SliceOSFooter from '@/components/SliceOSFooter';
 import { Button } from '@/components/ui/button';
@@ -81,15 +83,15 @@ export default function Checkout() {
     return parts.join(' - ');
   };
 
+  const navigate = useNavigate();
+
   useEffect(() => {
-    const savedCart = localStorage.getItem('cart');
+    const savedCart = safeLocalStorage.get('cart');
     if (savedCart) {
-      try {
-        setCart(JSON.parse(savedCart) ?? []);
-      } catch (error) {
-        console.warn('Invalid cart data in localStorage:', error);
-        localStorage.removeItem('cart');
-        setCart([]);
+      const parsed = safeJsonParse(savedCart, []);
+      setCart(Array.isArray(parsed) ? parsed : []);
+      if (!Array.isArray(parsed)) {
+        safeLocalStorage.remove('cart');
       }
     }
   }, []);
@@ -132,7 +134,7 @@ export default function Checkout() {
     mutationFn: (data) => base44.entities.Order.create(data),
     /** @param {any} order */
     onSuccess: (order) => {
-      localStorage.removeItem('cart');
+      safeLocalStorage.remove('cart');
       toast.success('Pedido criado!');
 
       const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -165,7 +167,7 @@ export default function Checkout() {
       );
 
       window.open(`https://wa.me/${waPhone}?text=${msg}`, '_blank');
-      window.location.href = createPageUrl('TrackOrder') + `?id=${order.id}`;
+      navigate(createPageUrl('TrackOrder') + `?id=${order.id}`);
     }
   });
 
@@ -215,7 +217,7 @@ export default function Checkout() {
         <div className="max-w-2xl w-full text-center space-y-4 bg-white border border-slate-200 p-8 rounded-3xl shadow-sm">
           <h1 className="text-2xl font-semibold text-slate-900">Nenhum item no carrinho</h1>
           <p className="text-sm text-slate-500">Adicione produtos ao carrinho antes de finalizar o pedido.</p>
-          <Button onClick={() => (window.location.href = createPageUrl('Menu'))}>Voltar para o cardápio</Button>
+          <Button onClick={() => navigate(createPageUrl('Menu'))}>Voltar para o cardápio</Button>
         </div>
       </div>
     );
@@ -226,7 +228,7 @@ export default function Checkout() {
       <div className="bg-white border-b border-slate-200 sticky top-0 z-50">
         <div className="max-w-3xl mx-auto px-4 py-4">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => window.history.back()}>
+            <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <div>

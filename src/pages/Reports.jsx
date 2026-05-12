@@ -28,7 +28,11 @@ export default function Reports() {
   const getDateRange = () => {
     const now = new Date();
     if (period === 'custom' && customStart && customEnd) {
-      return { start: startOfDay(parseISO(customStart)), end: endOfDay(parseISO(customEnd)) };
+      const start = parseISO(customStart);
+      const end = parseISO(customEnd);
+      if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
+        return { start: startOfDay(start), end: endOfDay(end) };
+      }
     }
     switch (period) {
       case 'today':

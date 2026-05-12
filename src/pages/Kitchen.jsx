@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { orderService } from '@/services/orderService';
+import { settingsService } from '@/services/settingsService';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -223,7 +224,7 @@ function KitchenContent() {
 
   const settingsQuery = useQuery({
     queryKey: ['settings'],
-    queryFn: () => base44.entities.Settings.list()
+    queryFn: () => settingsService.listSettings()
   });
   const settings = /** @type {{ key: string; value: string }[]} */ (
     settingsQuery.data ?? []
@@ -236,32 +237,13 @@ function KitchenContent() {
   const ordersQuery = useQuery({
     queryKey: ['kitchen-orders'],
     queryFn: async () => {
-      const all = await base44.entities.Order.list('-created_date', 100);
-      return all.filter(
-        /** @param {KitchenOrderItem} o */
-        (o) => ['pending', 'preparing', 'ready', 'delivering'].includes(o.status ?? '')
-      );
+      const all = await orderService.listKitchenOrders();
+      return all;
     },
     refetchInterval: 10000
   });
   const orders = /** @type {KitchenOrderItem[]} */ (ordersQuery.data ?? []);
   const isLoading = ordersQuery.isLoading;
-
-  useEffect(() => {
-    const unsubscribe = base44.entities.Order.subscribe(
-      /** @param {any} event */
-      (event) => {
-      if (event.type === 'create') {
-        // Play notification sound
-        const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBiWLz/LDdykGIm6+8N6URAwSWK3n8KRYE');
-        audio.volume = 0.5;
-        audio.play().catch(() => {});
-        toast.success('Novo pedido recebido!');
-      }
-      queryClient.invalidateQueries(['kitchen-orders']);
-    });
-    return unsubscribe;
-  }, [queryClient]);
 
   useEffect(() => {
     if (orders.length > lastOrderCount && lastOrderCount > 0) {
@@ -274,7 +256,7 @@ function KitchenContent() {
 
   const updateMutation = useMutation({
     mutationFn: /** @param {{ id: string; data: any }} params */
-      ({ id, data }) => base44.entities.Order.update(id, data),
+      ({ id, data }) => orderService.updateOrder(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries(['kitchen-orders']);
       toast.success('Atualizado');

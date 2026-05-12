@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import { safeLocalStorage } from '@/utils/storage';
 import { Pizza, ShoppingCart, Plus, Minus, Sparkles, Trash2, ArrowLeft } from 'lucide-react';
 import SliceOSFooter from '@/components/SliceOSFooter';
 import { toast } from 'sonner';
@@ -128,9 +129,11 @@ export default function Menu() {
 
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
+  const navigate = useNavigate();
+
   const handleCheckout = () => {
-    localStorage.setItem('cart', JSON.stringify(cart));
-    window.location.href = createPageUrl('Checkout');
+    safeLocalStorage.set('cart', JSON.stringify(cart));
+    navigate(createPageUrl('Checkout'));
   };
 
   return (

@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { authService } from '@/services/authService';
+import { settingsService } from '@/services/settingsService';
 
 const AuthContext = createContext(null);
 
@@ -16,15 +17,16 @@ export const AuthProvider = ({ children }) => {
     setIsLoadingPublicSettings(true);
     setAuthError(null);
     try {
-      const currentUser = await base44.auth.me();
+      const currentUser = await authService.getCurrentUser();
       setUser(currentUser);
-      setIsAuthenticated(true);
-      setAppPublicSettings({ id: 'local', public_settings: {} });
+      setIsAuthenticated(await authService.isAuthenticated());
+      const settings = await settingsService.listSettings();
+      setAppPublicSettings({ id: 'local', public_settings: settings });
     } catch (error) {
       console.warn('Fake auth fallback:', error);
       setUser({ id: 'guest', name: 'Guest' });
-      setIsAuthenticated(true);
-      setAppPublicSettings({ id: 'local', public_settings: {} });
+      setIsAuthenticated(false);
+      setAppPublicSettings({ id: 'local', public_settings: [] });
     } finally {
       setIsLoadingPublicSettings(false);
       setIsLoadingAuth(false);

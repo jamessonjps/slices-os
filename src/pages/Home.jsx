@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import { safeJsonParse } from '@/utils/storage';
 import { Pizza, ClipboardList, Phone, MapPin, Clock, CheckCircle, XCircle } from 'lucide-react';
 import SliceOSFooter from '@/components/SliceOSFooter';
 import { Button } from '@/components/ui/button';
@@ -71,7 +72,8 @@ export default function Home() {
   const hours = useMemo(() => {
     const s = settings.find(s => s.key === 'business_hours');
     if (!s) return DEFAULT_HOURS;
-    try { return JSON.parse(s.value); } catch { return DEFAULT_HOURS; }
+    const parsed = safeJsonParse(s.value, DEFAULT_HOURS);
+    return parsed && typeof parsed === 'object' ? parsed : DEFAULT_HOURS;
   }, [settings]);
 
   const whatsapp = settings.find(s => s.key === 'whatsapp_number')?.value || '';

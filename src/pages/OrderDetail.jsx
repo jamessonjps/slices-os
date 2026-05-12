@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { ArrowLeft, Clock, CheckCircle, Truck, Package, ChefHat, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -23,8 +23,9 @@ const statusConfig = {
 
 export default function OrderDetail() {
   const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
-  const urlParams = new URLSearchParams(window.location.search);
+  const urlParams = new URLSearchParams(location.search);
   const orderId = urlParams.get('id');
 
   const { data: order, isLoading } = useQuery({

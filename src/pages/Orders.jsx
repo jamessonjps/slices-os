@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { orderService } from '@/services/orderService';
+import { authService } from '@/services/authService';
 import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Plus, LogOut, ChefHat, DollarSign, Clock, CheckCircle, Truck, Package, ArrowLeft } from 'lucide-react';
 import SliceOSFooter from '@/components/SliceOSFooter';
@@ -25,17 +26,23 @@ export default function Orders() {
 
   const { data: orders = [], isLoading } = useQuery({
     queryKey: ['orders'],
-    queryFn: () => base44.entities.Order.list('-created_date', 100)
+    queryFn: () => orderService.listOrders('-created_date', 100)
   });
 
   React.useEffect(() => {
-    base44.auth.me().then(setUser).catch(() => {
+    authService.getCurrentUser().then(setUser).catch(() => {
       setUser(null);
     });
   }, []);
 
-  const handleLogout = () => {
-    base44.auth.logout(createPageUrl('Home'));
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await authService.logout();
+    } finally {
+      navigate(createPageUrl('Home'));
+    }
   };
 
   const todayOrders = orders.filter(o => {

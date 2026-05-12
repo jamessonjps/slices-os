@@ -1,5 +1,6 @@
-import React, { useEffect, useRef } from 'react';
-import { base44 } from '@/api/base44Client';
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { authService } from '@/services/authService';
 import { ShieldAlert, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -12,12 +13,12 @@ import { Button } from '@/components/ui/button';
 export default function AuthGate({ mode, children }) {
   const [isAuthenticated, setIsAuthenticated] = React.useState(null);
   const [isLoading, setIsLoading] = React.useState(true);
-  const didRedirectRef = useRef(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const authenticated = await base44.auth.isAuthenticated();
+        const authenticated = await authService.isAuthenticated();
         setIsAuthenticated(authenticated);
       } catch (error) {
         setIsAuthenticated(false);
@@ -27,17 +28,6 @@ export default function AuthGate({ mode, children }) {
     };
     checkAuth();
   }, []);
-
-  // Auto-redirect para login (apenas uma vez)
-  useEffect(() => {
-    if (mode === 'private' && isAuthenticated === false && !didRedirectRef.current) {
-      didRedirectRef.current = true;
-      // Pequeno delay para evitar race conditions
-      setTimeout(() => {
-        base44.auth.redirectToLogin(window.location.pathname + window.location.search);
-      }, 100);
-    }
-  }, [mode, isAuthenticated]);
 
   // Loading state
   if (isLoading) {
@@ -65,14 +55,20 @@ export default function AuthGate({ mode, children }) {
             <ShieldAlert className="w-16 h-16 text-slate-400 mx-auto mb-4" />
             <h1 className="text-2xl font-bold text-slate-900 mb-2">Login Necessário</h1>
             <p className="text-slate-600 mb-6">
-              Esta página requer autenticação. Faça login para continuar.
+              Esta página requer autenticação. Faça login ou retorne ao painel principal.
             </p>
             <Button
-              onClick={() => base44.auth.redirectToLogin(window.location.pathname + window.location.search)}
+              onClick={() => {
+                if (window.history.length > 1) {
+                  navigate(-1);
+                } else {
+                  navigate('/');
+                }
+              }}
               className="bg-slate-900 hover:bg-slate-800 text-white"
             >
               <LogIn className="w-4 h-4 mr-2" />
-              Ir para Login
+              Voltar ao App
             </Button>
           </div>
         </div>

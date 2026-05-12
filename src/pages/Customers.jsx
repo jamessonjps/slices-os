@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { customerService } from '@/services/customerService';
+import { orderService } from '@/services/orderService';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -23,21 +24,21 @@ export default function Customers() {
 
   const { data: customers = [], isLoading } = useQuery({
     queryKey: ['customers'],
-    queryFn: () => base44.entities.Customer.list('-created_date', 500)
+    queryFn: () => customerService.listCustomers()
   });
 
   const { data: orders = [] } = useQuery({
     queryKey: ['all-orders'],
-    queryFn: () => base44.entities.Order.list('-created_date', 1000)
+    queryFn: () => orderService.listOrders('-created_date', 100)
   });
 
   const { data: addresses = [] } = useQuery({
     queryKey: ['all-addresses'],
-    queryFn: () => base44.entities.Address.list()
+    queryFn: () => customerService.listAddresses()
   });
 
   const updateCustomerMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Customer.update(id, data),
+    mutationFn: ({ id, data }) => customerService.updateCustomer(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries(['customers']);
       toast.success('Cliente atualizado');
@@ -254,12 +255,12 @@ export default function Customers() {
                       {getCustomerAddresses(selectedCustomer.id).map(addr => (
                         <Card key={addr.id} className="p-3 bg-slate-50">
                           <p className="text-sm text-slate-900">
-                            {addr.rua}, {addr.numero}
-                            {addr.complemento && ` - ${addr.complemento}`}
+                            {addr.street}, {addr.number}
+                            {addr.complement && ` - ${addr.complement}`}
                           </p>
                           <p className="text-sm text-slate-600">
-                            {addr.bairro}
-                            {addr.referencia && ` • ${addr.referencia}`}
+                            {addr.district}
+                            {addr.city && ` • ${addr.city}`}
                           </p>
                         </Card>
                       ))}

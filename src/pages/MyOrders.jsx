@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import { safeLocalStorage } from '@/utils/storage';
 import { ArrowLeft, Package, Clock, CheckCircle } from 'lucide-react';
 import SliceOSFooter from '@/components/SliceOSFooter';
 import { Button } from '@/components/ui/button';
@@ -27,7 +28,7 @@ export default function MyOrders() {
   const [searchPhone, setSearchPhone] = useState('');
 
   useEffect(() => {
-    const savedPhone = localStorage.getItem('customer_phone');
+    const savedPhone = safeLocalStorage.get('customer_phone');
     if (savedPhone) {
       setPhone(savedPhone);
       setSearchPhone(savedPhone);
@@ -46,7 +47,7 @@ export default function MyOrders() {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    localStorage.setItem('customer_phone', phone);
+    safeLocalStorage.set('customer_phone', phone);
     setSearchPhone(phone);
   };
 
@@ -102,7 +103,7 @@ export default function MyOrders() {
                 onClick={() => {
                   setSearchPhone('');
                   setPhone('');
-                  localStorage.removeItem('customer_phone');
+                  safeLocalStorage.remove('customer_phone');
                 }}
               >
                 Alterar
