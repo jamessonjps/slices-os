@@ -32,15 +32,20 @@ export default function UserManagement() {
   const [form, setForm] = useState(emptyForm);
   const [showPassword, setShowPassword] = useState(false);
   const [inviteLoading, setInviteLoading] = useState(false);
+  const [accessDenied, setAccessDenied] = useState(false);
 
   useEffect(() => {
     base44.auth.me().then(u => {
       if (u?.role !== 'admin') {
-        navigate(createPageUrl('AdminHome'));
+        setCurrentUser(u ?? null);
+        setAccessDenied(true);
       } else {
         setCurrentUser(u);
       }
-    }).catch(() => navigate(createPageUrl('AdminHome')));
+    }).catch(() => {
+      setCurrentUser(null);
+      setAccessDenied(true);
+    });
   }, []);
 
   const { data: profiles = [] } = useQuery({
@@ -96,6 +101,20 @@ export default function UserManagement() {
   };
 
   const f = (field) => (e) => setForm(prev => ({ ...prev, [field]: e.target.value }));
+
+  if (accessDenied) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
+        <div className="max-w-md w-full bg-white border border-slate-200 rounded-3xl p-8 text-center shadow-sm">
+          <p className="text-2xl font-semibold text-slate-900 mb-3">Acesso restrito</p>
+          <p className="text-slate-600 mb-6">Você não tem permissão para acessar esta área administrativa.</p>
+          <Link to={createPageUrl('AdminHome')}>
+            <Button className="bg-slate-900 hover:bg-slate-800 text-white">Voltar para o painel</Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50">

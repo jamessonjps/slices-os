@@ -10,28 +10,30 @@ export const AuthProvider = ({ children }) => {
   const [isLoadingPublicSettings, setIsLoadingPublicSettings] = useState(true);
   const [authError, setAuthError] = useState(null);
   const [appPublicSettings, setAppPublicSettings] = useState(null);
+  const [authChecked, setAuthChecked] = useState(false);
+
+  const loadAuthState = async () => {
+    setIsLoadingPublicSettings(true);
+    setAuthError(null);
+    try {
+      const currentUser = await base44.auth.me();
+      setUser(currentUser);
+      setIsAuthenticated(true);
+      setAppPublicSettings({ id: 'local', public_settings: {} });
+    } catch (error) {
+      console.warn('Fake auth fallback:', error);
+      setUser({ id: 'guest', name: 'Guest' });
+      setIsAuthenticated(true);
+      setAppPublicSettings({ id: 'local', public_settings: {} });
+    } finally {
+      setIsLoadingPublicSettings(false);
+      setIsLoadingAuth(false);
+      setAuthChecked(true);
+    }
+  };
 
   useEffect(() => {
-    const startup = async () => {
-      setIsLoadingPublicSettings(true);
-      setAuthError(null);
-      try {
-        const currentUser = await base44.auth.me();
-        setUser(currentUser);
-        setIsAuthenticated(true);
-        setAppPublicSettings({ id: 'local', public_settings: {} });
-      } catch (error) {
-        console.warn('Fake auth fallback:', error);
-        setUser({ id: 'guest', name: 'Guest' });
-        setIsAuthenticated(true);
-        setAppPublicSettings({ id: 'local', public_settings: {} });
-      } finally {
-        setIsLoadingPublicSettings(false);
-        setIsLoadingAuth(false);
-      }
-    };
-
-    startup();
+    loadAuthState();
   }, []);
 
   const logout = () => {
@@ -52,9 +54,11 @@ export const AuthProvider = ({ children }) => {
         isLoadingPublicSettings,
         authError,
         appPublicSettings,
+        authChecked,
         logout,
         navigateToLogin,
-        checkAppState: () => {},
+        checkAppState: loadAuthState,
+        checkUserAuth: loadAuthState,
       }}
     >
       {children}

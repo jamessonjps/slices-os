@@ -84,7 +84,13 @@ export default function Checkout() {
   useEffect(() => {
     const savedCart = localStorage.getItem('cart');
     if (savedCart) {
-      setCart(JSON.parse(savedCart));
+      try {
+        setCart(JSON.parse(savedCart) ?? []);
+      } catch (error) {
+        console.warn('Invalid cart data in localStorage:', error);
+        localStorage.removeItem('cart');
+        setCart([]);
+      }
     }
   }, []);
 

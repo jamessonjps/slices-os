@@ -54,8 +54,13 @@ export default function OrderDetail() {
   };
 
   const handleWhatsApp = () => {
-    const phone = order.customer_phone.replace(/\D/g, '');
-    const message = `Olá ${order.customer_name}! Seu pedido #${order.id.slice(0, 8)} está ${config.label.toLowerCase()}. 🍕`;
+    const phone = order?.customer_phone ? order.customer_phone.replace(/\D/g, '') : '';
+    if (!phone) {
+      toast.error('Telefone do cliente indisponível');
+      return;
+    }
+
+    const message = `Olá ${order.customer_name || 'cliente'}! Seu pedido #${order.id?.slice(0, 8) || ''} está ${config.label.toLowerCase()}. 🍕`;
     window.open(`https://wa.me/55${phone}?text=${encodeURIComponent(message)}`, '_blank');
   };
 

@@ -30,7 +30,7 @@ export default function Orders() {
 
   React.useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {
-      base44.auth.redirectToLogin(createPageUrl('Orders'));
+      setUser(null);
     });
   }, []);
 

@@ -106,7 +106,9 @@ export default function Settings() {
   const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
-    base44.auth.me().then(setCurrentUser).catch(() => {});
+    base44.auth.me().then(setCurrentUser).catch(() => {
+      setCurrentUser(null);
+    });
   }, []);
 
   const { data: settings = [] } = useQuery({

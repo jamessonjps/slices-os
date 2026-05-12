@@ -11,7 +11,7 @@ export default function AdminHome() {
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {
-      base44.auth.redirectToLogin(createPageUrl('AdminHome'));
+      setUser(null);
     });
   }, []);
 
