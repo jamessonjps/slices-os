@@ -60,12 +60,6 @@ export default function TrackOrder() {
     return `${totalTime} minutos estimados`;
   };
 
-  useEffect(() => {
-    if (!orderId) {
-      window.location.href = createPageUrl('Menu');
-    }
-  }, [orderId]);
-
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">

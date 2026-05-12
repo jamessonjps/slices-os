@@ -85,8 +85,6 @@ export default function Checkout() {
     const savedCart = localStorage.getItem('cart');
     if (savedCart) {
       setCart(JSON.parse(savedCart));
-    } else {
-      window.location.href = createPageUrl('Menu');
     }
   }, []);
 

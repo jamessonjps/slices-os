@@ -1,7 +1,8 @@
 const createEntityProxy = () => {
-  return new Proxy({}, {
+  return new Proxy(/** @type {Record<string, any>} */ ({}), {
     get(target, entityName) {
-      if (!target[entityName]) {
+      const key = String(entityName);
+      if (!target[key]) {
         const entity = {
           list: async () => [],
           filter: async () => [],
@@ -11,16 +12,16 @@ const createEntityProxy = () => {
           subscribe: () => ({ unsubscribe: () => {} }),
           get: async () => ({}),
         };
-        target[entityName] = entity;
+        target[key] = entity;
       }
-      return target[entityName];
+      return target[key];
     }
   });
 };
 
 export const base44 = {
   auth: {
-    me: async () => ({ id: 'guest', name: 'Guest' }),
+    me: async () => ({ id: 'admin', name: 'Admin', role: 'admin' }),
     logout: async () => {},
     redirectToLogin: () => {},
     isAuthenticated: async () => true,
