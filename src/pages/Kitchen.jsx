@@ -371,44 +371,47 @@ function KitchenContent() {
         waPhone={waPhone}
       />
       {/* Header */}
-      <div className="bg-slate-800 border-b border-slate-700 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <ChefHat className="w-8 h-8 text-white" />
-              <div>
-                <h1 className="text-2xl font-bold text-white">Cozinha</h1>
-                <p className="text-sm text-slate-400">{orders.length} pedidos ativos</p>
+      <div className="bg-card border-b border-border sticky top-0 z-50 shadow-sm">
+        <div className="max-w-full mx-auto px-4 py-4">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3 min-w-0">
+              <ChefHat className="w-6 h-6 md:w-8 md:h-8 text-primary flex-shrink-0" />
+              <div className="min-w-0">
+                <h1 className="text-xl md:text-2xl font-bold text-foreground truncate">Cozinha</h1>
+                <p className="text-xs md:text-sm text-muted-foreground">{orders.length} pedidos ativos</p>
               </div>
             </div>
-            <Link to={createPageUrl('AdminHome')}>
-              <Button variant="outline" className="text-white border-slate-600 hover:bg-slate-700">
-                <Home className="w-4 h-4 mr-2" />
-                Voltar
+            <Link to={createPageUrl('AdminHome')} className="flex-shrink-0">
+              <Button variant="outline" size="sm" className="gap-2">
+                <Home className="w-4 h-4" />
+                <span className="hidden sm:inline">Voltar</span>
               </Button>
             </Link>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-6">
+      <div className="max-w-full mx-auto px-4 py-4 md:py-6 space-y-4">
         {isLoading ? (
-          <div className="text-center py-12 text-slate-400">Carregando...</div>
+          <div className="text-center py-12 text-muted-foreground">Carregando pedidos...</div>
         ) : orders.length === 0 ? (
           <div className="text-center py-12">
-            <CheckCircle className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-            <p className="text-xl text-slate-400">Nenhum pedido ativo</p>
-            <p className="text-sm text-slate-500 mt-2">Todos os pedidos foram concluídos! 🎉</p>
+            <CheckCircle className="w-12 h-12 md:w-16 md:h-16 text-muted-foreground/50 mx-auto mb-4" />
+            <p className="text-lg md:text-xl font-semibold text-foreground">Nenhum pedido ativo</p>
+            <p className="text-sm text-muted-foreground mt-2">Todos os pedidos foram concluídos! 🎉</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
             {/* Pending Column */}
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-3 h-3 rounded-full bg-amber-500" />
-                <h2 className="font-semibold text-white">Pendentes ({groupedOrders.pending.length})</h2>
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-2 px-1">
+                <div className="w-3 h-3 rounded-full bg-warning flex-shrink-0" />
+                <h2 className="font-semibold text-foreground text-sm md:text-base">Pendentes</h2>
+                <span className="ml-auto bg-warning/20 text-warning text-xs font-semibold px-2 py-1 rounded">
+                  {groupedOrders.pending.length}
+                </span>
               </div>
-              <div className="space-y-3">
+              <div className="space-y-3 flex-1">
                 {groupedOrders.pending.map(order => (
                   <OrderCard 
                     key={order.id} 
@@ -424,12 +427,15 @@ function KitchenContent() {
             </div>
 
             {/* Preparing Column */}
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-3 h-3 rounded-full bg-blue-500" />
-                <h2 className="font-semibold text-white">Preparando ({groupedOrders.preparing.length})</h2>
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-2 px-1">
+                <div className="w-3 h-3 rounded-full bg-info flex-shrink-0" />
+                <h2 className="font-semibold text-foreground text-sm md:text-base">Preparando</h2>
+                <span className="ml-auto bg-info/20 text-info text-xs font-semibold px-2 py-1 rounded">
+                  {groupedOrders.preparing.length}
+                </span>
               </div>
-              <div className="space-y-3">
+              <div className="space-y-3 flex-1">
                 {groupedOrders.preparing.map(order => (
                   <OrderCard 
                     key={order.id} 
@@ -445,12 +451,15 @@ function KitchenContent() {
             </div>
 
             {/* Ready Column */}
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-3 h-3 rounded-full bg-green-500" />
-                <h2 className="font-semibold text-white">Prontos ({groupedOrders.ready.length})</h2>
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-2 px-1">
+                <div className="w-3 h-3 rounded-full bg-success flex-shrink-0" />
+                <h2 className="font-semibold text-foreground text-sm md:text-base">Prontos</h2>
+                <span className="ml-auto bg-success/20 text-success text-xs font-semibold px-2 py-1 rounded">
+                  {groupedOrders.ready.length}
+                </span>
               </div>
-              <div className="space-y-3">
+              <div className="space-y-3 flex-1">
                 {groupedOrders.ready.map(order => (
                   <OrderCard 
                     key={order.id} 
@@ -466,12 +475,15 @@ function KitchenContent() {
             </div>
 
             {/* Delivering Column */}
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-3 h-3 rounded-full bg-purple-500" />
-                <h2 className="font-semibold text-white">Em Entrega ({groupedOrders.delivering.length})</h2>
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-2 px-1">
+                <div className="w-3 h-3 rounded-full bg-primary flex-shrink-0" />
+                <h2 className="font-semibold text-foreground text-sm md:text-base">Entrega</h2>
+                <span className="ml-auto bg-primary/20 text-primary text-xs font-semibold px-2 py-1 rounded">
+                  {groupedOrders.delivering.length}
+                </span>
               </div>
-              <div className="space-y-3">
+              <div className="space-y-3 flex-1">
                 {groupedOrders.delivering.map(order => (
                   <OrderCard 
                     key={order.id} 
@@ -519,6 +531,12 @@ function OrderCard({ order, onAdvance, onTogglePizza, onToggleDrink, onEdit, upd
     (order.pizzas?.every((p) => p.ready) ?? true) && 
     (order.drinks?.every((d) => d.ready) ?? true);
 
+  const getStatusBadgeVariant = () => {
+    if (minutesAgo > 15 && order.status === 'preparing') return 'destructive';
+    if (minutesAgo > 10 && order.status === 'preparing') return 'warning';
+    return 'default';
+  };
+
   const openGoogleMaps = () => {
     if (order.delivery_type === 'delivery' && order.address_text) {
       const encodedAddress = encodeURIComponent(order.address_text);
@@ -529,135 +547,133 @@ function OrderCard({ order, onAdvance, onTogglePizza, onToggleDrink, onEdit, upd
 
   return (
     <Card className={cn(
-      "p-4 bg-slate-800 border-slate-700",
-      minutesAgo > 15 && order.status === 'preparing' && "border-red-500 border-2"
+      "p-3 md:p-4 border-2",
+      minutesAgo > 15 && order.status === 'preparing' && "border-error"
     )}>
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex-1">
-          <h3 className="font-bold text-white text-lg">{order.customer_name}</h3>
-          <div className="flex items-center gap-2 mt-1">
-            <Clock className="w-3 h-3 text-slate-400" />
-            <span className="text-xs text-slate-400">{timeAgo}</span>
+      {/* Header */}
+      <div className="flex items-start justify-between mb-3 gap-2">
+        <div className="flex-1 min-w-0">
+          <h3 className="font-semibold text-base md:text-lg text-foreground truncate">{order.customer_name}</h3>
+          <div className="flex items-center gap-2 mt-1 flex-wrap">
+            <Clock className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+            <span className="text-xs text-muted-foreground">{timeAgo}</span>
             {minutesAgo > 0 && (
-              <Badge className={cn(
-                "text-xs",
-                minutesAgo > 15 ? "bg-red-600" : minutesAgo > 10 ? "bg-amber-600" : "bg-slate-600"
-              )}>
+              <Badge variant={getStatusBadgeVariant()} size="sm">
                 {minutesAgo}min
               </Badge>
             )}
           </div>
-          {order.delivery_type === 'delivery' && order.address_text && (
-            <button
-              onClick={openGoogleMaps}
-              className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1 mt-1"
-            >
-              <Truck className="w-3 h-3" />
-              Ver rota no Maps
-            </button>
-          )}
         </div>
         {order.delivery_type === 'delivery' && (
-          <Truck className="w-4 h-4 text-slate-500" />
+          <Truck className="w-4 h-4 text-muted-foreground flex-shrink-0" />
         )}
       </div>
 
+      {/* Address (if delivery) */}
+      {order.delivery_type === 'delivery' && order.address_text && (
+        <button
+          onClick={openGoogleMaps}
+          className="text-xs text-primary hover:text-primary/80 flex items-center gap-1 mb-3"
+        >
+          <Truck className="w-3 h-3" />
+          Ver rota
+        </button>
+      )}
+
       {/* Pizzas */}
-      <div className="space-y-2 mb-4">
-        {order.pizzas?.map((pizza, i) => (
-          <div
-            key={i}
-            onClick={() => order.status === 'preparing' && onTogglePizza(order, i)}
-            className={cn(
-              "bg-slate-700 rounded-lg p-3 transition-all",
-              order.status === 'preparing' && "cursor-pointer hover:bg-slate-600",
-              pizza.ready && "bg-green-900 border-2 border-green-600"
-            )}
-          >
-            <div className="flex items-center gap-2 mb-1">
-              <Badge className="bg-slate-600 text-white border-0">
-                {pizza.size} fatias
-              </Badge>
-              {pizza.ready ? (
-                <CheckCircle className="w-4 h-4 text-green-400" />
-              ) : order.status === 'preparing' ? (
-                <Circle className="w-4 h-4 text-slate-400" />
-              ) : null}
-            </div>
-            <p className="text-sm text-white font-medium">
-              {pizza.is_half ? (
-                <>
-                  <span className="text-amber-400">½</span> {pizza.flavor1}
-                  <br />
-                  <span className="text-amber-400">½</span> {pizza.flavor2}
-                </>
-              ) : (
-                pizza.flavor1
+      {(order.pizzas?.length ?? 0) > 0 && (
+        <div className="space-y-2 mb-3">
+          {order.pizzas?.map((pizza, i) => (
+            <div
+              key={i}
+              onClick={() => order.status === 'preparing' && onTogglePizza(order, i)}
+              className={cn(
+                "bg-card rounded-lg p-2 transition-all text-sm border",
+                order.status === 'preparing' && "cursor-pointer hover:shadow-sm",
+                pizza.ready && "bg-success/10 border-success"
               )}
-            </p>
-          </div>
-        ))}
-      </div>
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <Badge size="sm" variant={pizza.ready ? "success" : "default"}>
+                  {pizza.size}
+                </Badge>
+                {pizza.ready && (
+                  <CheckCircle className="w-3 h-3 text-success flex-shrink-0" />
+                )}
+              </div>
+              <p className="text-foreground font-medium text-xs md:text-sm line-clamp-2">
+                {pizza.is_half ? (
+                  <>
+                    <span className="text-warning">½</span> {pizza.flavor1} / <span className="text-warning">½</span> {pizza.flavor2}
+                  </>
+                ) : (
+                  pizza.flavor1
+                )}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Drinks */}
       {(order.drinks?.length ?? 0) > 0 && (
-        <div className="mb-4 border-t border-slate-700 pt-3">
-          <p className="text-xs text-slate-400 mb-2">Bebidas:</p>
-          <div className="space-y-2">
+        <div className="mb-3 border-t border-border pt-2">
+          <p className="text-xs text-muted-foreground mb-2 font-medium">Bebidas</p>
+          <div className="space-y-1">
             {(order.drinks ?? []).map((drink, i) => (
               <div
                 key={i}
                 onClick={() => order.status === 'preparing' && onToggleDrink(order, i)}
                 className={cn(
-                  "text-sm text-slate-300 p-2 rounded flex items-center justify-between",
-                  order.status === 'preparing' && "cursor-pointer hover:bg-slate-600",
-                  drink.ready && "bg-green-900 text-green-100"
+                  "text-xs p-2 rounded flex items-center justify-between transition-all",
+                  order.status === 'preparing' && "cursor-pointer hover:bg-accent",
+                  drink.ready && "bg-success/10"
                 )}
               >
-                <span>{drink.quantity}x {drink.name}</span>
-                {drink.ready ? (
-                  <CheckCircle className="w-4 h-4 text-green-400" />
-                ) : order.status === 'preparing' ? (
-                  <Circle className="w-4 h-4 text-slate-400" />
-                ) : null}
+                <span className="text-foreground">{drink.quantity}x {drink.name}</span>
+                {drink.ready && (
+                  <CheckCircle className="w-3 h-3 text-success flex-shrink-0" />
+                )}
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* Advance Button */}
-      <Button
-        onClick={() => onAdvance(order)}
-        disabled={updating || (order.status === 'preparing' && !allItemsReady)}
-        className={cn(
-          `w-full ${config.color} hover:opacity-90 text-white font-semibold`,
-          order.status === 'preparing' && !allItemsReady && "opacity-50 cursor-not-allowed"
-        )}
-      >
-        {config.nextLabel}
-        <ArrowRight className="w-4 h-4 ml-2" />
-      </Button>
+      {/* Notes */}
+      {order.notes && (
+        <div className="mb-3 text-xs text-muted-foreground italic border-l-2 border-muted pl-2">
+          "{order.notes}"
+        </div>
+      )}
+
+      {/* Action Buttons */}
+      <div className="flex gap-2 pt-2 border-t border-border">
+        <Button
+          onClick={() => onAdvance(order)}
+          disabled={updating || (order.status === 'preparing' && !allItemsReady)}
+          variant="default"
+          size="sm"
+          className="flex-1"
+        >
+          <span className="text-xs md:text-sm">{config.nextLabel}</span>
+          <ArrowRight className="w-3 h-3 ml-1" />
+        </Button>
+        <Button
+          onClick={() => onEdit(order)}
+          variant="outline"
+          size="icon"
+          className="h-9 w-9"
+        >
+          <Pencil className="w-4 h-4" />
+        </Button>
+      </div>
 
       {order.status === 'preparing' && !allItemsReady && (
-        <p className="text-xs text-amber-400 text-center mt-2">
-          Marque todos os itens como prontos
+        <p className="text-xs text-warning text-center mt-2 font-medium">
+          Marque itens prontos
         </p>
       )}
-
-      {order.notes && (
-        <p className="text-xs text-slate-400 mt-3 italic">"{order.notes}"</p>
-      )}
-
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => onEdit(order)}
-        className="w-full mt-2 text-slate-400 hover:text-white hover:bg-slate-700 text-xs"
-      >
-        <Pencil className="w-3 h-3 mr-1" />
-        Editar e Notificar Cliente
-      </Button>
     </Card>
   );
 }

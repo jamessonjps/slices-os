@@ -137,41 +137,50 @@ export default function Menu() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-orange-50">
-      {/* Header */}
-      <div className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+    <div className="min-h-screen bg-background">
+      {/* Header Premium */}
+      <div className="bg-card border-b border-border sticky top-0 z-50 shadow-sm">
+        <div className="max-w-full mx-auto px-4 py-3 md:py-4">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 md:gap-3 min-w-0">
               <Link to={createPageUrl('Home')}>
-                <Button variant="ghost" size="icon">
-                  <ArrowLeft className="w-5 h-5 text-slate-600" />
+                <Button variant="ghost" size="icon" className="h-9 w-9 md:h-10 md:w-10">
+                  <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" />
                 </Button>
               </Link>
               <img
                 src="https://media.base44.com/images/public/698b33880f8f26bcac1c2f36/acd017143_Semttulo.jpg"
                 alt="Pizza Millano Pizzaria"
-                className="h-10 w-auto rounded-lg"
+                className="h-8 md:h-10 w-auto rounded-lg flex-shrink-0"
               />
-              <div>
-                <h1 className="text-xl font-bold text-slate-900">Millano Pizzaria</h1>
-                <p className="text-xs text-slate-500">Faça seu pedido online</p>
+              <div className="min-w-0">
+                <h1 className="text-base md:text-lg font-bold text-foreground truncate">Millano Pizzaria</h1>
+                <p className="text-xs text-muted-foreground">Faça seu pedido online</p>
               </div>
             </div>
+            
             {cart.length > 0 && (
-              <Badge className="bg-red-600 text-white">
-                {cart.reduce((sum, i) => sum + i.quantity, 0)} itens
-              </Badge>
+              <Button 
+                onClick={handleCheckout}
+                className="flex items-center gap-2 ml-auto flex-shrink-0"
+                size="sm"
+              >
+                <ShoppingCart className="w-4 h-4" />
+                <span className="hidden sm:inline text-xs md:text-sm">
+                  {cart.reduce((sum, i) => sum + i.quantity, 0)} itens
+                </span>
+                <span className="sm:hidden">{cart.reduce((sum, i) => sum + i.quantity, 0)}</span>
+              </Button>
             )}
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-6 pb-32">
+      <div className="max-w-full mx-auto px-4 py-6 md:py-8 pb-24">
         {menuItems.length === 0 && (
-          <div className="text-center py-20 text-slate-400">
-            <Pizza className="w-16 h-16 mx-auto mb-4 opacity-30" />
-            <p className="text-xl font-semibold">Cardápio em atualização</p>
+          <div className="text-center py-20 text-muted-foreground">
+            <Pizza className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-4 opacity-30" />
+            <p className="text-lg md:text-xl font-semibold text-foreground">Cardápio em atualização</p>
             <p className="text-sm mt-2">Em breve nossos sabores estarão disponíveis!</p>
           </div>
         )}
@@ -179,31 +188,36 @@ export default function Menu() {
         {/* Pizzas Especiais */}
         {pizzasEspeciais.length > 0 && (
           <div className="mb-8">
-            <h2 className="text-2xl font-bold text-slate-900 mb-2">Pizzas Especiais</h2>
-            <p className="text-sm text-slate-500 mb-4">8 fatias R$ 50,00</p>
-            <div className="space-y-4">
+            <div className="mb-4">
+              <h2 className="text-lg md:text-2xl font-bold text-foreground mb-1">Pizzas Especiais</h2>
+              <p className="text-xs md:text-sm text-muted-foreground">8 fatias • R$ 50,00</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
               {pizzasEspeciais.map((pizza) => (
-                <Card key={pizza.id} className="p-4">
-                  <div className="flex justify-between items-start mb-3">
-                    <div>
-                      <h3 className="font-bold text-lg text-slate-900">{pizza.name}</h3>
+                <Card key={pizza.id} className="flex flex-col p-3 md:p-4 hover:shadow-md transition-shadow">
+                  <div className="flex items-start justify-between gap-2 mb-3">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-sm md:text-base text-foreground truncate">{pizza.name}</h3>
                       {pizza.description && (
-                        <p className="text-sm text-slate-600">{pizza.description}</p>
+                        <p className="text-xs md:text-sm text-muted-foreground line-clamp-2 mt-1">{pizza.description}</p>
                       )}
                     </div>
                     {pizza.is_promotion && (
-                      <Badge className="bg-red-600 text-white">
-                        <Sparkles className="w-3 h-3 mr-1" />
-                        Promoção
+                      <Badge variant="warning" size="sm" className="flex-shrink-0">
+                        <Sparkles className="w-3 h-3 mr-0.5" />
+                        Promo
                       </Badge>
                     )}
                   </div>
                   <Button
-                    className="w-full bg-red-600 hover:bg-red-700 text-white"
+                    className="w-full mt-auto"
+                    variant="default"
+                    size="sm"
                     onClick={() => openPizzaDialog(pizza)}
                   >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Adicionar ao Carrinho
+                    <Plus className="w-4 h-4 mr-1" />
+                    <span className="hidden xs:inline">Adicionar</span>
+                    <span className="xs:hidden">+</span>
                   </Button>
                 </Card>
               ))}
@@ -214,32 +228,38 @@ export default function Menu() {
         {/* Pizzas Tradicionais */}
         {pizzasTradicionais.length > 0 && (
           <div className="mb-8">
-            <h2 className="text-2xl font-bold text-slate-900 mb-2">Pizzas Tradicionais</h2>
-            <p className="text-sm text-slate-500 mb-1">8 fatias a partir de R$ 35,00</p>
-            <p className="text-xs text-amber-700 bg-amber-50 rounded-lg px-3 py-1.5 mb-4 inline-block">⭐ Promoção: 6 fatias (1 sabor) R$ 28,00 — sabores selecionados</p>
-            <div className="space-y-4">
+            <div className="mb-4">
+              <h2 className="text-lg md:text-2xl font-bold text-foreground mb-1">Pizzas Tradicionais</h2>
+              <p className="text-xs md:text-sm text-muted-foreground">8 fatias a partir de R$ 35,00</p>
+              <div className="mt-2 inline-block text-xs md:text-sm px-3 py-1.5 rounded-lg bg-warning/10 text-warning border border-warning/20">
+                ⭐ 6 fatias a partir de R$ 28,00
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
               {pizzasTradicionais.map((pizza) => (
-                <Card key={pizza.id} className="p-4">
-                  <div className="flex justify-between items-start mb-3">
-                    <div>
-                      <h3 className="font-bold text-lg text-slate-900">{pizza.name}</h3>
+                <Card key={pizza.id} className="flex flex-col p-3 md:p-4 hover:shadow-md transition-shadow">
+                  <div className="flex items-start justify-between gap-2 mb-3">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-sm md:text-base text-foreground truncate">{pizza.name}</h3>
                       {pizza.description && (
-                        <p className="text-sm text-slate-600">{pizza.description}</p>
+                        <p className="text-xs md:text-sm text-muted-foreground line-clamp-2 mt-1">{pizza.description}</p>
                       )}
                     </div>
                     {pizza.is_promotion && (
-                      <Badge className="bg-red-600 text-white">
-                        <Sparkles className="w-3 h-3 mr-1" />
-                        Promoção
+                      <Badge variant="warning" size="sm" className="flex-shrink-0">
+                        <Sparkles className="w-3 h-3 mr-0.5" />
                       </Badge>
                     )}
                   </div>
                   <Button
-                    className="w-full bg-red-600 hover:bg-red-700 text-white"
+                    className="w-full mt-auto"
+                    variant="default"
+                    size="sm"
                     onClick={() => openPizzaDialog(pizza)}
                   >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Adicionar ao Carrinho
+                    <Plus className="w-4 h-4 mr-1" />
+                    <span className="hidden xs:inline">Adicionar</span>
+                    <span className="xs:hidden">+</span>
                   </Button>
                 </Card>
               ))}
@@ -250,34 +270,39 @@ export default function Menu() {
         {/* Pizzas 6 Fatias */}
         {pizzas6Fatias.length > 0 && (
           <div className="mb-8">
-            <h2 className="text-2xl font-bold text-slate-900 mb-1">Pizzas 6 Fatias</h2>
-            <p className="text-sm text-slate-500 mb-1">Apenas 1 sabor • R$ 28,00</p>
-            <p className="text-xs text-amber-700 bg-amber-50 rounded-lg px-3 py-1.5 mb-4 inline-block">⭐ Promoção especial — somente esses sabores</p>
-            <div className="space-y-4">
+            <div className="mb-4">
+              <h2 className="text-lg md:text-2xl font-bold text-foreground mb-1">Pizzas 6 Fatias</h2>
+              <p className="text-xs md:text-sm text-muted-foreground">1 sabor • R$ 28,00</p>
+              <div className="mt-2 inline-block text-xs md:text-sm px-3 py-1.5 rounded-lg bg-warning/10 text-warning border border-warning/20">
+                ⭐ Promoção especial
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
               {pizzas6Fatias.map((pizza) => (
-                <Card key={pizza.id} className="p-4 border-amber-200 bg-amber-50/30">
-                  <div className="flex justify-between items-start mb-3">
-                    <div>
-                      <h3 className="font-bold text-lg text-slate-900">{pizza.name}</h3>
+                <Card key={pizza.id} className="flex flex-col p-3 md:p-4 border-warning/20 bg-warning/5 hover:shadow-md transition-shadow">
+                  <div className="flex items-start justify-between gap-2 mb-3">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-sm md:text-base text-foreground truncate">{pizza.name}</h3>
                       {pizza.description && (
-                        <p className="text-sm text-slate-600">{pizza.description}</p>
+                        <p className="text-xs md:text-sm text-muted-foreground line-clamp-2 mt-1">{pizza.description}</p>
                       )}
                     </div>
-                    <Badge className="bg-amber-500 text-white">
-                      <Sparkles className="w-3 h-3 mr-1" />
+                    <Badge variant="warning" size="sm" className="flex-shrink-0">
                       6 fatias
                     </Badge>
                   </div>
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-lg font-bold text-slate-900">R$ {pizza.price_small?.toFixed(2)}</span>
-                    <span className="text-xs text-slate-500">8 fatias: R$ {pizza.price_medium?.toFixed(2)}</span>
+                  <div className="text-sm font-semibold text-foreground mb-2">
+                    R$ {pizza.price_small?.toFixed(2)}
                   </div>
                   <Button
-                    className="w-full bg-red-600 hover:bg-red-700 text-white"
+                    className="w-full mt-auto"
+                    variant="default"
+                    size="sm"
                     onClick={() => openPizzaDialog(pizza)}
                   >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Adicionar ao Carrinho
+                    <Plus className="w-4 h-4 mr-1" />
+                    <span className="hidden xs:inline">Adicionar</span>
+                    <span className="xs:hidden">+</span>
                   </Button>
                 </Card>
               ))}
@@ -288,16 +313,106 @@ export default function Menu() {
         {/* Pizzas Doces */}
         {pizzasDoces.length > 0 && (
           <div className="mb-8">
-            <h2 className="text-2xl font-bold text-slate-900 mb-4">Pizzas Doces</h2>
-            <div className="space-y-4">
+            <h2 className="text-lg md:text-2xl font-bold text-foreground mb-4">Pizzas Doces</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
               {pizzasDoces.map((pizza) => (
-                <Card key={pizza.id} className="p-4">
-                  <h3 className="font-bold text-lg text-slate-900 mb-3">{pizza.name}</h3>
+                <Card key={pizza.id} className="flex flex-col p-3 md:p-4 hover:shadow-md transition-shadow">
+                  <h3 className="font-semibold text-sm md:text-base text-foreground mb-2">{pizza.name}</h3>
                   {pizza.description && (
-                    <p className="text-sm text-slate-600 mb-3">{pizza.description}</p>
+                    <p className="text-xs md:text-sm text-muted-foreground line-clamp-2 mb-3">{pizza.description}</p>
                   )}
                   <Button
-                    className="w-full bg-red-600 hover:bg-red-700 text-white"
+                    className="w-full mt-auto"
+                    variant="default"
+                    size="sm"
+                    onClick={() => openPizzaDialog(pizza)}
+                  >
+                    <Plus className="w-4 h-4 mr-1" />
+                    <span className="hidden xs:inline">Adicionar</span>
+                    <span className="xs:hidden">+</span>
+                  </Button>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Drinks */}
+        {drinks.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-lg md:text-2xl font-bold text-foreground mb-4">Bebidas</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+              {drinks.map((drink) => (
+                <Card key={drink.id} className="flex flex-col p-3 md:p-4 hover:shadow-md transition-shadow">
+                  <h3 className="font-semibold text-sm md:text-base text-foreground mb-2">{drink.name}</h3>
+                  {drink.description && (
+                    <p className="text-xs md:text-sm text-muted-foreground line-clamp-2 mb-3">{drink.description}</p>
+                  )}
+                  <div className="text-sm font-semibold text-foreground mb-2">
+                    R$ {drink.price?.toFixed(2)}
+                  </div>
+                  <Button
+                    className="w-full mt-auto"
+                    variant="default"
+                    size="sm"
+                    onClick={() => addDrink(drink)}
+                  >
+                    <Plus className="w-4 h-4 mr-1" />
+                    <span className="hidden xs:inline">Adicionar</span>
+                    <span className="xs:hidden">+</span>
+                  </Button>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Desserts */}
+        {desserts.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-lg md:text-2xl font-bold text-foreground mb-4">Sobremesas</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+              {desserts.map((dessert) => (
+                <Card key={dessert.id} className="flex flex-col p-3 md:p-4 hover:shadow-md transition-shadow">
+                  <h3 className="font-semibold text-sm md:text-base text-foreground mb-2">{dessert.name}</h3>
+                  {dessert.description && (
+                    <p className="text-xs md:text-sm text-muted-foreground line-clamp-2 mb-3">{dessert.description}</p>
+                  )}
+                  <div className="text-sm font-semibold text-foreground mb-2">
+                    R$ {dessert.price?.toFixed(2)}
+                  </div>
+                  <Button
+                    className="w-full mt-auto"
+                    variant="default"
+                    size="sm"
+                    onClick={() => addDessert(dessert)}
+                  >
+                    <Plus className="w-4 h-4 mr-1" />
+                    <span className="hidden xs:inline">Adicionar</span>
+                    <span className="xs:hidden">+</span>
+                  </Button>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Cart Floating Button (Mobile) */}
+      {cart.length > 0 && (
+        <div className="fixed bottom-6 left-4 right-4 md:hidden">
+          <Button 
+            onClick={handleCheckout}
+            className="w-full h-12"
+            size="lg"
+          >
+            <ShoppingCart className="w-5 h-5 mr-2" />
+            Carrinho • R$ {total.toFixed(2)}
+          </Button>
+        </div>
+      )}
+
+      {/* Pizza Dialog */}
                     onClick={() => openPizzaDialog(pizza)}
                   >
                     <Plus className="w-4 h-4 mr-2" />
