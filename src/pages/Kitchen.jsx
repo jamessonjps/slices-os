@@ -52,72 +52,39 @@ const statusConfig = {
  * @param {{ order: KitchenOrderItem | null; open: boolean; onClose: () => void; onSave: (data: any) => void; waPhone: string }} props
  */
 function EditOrderDialog({ order, open, onClose, onSave, waPhone }) {
-  const [pizzas, setPizzas] = useState(
-    /** @type {Array<{ size?: string; is_half?: boolean; flavor1?: string; flavor2?: string; name?: string; price: number; quantity?: number; ready?: boolean }>} */
-    ([])
-  );
-  const [drinks, setDrinks] = useState(
-    /** @type {Array<{ name: string; quantity: number; price: number; ready?: boolean }>} */
-    ([])
-  );
+  const [items, setItems] = useState([]);
 
   useEffect(() => {
     if (order) {
-      setPizzas(order.pizzas ? JSON.parse(JSON.stringify(order.pizzas)) : []);
-      setDrinks(order.drinks ? JSON.parse(JSON.stringify(order.drinks)) : []);
+      setItems(order.items ? JSON.parse(JSON.stringify(order.items)) : []);
     }
   }, [order]);
 
   if (!order) return null;
 
-  /**
-   * @param {number} i
-   * @param {string} field
-   * @param {string | number} value
-   */
-  const updatePizza = (i, field, value) => {
-    const updated = [...pizzas];
-    updated[i] = { ...updated[i], [field]: field === 'price' ? parseFloat(String(value)) || 0 : value };
-    setPizzas(updated);
+  const updateItem = (i, field, value) => {
+    const updated = [...items];
+    updated[i] = { ...updated[i], [field]: (field === 'price' || field === 'quantity') ? parseFloat(String(value)) || 0 : value };
+    setItems(updated);
   };
 
-  /**
-   * @param {number} i
-   * @param {string} field
-   * @param {string | number} value
-   */
-  const updateDrink = (i, field, value) => {
-    const updated = [...drinks];
-    updated[i] = {
-      ...updated[i],
-      [field]: field === 'price' || field === 'quantity' ? parseFloat(String(value)) || 0 : value
-    };
-    setDrinks(updated);
-  };
-
-  /** @param {number} i */
-  const removePizza = (i) => setPizzas(pizzas.filter((_, idx) => idx !== i));
-  /** @param {number} i */
-  const removeDrink = (i) => setDrinks(drinks.filter((_, idx) => idx !== i));
-
-  const addDrink = () => setDrinks([...drinks, { name: '', quantity: 1, price: 0 }]);
+  const removeItem = (i) => setItems(items.filter((_, idx) => idx !== i));
+  const addItem = (type = 'drink') => setItems([...items, { type, name: '', quantity: 1, price: 0 }]);
 
   const calcTotal = () => {
-    const sub = [...pizzas, ...drinks].reduce((s, i) => s + (i.price * (i.quantity || 1)), 0);
-    return sub + (order.delivery_type === 'delivery' ? 2 : 0);
+    const sub = items.reduce((s, i) => s + (i.price * (i.quantity || 1)), 0);
+    return sub + (order.delivery_type === 'delivery' ? (order.delivery_fee || 0) : 0);
   };
 
   const handleSendWhatsApp = () => {
-    const sub = [...pizzas, ...drinks].reduce((s, i) => s + (i.price * (i.quantity || 1)), 0);
-    const deliveryFee = order.delivery_type === 'delivery' ? 2 : 0;
+    const sub = items.reduce((s, i) => s + (i.price * (i.quantity || 1)), 0);
+    const deliveryFee = order.delivery_type === 'delivery' ? (order.delivery_fee || 0) : 0;
     const total = sub + deliveryFee;
 
-    const pizzaLines = pizzas.map(p => {
-      const label = p.is_half ? `½ ${p.flavor1} / ½ ${p.flavor2}` : p.flavor1 || p.name || '';
-      return `• ${label} (${p.quantity || 1}x) - R$ ${((p.price) * (p.quantity || 1)).toFixed(2)}`;
-    });
-    const drinkLines = drinks.map(d => `• ${d.name} (${d.quantity}x) - R$ ${(d.price * d.quantity).toFixed(2)}`);
-    const allItems = [...pizzaLines, ...drinkLines].join('\n');
+    const allItems = items.map(p => {
+      return `• ${p.name} (${p.quantity || 1}x) - R$ ${((p.price) * (p.quantity || 1)).toFixed(2)}`;
+    }).join('\n');
+
     const paymentLabel = order.payment_method === 'cash' ? 'Dinheiro' : order.payment_method === 'card' ? 'Cartão' : 'PIX';
 
     const msg = encodeURIComponent(
@@ -126,7 +93,7 @@ function EditOrderDialog({ order, open, onClose, onSave, waPhone }) {
 
     const phone = order.customer_phone?.replace(/\D/g, '');
     window.open(`https://wa.me/55${phone}?text=${msg}`, '_blank');
-    onSave({ pizzas, drinks, total_amount: total });
+    onSave({ items, total_amount: total });
   };
 
   return (
@@ -138,60 +105,40 @@ function EditOrderDialog({ order, open, onClose, onSave, waPhone }) {
         <div className="space-y-4 pt-2">
           {/* Pizzas */}
           <div>
-            <Label className="text-sm font-semibold">Pizzas</Label>
-            <div className="space-y-2 mt-2">
-              {pizzas.map((p, i) => (
-                <div key={i} className="flex gap-2 items-center bg-slate-50 rounded-lg p-2">
-                  <div className="flex-1 text-sm text-slate-700 truncate">
-                    {p.is_half ? `½ ${p.flavor1} / ½ ${p.flavor2}` : p.flavor1 || p.name}
-                  </div>
-                  <Input
-                    type="number"
-                    className="w-20 h-8 text-sm"
-                    value={p.price}
-                    onChange={(e) => updatePizza(i, 'price', e.target.value)}
-                    placeholder="R$"
-                  />
-                  <button onClick={() => removePizza(i)} className="text-red-400 hover:text-red-600">
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Drinks */}
-          <div>
             <div className="flex items-center justify-between">
-              <Label className="text-sm font-semibold">Bebidas</Label>
-              <Button variant="ghost" size="sm" onClick={addDrink} className="h-7 text-xs">
-                <Plus className="w-3 h-3 mr-1" /> Adicionar
+              <Label className="text-sm font-semibold">Itens do Pedido</Label>
+              <Button variant="ghost" size="sm" onClick={() => addItem('drink')} className="h-7 text-xs">
+                <Plus className="w-3 h-3 mr-1" /> Adicionar Bebida
               </Button>
             </div>
             <div className="space-y-2 mt-2">
-              {drinks.map((d, i) => (
+              {items.map((item, i) => (
                 <div key={i} className="flex gap-2 items-center bg-slate-50 rounded-lg p-2">
-                  <Input
-                    className="flex-1 h-8 text-sm"
-                    value={d.name}
-                    onChange={(e) => updateDrink(i, 'name', e.target.value)}
-                    placeholder="Nome"
-                  />
-                  <Input
-                    type="number"
-                    className="w-14 h-8 text-sm"
-                    value={d.quantity}
-                    onChange={(e) => updateDrink(i, 'quantity', e.target.value)}
-                    placeholder="Qtd"
-                  />
-                  <Input
-                    type="number"
-                    className="w-20 h-8 text-sm"
-                    value={d.price}
-                    onChange={(e) => updateDrink(i, 'price', e.target.value)}
-                    placeholder="R$"
-                  />
-                  <button onClick={() => removeDrink(i)} className="text-red-400 hover:text-red-600">
+                  <div className="flex-1 min-w-0">
+                    <Input
+                      className="h-8 text-sm mb-1"
+                      value={item.name}
+                      onChange={(e) => updateItem(i, 'name', e.target.value)}
+                      placeholder="Nome do item"
+                    />
+                    <div className="flex gap-2">
+                      <Input
+                        type="number"
+                        className="w-14 h-7 text-xs"
+                        value={item.quantity}
+                        onChange={(e) => updateItem(i, 'quantity', e.target.value)}
+                        placeholder="Qtd"
+                      />
+                      <Input
+                        type="number"
+                        className="w-20 h-7 text-xs"
+                        value={item.price}
+                        onChange={(e) => updateItem(i, 'price', e.target.value)}
+                        placeholder="R$"
+                      />
+                    </div>
+                  </div>
+                  <button onClick={() => removeItem(i)} className="text-red-400 hover:text-red-600 px-1">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
@@ -236,30 +183,51 @@ function KitchenContent() {
 
   const ordersQuery = useQuery({
     queryKey: ['kitchen-orders'],
-    queryFn: async () => {
-      const all = await orderService.listKitchenOrders();
-      return all;
-    },
-    refetchInterval: 10000
+    queryFn: () => orderService.listKitchenOrders(),
+    // Fallback: poll a cada 30 segundos caso o Realtime falhe
+    refetchInterval: 30000,
+    staleTime: 10000
   });
-  const orders = /** @type {KitchenOrderItem[]} */ (ordersQuery.data ?? []);
+
+  const orders = ordersQuery.data ?? [];
   const isLoading = ordersQuery.isLoading;
 
+  // Realtime Integration
   useEffect(() => {
-    if (orders.length > lastOrderCount && lastOrderCount > 0) {
-      const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBiWLz/LDdykGIm6+8N6URAwSWK3n8KRYE');
-      audio.volume = 0.5;
-      audio.play().catch(() => {});
-    }
-    setLastOrderCount(orders.length);
-  }, [orders.length]);
+    const subscription = orderService.subscribe((payload, eventType) => {
+      // Invalida o cache para recarregar os dados
+      queryClient.invalidateQueries(['kitchen-orders']);
+      
+      // Se for um novo pedido, toca o som
+      if (eventType === 'INSERT') {
+        const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBiWLz/LDdykGIm6+8N6URAwSWK3n8KRYE');
+        audio.volume = 0.5;
+        audio.play().catch(() => {});
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [queryClient]);
 
   const updateMutation = useMutation({
-    mutationFn: /** @param {{ id: string; data: any }} params */
-      ({ id, data }) => orderService.updateOrder(id, data),
-    onSuccess: () => {
+    mutationFn: ({ id, data }) => orderService.updateOrder(id, data),
+    onMutate: async ({ id, data }) => {
+      // Cancela refetches
+      await queryClient.cancelQueries(['kitchen-orders']);
+      // Salva estado anterior
+      const previousOrders = queryClient.getQueryData(['kitchen-orders']);
+      // Atualiza cache de forma otimista
+      queryClient.setQueryData(['kitchen-orders'], (old) => {
+        return old?.map(order => order.id === id ? { ...order, ...data } : order);
+      });
+      return { previousOrders };
+    },
+    onError: (err, variables, context) => {
+      queryClient.setQueryData(['kitchen-orders'], context.previousOrders);
+      toast.error('Erro ao atualizar. Tentando novamente...');
+    },
+    onSettled: () => {
       queryClient.invalidateQueries(['kitchen-orders']);
-      toast.success('Atualizado');
     }
   });
 
@@ -312,34 +280,13 @@ function KitchenContent() {
     }
   };
 
-  /**
-   * @param {KitchenOrderItem} order
-   * @param {number} pizzaIndex
-   */
-  /**
-   * @param {KitchenOrderItem} order
-   * @param {number} pizzaIndex
-   */
-  const togglePizzaReady = (order, pizzaIndex) => {
-    const updatedPizzas = [...(order.pizzas || [])];
-    updatedPizzas[pizzaIndex] = {
-      ...updatedPizzas[pizzaIndex],
-      ready: !updatedPizzas[pizzaIndex].ready
+  const toggleItemReady = (order, itemIndex) => {
+    const updatedItems = [...(order.items || [])];
+    updatedItems[itemIndex] = {
+      ...updatedItems[itemIndex],
+      ready: !updatedItems[itemIndex].ready
     };
-    updateMutation.mutate({ id: order.id, data: { pizzas: updatedPizzas } });
-  };
-
-  /**
-   * @param {KitchenOrderItem} order
-   * @param {number} drinkIndex
-   */
-  const toggleDrinkReady = (order, drinkIndex) => {
-    const updatedDrinks = [...(order.drinks || [])];
-    updatedDrinks[drinkIndex] = {
-      ...updatedDrinks[drinkIndex],
-      ready: !updatedDrinks[drinkIndex].ready
-    };
-    updateMutation.mutate({ id: order.id, data: { drinks: updatedDrinks } });
+    updateMutation.mutate({ id: order.id, data: { items: updatedItems } });
   };
 
   const sortedOrders = [...orders].sort((a, b) => {
@@ -414,8 +361,7 @@ function KitchenContent() {
                     key={order.id} 
                     order={order} 
                     onAdvance={handleAdvanceStatus}
-                    onTogglePizza={togglePizzaReady}
-                    onToggleDrink={toggleDrinkReady}
+                    onToggleItem={toggleItemReady}
                     onEdit={setEditingOrder}
                     updating={updateMutation.isPending}
                   />
@@ -435,8 +381,7 @@ function KitchenContent() {
                     key={order.id} 
                     order={order} 
                     onAdvance={handleAdvanceStatus}
-                    onTogglePizza={togglePizzaReady}
-                    onToggleDrink={toggleDrinkReady}
+                    onToggleItem={toggleItemReady}
                     onEdit={setEditingOrder}
                     updating={updateMutation.isPending}
                   />
@@ -456,8 +401,7 @@ function KitchenContent() {
                     key={order.id} 
                     order={order} 
                     onAdvance={handleAdvanceStatus}
-                    onTogglePizza={togglePizzaReady}
-                    onToggleDrink={toggleDrinkReady}
+                    onToggleItem={toggleItemReady}
                     onEdit={setEditingOrder}
                     updating={updateMutation.isPending}
                   />
@@ -477,8 +421,7 @@ function KitchenContent() {
                     key={order.id} 
                     order={order} 
                     onAdvance={handleAdvanceStatus}
-                    onTogglePizza={togglePizzaReady}
-                    onToggleDrink={toggleDrinkReady}
+                    onToggleItem={toggleItemReady}
                     onEdit={setEditingOrder}
                     updating={updateMutation.isPending}
                   />
@@ -500,24 +443,12 @@ export default function Kitchen() {
   );
 }
 
-/**
- * @param {{
- *   order: KitchenOrderItem;
- *   onAdvance: (order: KitchenOrderItem) => void;
- *   onTogglePizza: (order: KitchenOrderItem, pizzaIndex: number) => void;
- *   onToggleDrink: (order: KitchenOrderItem, drinkIndex: number) => void;
- *   onEdit: (order: KitchenOrderItem | null) => void;
- *   updating: boolean;
- * }} props
- */
-function OrderCard({ order, onAdvance, onTogglePizza, onToggleDrink, onEdit, updating }) {
+function OrderCard({ order, onAdvance, onToggleItem, onEdit, updating }) {
   const config = statusConfig[order.status ?? 'pending'];
   const timeAgo = format(new Date(order.created_date || 0), 'HH:mm', { locale: ptBR });
   const minutesAgo = differenceInMinutes(new Date(), new Date(order.created_date || 0));
   
-  const allItemsReady = 
-    (order.pizzas?.every((p) => p.ready) ?? true) && 
-    (order.drinks?.every((d) => d.ready) ?? true);
+  const allItemsReady = (order.items || []).every((item) => item.ready);
 
   const openGoogleMaps = () => {
     if (order.delivery_type === 'delivery' && order.address_text) {
@@ -562,69 +493,39 @@ function OrderCard({ order, onAdvance, onTogglePizza, onToggleDrink, onEdit, upd
         )}
       </div>
 
-      {/* Pizzas */}
+      {/* Items */}
       <div className="space-y-2 mb-4">
-        {order.pizzas?.map((pizza, i) => (
+        {(order.items || []).map((item, i) => (
           <div
             key={i}
-            onClick={() => order.status === 'preparing' && onTogglePizza(order, i)}
+            onClick={() => order.status === 'preparing' && onToggleItem(order, i)}
             className={cn(
               "bg-slate-700 rounded-lg p-3 transition-all",
               order.status === 'preparing' && "cursor-pointer hover:bg-slate-600",
-              pizza.ready && "bg-green-900 border-2 border-green-600"
+              item.ready && "bg-green-900 border-2 border-green-600"
             )}
           >
             <div className="flex items-center gap-2 mb-1">
-              <Badge className="bg-slate-600 text-white border-0">
-                {pizza.size} fatias
+              <Badge className={cn(
+                "border-0",
+                item.type === 'pizza' ? "bg-amber-600 text-white" : "bg-slate-600 text-white"
+              )}>
+                {item.type === 'pizza' ? 'Pizza' : 'Item'}
               </Badge>
-              {pizza.ready ? (
+              {item.ready ? (
                 <CheckCircle className="w-4 h-4 text-green-400" />
               ) : order.status === 'preparing' ? (
                 <Circle className="w-4 h-4 text-slate-400" />
               ) : null}
             </div>
             <p className="text-sm text-white font-medium">
-              {pizza.is_half ? (
-                <>
-                  <span className="text-amber-400">½</span> {pizza.flavor1}
-                  <br />
-                  <span className="text-amber-400">½</span> {pizza.flavor2}
-                </>
-              ) : (
-                pizza.flavor1
-              )}
+              {item.quantity > 1 && <span className="text-amber-400 mr-1">{item.quantity}x</span>}
+              {item.name}
+              {item.size && <span className="text-[10px] text-slate-400 ml-1">({item.size}f)</span>}
             </p>
           </div>
         ))}
       </div>
-
-      {/* Drinks */}
-      {(order.drinks?.length ?? 0) > 0 && (
-        <div className="mb-4 border-t border-slate-700 pt-3">
-          <p className="text-xs text-slate-400 mb-2">Bebidas:</p>
-          <div className="space-y-2">
-            {(order.drinks ?? []).map((drink, i) => (
-              <div
-                key={i}
-                onClick={() => order.status === 'preparing' && onToggleDrink(order, i)}
-                className={cn(
-                  "text-sm text-slate-300 p-2 rounded flex items-center justify-between",
-                  order.status === 'preparing' && "cursor-pointer hover:bg-slate-600",
-                  drink.ready && "bg-green-900 text-green-100"
-                )}
-              >
-                <span>{drink.quantity}x {drink.name}</span>
-                {drink.ready ? (
-                  <CheckCircle className="w-4 h-4 text-green-400" />
-                ) : order.status === 'preparing' ? (
-                  <Circle className="w-4 h-4 text-slate-400" />
-                ) : null}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Advance Button */}
       <Button

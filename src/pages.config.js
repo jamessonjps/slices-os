@@ -1,70 +1,28 @@
-/**
- * pages.config.js - Page routing configuration
- * 
- * This file is AUTO-GENERATED. Do not add imports or modify PAGES manually.
- * Pages are auto-registered when you create files in the ./pages/ folder.
- * 
- * THE ONLY EDITABLE VALUE: mainPage
- * This controls which page is the landing page (shown when users visit the app).
- * 
- * Example file structure:
- * 
- *   import HomePage from './pages/HomePage';
- *   import Dashboard from './pages/Dashboard';
- *   import Settings from './pages/Settings';
- *   
- *   export const PAGES = {
- *       "HomePage": HomePage,
- *       "Dashboard": Dashboard,
- *       "Settings": Settings,
- *   }
- *   
- *   export const pagesConfig = {
- *       mainPage: "HomePage",
- *       Pages: PAGES,
- *   };
- * 
- * Example with Layout (wraps all pages):
- *
- *   import Home from './pages/Home';
- *   import Settings from './pages/Settings';
- *   import __Layout from './Layout.jsx';
- *
- *   export const PAGES = {
- *       "Home": Home,
- *       "Settings": Settings,
- *   }
- *
- *   export const pagesConfig = {
- *       mainPage: "Home",
- *       Pages: PAGES,
- *       Layout: __Layout,
- *   };
- *
- * To change the main page from HomePage to Dashboard, use find_replace:
- *   Old: mainPage: "HomePage",
- *   New: mainPage: "Dashboard",
- *
- * The mainPage value must match a key in the PAGES object exactly.
- */
-import Checkout from './pages/Checkout';
-import Home from './pages/Home';
-import Kitchen from './pages/Kitchen';
-import Menu from './pages/Menu';
-import MyOrders from './pages/MyOrders';
-import NewOrder from './pages/NewOrder';
-import OrderDetail from './pages/OrderDetail';
-import Orders from './pages/Orders';
-import Reports from './pages/Reports';
-import Stock from './pages/Stock';
-import TrackOrder from './pages/TrackOrder';
-import Customers from './pages/Customers';
-import MenuManagement from './pages/MenuManagement';
-import Settings from './pages/Settings';
-import AdminHome from './pages/AdminHome';
-import UserManagement from './pages/UserManagement';
-import DeleteAccount from './pages/DeleteAccount';
+import { lazy } from 'react';
 
+// Área Pública
+const Checkout = lazy(() => import('./pages/Checkout'));
+const Home = lazy(() => import('./pages/Home'));
+const Menu = lazy(() => import('./pages/Menu'));
+const MyOrders = lazy(() => import('./pages/MyOrders'));
+const NewOrder = lazy(() => import('./pages/NewOrder'));
+const TrackOrder = lazy(() => import('./pages/TrackOrder'));
+
+// Área Admin (Lazy Loaded para não pesar o bundle público)
+const Kitchen = lazy(() => import('./pages/Kitchen'));
+const OrderDetail = lazy(() => import('./pages/OrderDetail'));
+const Orders = lazy(() => import('./pages/Orders'));
+const Reports = lazy(() => import('./pages/Reports'));
+const Stock = lazy(() => import('./pages/Stock'));
+const Customers = lazy(() => import('./pages/Customers'));
+const MenuManagement = lazy(() => import('./pages/MenuManagement'));
+const Settings = lazy(() => import('./pages/Settings'));
+const AdminHome = lazy(() => import('./pages/AdminHome'));
+const UserManagement = lazy(() => import('./pages/UserManagement'));
+const DeleteAccount = lazy(() => import('./pages/DeleteAccount'));
+
+// Arquivo que criamos manualmente para o login
+const Login = lazy(() => import('./pages/Login'));
 
 export const PAGES = {
     "Checkout": Checkout,
@@ -84,6 +42,7 @@ export const PAGES = {
     "AdminHome": AdminHome,
     "UserManagement": UserManagement,
     "DeleteAccount": DeleteAccount,
+    "Login": Login,
 }
 
 export const pagesConfig = {

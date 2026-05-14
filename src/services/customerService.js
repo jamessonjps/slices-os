@@ -1,54 +1,113 @@
-import { createId, database, matchesFilter, removeById, sortRecords } from '@/data/database';
+import { supabase } from '@/lib/supabase';
+import { authService } from '@/services/authService';
+
+const getDefaultStoreId = () => import.meta.env.VITE_STORE_ID || '11111111-1111-1111-1111-111111111111';
 
 export const customerService = {
   listCustomers: async (sortString = 'name') => {
-    return sortRecords(database.customers, sortString);
+    const user = await authService.getCurrentUser();
+    if (!user?.store_id) return [];
+
+    const sortColumn = sortString.replace(/^-/, '');
+    const isAscending = !sortString.startsWith('-');
+
+    const { data, error } = await supabase
+      .from('customers')
+      .select('*')
+      .eq('store_id', user.store_id)
+      .order(sortColumn, { ascending: isAscending });
+
+    if (error) throw error;
+    return data;
   },
+
   getCustomerById: async (id) => {
-    return database.customers.find((customer) => customer.id === id) || null;
+    const { data, error } = await supabase
+      .from('customers')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error && error.code !== 'PGRST116') throw error;
+    return data || null;
   },
+
   filterCustomers: async (filter = {}) => {
-    return database.customers.filter((customer) => matchesFilter(customer, filter));
+    const user = await authService.getCurrentUser();
+    if (!user?.store_id) return [];
+
+    let query = supabase.from('customers').select('*').eq('store_id', user.store_id);
+
+    Object.entries(filter).forEach(([key, value]) => {
+      query = query.eq(key, value);
+    });
+
+    const { data, error } = await query;
+    if (error) throw error;
+    return data;
   },
-  createCustomer: async (data) => {
-    const customer = {
-      id: createId('cus'),
-      notes: '',
-      ...data
-    };
-    database.customers.unshift(customer);
-    return customer;
+
+  createCustomer: async (customerData) => {
+    const user = await authService.getCurrentUser();
+    const storeId = user?.store_id || getDefaultStoreId();
+
+    const { data, error } = await supabase
+      .from('customers')
+      .insert([{ ...customerData, store_id: storeId }])
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
   },
-  updateCustomer: async (id, data) => {
-    const customer = database.customers.find((item) => item.id === id);
-    if (!customer) return null;
-    Object.assign(customer, data);
-    return customer;
+
+  updateCustomer: async (id, customerData) => {
+    const { data, error } = await supabase
+      .from('customers')
+      .update(customerData)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
   },
+
+  upsertCustomerByPhone: async (phone, customerData) => {
+    // Usado no checkout para evitar duplicatas
+    const storeId = getDefaultStoreId();
+    
+    // Verifica se já existe
+    const { data: existing } = await supabase
+      .from('customers')
+      .select('id')
+      .eq('store_id', storeId)
+      .eq('phone', phone)
+      .single();
+      
+    if (existing) {
+      return await customerService.updateCustomer(existing.id, customerData);
+    } else {
+      return await customerService.createCustomer({ ...customerData, phone, store_id: storeId });
+    }
+  },
+
   deleteCustomer: async (id) => {
-    return removeById(database.customers, id);
+    const { data, error } = await supabase
+      .from('customers')
+      .delete()
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
   },
-  listAddresses: async () => {
-    return [...database.addresses];
-  },
-  getAddressesForCustomer: async (customerId) => {
-    return database.addresses.filter((address) => address.customer_id === customerId);
-  },
-  createAddress: async (data) => {
-    const address = {
-      id: createId('addr'),
-      ...data
-    };
-    database.addresses.unshift(address);
-    return address;
-  },
-  updateAddress: async (id, data) => {
-    const address = database.addresses.find((item) => item.id === id);
-    if (!address) return null;
-    Object.assign(address, data);
-    return address;
-  },
-  deleteAddress: async (id) => {
-    return removeById(database.addresses, id);
-  }
+  
+  // Stubs para compatibilidade com a UI antiga (já que o endereço vai direto no pedido agora)
+  listAddresses: async () => [],
+  getAddressesForCustomer: async () => [],
+  createAddress: async (data) => data,
+  updateAddress: async (id, data) => data,
+  deleteAddress: async (id) => null
 };

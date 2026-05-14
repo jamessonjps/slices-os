@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -12,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { format, startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear, isWithinInterval, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { orderService } from '@/services/orderService';
 
 const COLORS = ['#ef4444', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899'];
 
@@ -22,7 +22,7 @@ export default function Reports() {
 
   const { data: orders = [] } = useQuery({
     queryKey: ['orders-report'],
-    queryFn: () => base44.entities.Order.list('-created_date', 1000)
+    queryFn: () => orderService.listOrders('-created_date', 1000)
   });
 
   const getDateRange = () => {

@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -11,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
+import { orderService } from '@/services/orderService';
 
 const statusConfig = {
   pending: { label: 'Pendente', color: 'bg-amber-100 text-amber-800', icon: Clock },
@@ -30,29 +30,28 @@ export default function OrderDetail() {
 
   const { data: order, isLoading } = useQuery({
     queryKey: ['order', orderId],
-    queryFn: async () => {
-      const orders = await base44.entities.Order.filter({ id: orderId });
-      return orders[0];
-    },
+    queryFn: () => orderService.getOrderById(orderId),
     enabled: !!orderId
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Order.update(id, data),
+    mutationFn: (data) => orderService.updateOrder(orderId, data),
     onSuccess: () => {
       queryClient.invalidateQueries(['order', orderId]);
       queryClient.invalidateQueries(['orders']);
-      toast.success('Status atualizado');
+      toast.success('Pedido atualizado');
     }
   });
 
   const handleStatusChange = (newStatus) => {
-    updateMutation.mutate({ id: orderId, data: { status: newStatus } });
+    updateMutation.mutate({ status: newStatus });
   };
 
   const handlePaymentChange = (paymentStatus) => {
-    updateMutation.mutate({ id: orderId, data: { payment_status: paymentStatus } });
+    updateMutation.mutate({ payment_status: paymentStatus });
   };
+
+  const config = statusConfig[order?.status] || statusConfig.pending;
 
   const handleWhatsApp = () => {
     const phone = order?.customer_phone ? order.customer_phone.replace(/\D/g, '') : '';
@@ -73,20 +72,14 @@ export default function OrderDetail() {
     }
   };
 
-  if (isLoading) {
-    return <div className="flex items-center justify-center min-h-screen">Carregando...</div>;
-  }
+  if (isLoading) return <div className="flex items-center justify-center min-h-screen">Carregando...</div>;
+  if (!order) return <div className="flex items-center justify-center min-h-screen">Pedido não encontrado</div>;
 
-  if (!order) {
-    return <div className="flex items-center justify-center min-h-screen">Pedido não encontrado</div>;
-  }
-
-  const config = statusConfig[order.status] || statusConfig.pending;
   const Icon = config.icon;
+  const items = order.items || [];
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Header */}
       <div className="bg-white border-b border-slate-200 sticky top-0 z-50">
         <div className="max-w-3xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
@@ -110,21 +103,18 @@ export default function OrderDetail() {
       </div>
 
       <div className="max-w-3xl mx-auto px-4 py-6 space-y-4">
-        {/* Status */}
         <Card className="p-4 bg-white border-slate-200">
           <div className="flex items-center gap-3 mb-3">
             <div className={`w-10 h-10 rounded-lg ${config.color} flex items-center justify-center`}>
               <Icon className="w-5 h-5" />
             </div>
             <div className="flex-1">
-              <p className="text-xs text-slate-500">Status</p>
+              <p className="text-xs text-slate-500">Status Atual</p>
               <p className="font-semibold text-slate-900">{config.label}</p>
             </div>
           </div>
           <Select value={order.status} onValueChange={handleStatusChange}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
+            <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="pending">Pendente</SelectItem>
               <SelectItem value="preparing">Preparando</SelectItem>
@@ -136,82 +126,64 @@ export default function OrderDetail() {
           </Select>
         </Card>
 
-        {/* Customer */}
         <Card className="p-4 bg-white border-slate-200">
-          <h3 className="font-semibold text-slate-900 mb-3">Cliente</h3>
+          <h3 className="font-semibold text-slate-900 mb-3 text-sm uppercase tracking-wider">Cliente</h3>
           <div className="space-y-2 text-sm">
             <p><span className="text-slate-500">Nome:</span> {order.customer_name}</p>
             <p><span className="text-slate-500">Telefone:</span> {order.customer_phone}</p>
-            <p><span className="text-slate-500">Tipo:</span> {order.delivery_type === 'delivery' ? 'Entrega' : 'Retirada'}</p>
+            <p><span className="text-slate-500">Entrega:</span> {order.delivery_type === 'delivery' ? 'Entrega em domicílio' : 'Retirada no balcão'}</p>
             {order.address_text && (
-              <div>
-                <p><span className="text-slate-500">Endereço:</span> {order.address_text}</p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={openGoogleMaps}
-                  className="mt-2 w-full text-blue-600 border-blue-600 hover:bg-blue-50"
-                >
-                  <Truck className="w-4 h-4 mr-2" />
-                  Abrir rota no Google Maps
+              <div className="pt-2">
+                <p className="text-slate-500 mb-1">Endereço:</p>
+                <p className="font-medium">{order.address_text}</p>
+                <Button variant="outline" size="sm" onClick={openGoogleMaps} className="mt-2 w-full text-blue-600 border-blue-600">
+                  <Truck className="w-4 h-4 mr-2" /> Abrir no Google Maps
                 </Button>
               </div>
             )}
           </div>
         </Card>
 
-        {/* Pizzas */}
         <Card className="p-4 bg-white border-slate-200">
-          <h3 className="font-semibold text-slate-900 mb-3">Pizzas</h3>
-          <div className="space-y-3">
-            {order.pizzas?.map((pizza, i) => (
-              <div key={i} className="border-l-4 border-slate-300 pl-3 py-2">
-                <p className="font-medium text-slate-900">
-                  {pizza.size} fatias - {pizza.is_half ? `${pizza.flavor1} / ${pizza.flavor2}` : pizza.flavor1}
-                </p>
-                <p className="text-sm text-slate-500">R$ {pizza.price?.toFixed(2)}</p>
+          <h3 className="font-semibold text-slate-900 mb-3 text-sm uppercase tracking-wider">Itens do Pedido</h3>
+          <div className="space-y-4">
+            {items.map((item, i) => (
+              <div key={i} className="flex justify-between items-start border-b border-slate-100 pb-3 last:border-0 last:pb-0">
+                <div className="min-w-0">
+                  <p className="font-semibold text-slate-900 leading-tight">
+                    {item.quantity > 1 && <span className="text-blue-600 mr-1">{item.quantity}x</span>}
+                    {item.name}
+                  </p>
+                  {item.size && <p className="text-[10px] text-slate-500">Tamanho: {item.size} fatias</p>}
+                  {item.is_half && <p className="text-[10px] text-slate-500">Meio a meio: {item.flavor1} / {item.flavor2}</p>}
+                  {item.notes && <p className="text-[10px] text-amber-600 mt-1 italic">Obs: {item.notes}</p>}
+                </div>
+                <div className="text-right ml-4">
+                  <p className="text-sm font-bold text-slate-900">R$ {((item.price || 0) * (item.quantity || 1)).toFixed(2)}</p>
+                </div>
               </div>
             ))}
           </div>
         </Card>
 
-        {/* Drinks */}
-        {order.drinks?.length > 0 && (
-          <Card className="p-4 bg-white border-slate-200">
-            <h3 className="font-semibold text-slate-900 mb-3">Bebidas</h3>
-            <div className="space-y-2">
-              {order.drinks.map((drink, i) => (
-                <div key={i} className="flex justify-between text-sm">
-                  <span className="text-slate-700">{drink.quantity}x {drink.name}</span>
-                  <span className="text-slate-900">R$ {(drink.price * drink.quantity).toFixed(2)}</span>
-                </div>
-              ))}
-            </div>
-          </Card>
-        )}
-
-        {/* Notes */}
         {order.notes && (
-          <Card className="p-4 bg-white border-slate-200">
-            <h3 className="font-semibold text-slate-900 mb-2">Observações</h3>
-            <p className="text-sm text-slate-600">{order.notes}</p>
+          <Card className="p-4 bg-amber-50 border-amber-100">
+            <h3 className="font-semibold text-amber-900 mb-1 text-sm uppercase tracking-wider">Observações Gerais</h3>
+            <p className="text-sm text-amber-800">{order.notes}</p>
           </Card>
         )}
 
-        {/* Payment */}
         <Card className="p-4 bg-white border-slate-200">
-          <h3 className="font-semibold text-slate-900 mb-3">Pagamento</h3>
+          <h3 className="font-semibold text-slate-900 mb-3 text-sm uppercase tracking-wider">Pagamento</h3>
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <span className="text-slate-500">Status:</span>
+              <span className="text-sm text-slate-500">Situação:</span>
               <Badge className={order.payment_status === 'paid' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}>
                 {order.payment_status === 'paid' ? 'Pago' : 'Pendente'}
               </Badge>
             </div>
             <Select value={order.payment_status} onValueChange={handlePaymentChange}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
+              <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="pending">Pendente</SelectItem>
                 <SelectItem value="paid">Pago</SelectItem>
@@ -220,16 +192,14 @@ export default function OrderDetail() {
           </div>
         </Card>
 
-        {/* Total */}
-        <Card className="p-4 bg-slate-900 text-white">
+        <Card className="p-6 bg-slate-900 text-white shadow-xl">
           <div className="flex justify-between items-center">
-            <span className="text-lg font-semibold">Total</span>
-            <span className="text-2xl font-bold">R$ {order.total_amount?.toFixed(2)}</span>
+            <span className="text-lg font-medium opacity-80">Valor Total</span>
+            <span className="text-3xl font-bold tracking-tight text-white">R$ {order.total_amount?.toFixed(2)}</span>
           </div>
         </Card>
 
-        {/* Timestamp */}
-        <p className="text-center text-sm text-slate-400">
+        <p className="text-center text-[10px] text-slate-400 uppercase tracking-widest pt-4">
           Criado em {format(new Date(order.created_date), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
         </p>
       </div>

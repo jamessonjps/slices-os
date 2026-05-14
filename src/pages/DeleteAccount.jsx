@@ -6,8 +6,8 @@ import { ArrowLeft, Trash2, AlertTriangle, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
+import { authService } from '@/services/authService';
 
 export default function DeleteAccount() {
   const [step, setStep] = useState('confirm'); // 'confirm' | 'verify' | 'done'
@@ -22,16 +22,14 @@ export default function DeleteAccount() {
     }
     setLoading(true);
     try {
-      // Send deletion request via WhatsApp / email notification
-      const user = await base44.auth.me().catch(() => null);
+      // Simulação de solicitação de exclusão
+      const user = await authService.getCurrentUser();
       const email = user?.email || 'Usuário não identificado';
 
-      // We use InvokeLLM to send a notification (no backend function available)
-      await base44.integrations.Core.SendEmail({
-        to: 'admin@millanopizzaria.com.br',
-        subject: 'Solicitação de Exclusão de Conta',
-        body: `O usuário ${email} solicitou a exclusão de sua conta.\n\nMotivo: ${reason || 'Não informado'}\n\nData: ${new Date().toLocaleString('pt-BR')}`
-      }).catch(() => {});
+      console.log(`Solicitação de exclusão para: ${email}. Motivo: ${reason}`);
+      
+      // Aqui poderíamos chamar um webhook ou serviço de suporte
+      await new Promise(resolve => setTimeout(resolve, 1500));
 
       setStep('done');
     } catch (e) {

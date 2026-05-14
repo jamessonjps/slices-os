@@ -1,13 +1,12 @@
 import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { safeJsonParse } from '@/utils/storage';
 import { Pizza, ClipboardList, Phone, MapPin, Clock, CheckCircle, XCircle } from 'lucide-react';
 import SliceOSFooter from '@/components/SliceOSFooter';
 import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
+import { settingsService } from '@/services/settingsService';
 
 const DAY_NAMES = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
 
@@ -22,22 +21,28 @@ const DEFAULT_HOURS = {
 };
 
 function isOpen(hours) {
+  if (!hours) return false;
   const now = new Date();
   const dayName = DAY_NAMES[now.getDay()];
   const todayConfig = hours[dayName];
-  if (!todayConfig || todayConfig.closed) return false;
+  if (!todayConfig || todayConfig.closed || !todayConfig.open || !todayConfig.close) return false;
 
-  const [openH, openM] = todayConfig.open.split(':').map(Number);
-  const [closeH, closeM] = todayConfig.close.split(':').map(Number);
-  const nowMinutes = now.getHours() * 60 + now.getMinutes();
-  const openMinutes = openH * 60 + openM;
-  const closeMinutes = closeH * 60 + closeM;
+  try {
+    const [openH, openM] = todayConfig.open.split(':').map(Number);
+    const [closeH, closeM] = todayConfig.close.split(':').map(Number);
+    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+    const openMinutes = openH * 60 + openM;
+    const closeMinutes = closeH * 60 + closeM;
 
-  return nowMinutes >= openMinutes && nowMinutes < closeMinutes;
+    return nowMinutes >= openMinutes && nowMinutes < closeMinutes;
+  } catch (e) {
+    console.error("Error parsing hours:", e);
+    return false;
+  }
 }
 
 function getHoursDisplay(hours) {
-  // Group consecutive days with same schedule
+  if (!hours) return [];
   const days = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
   const groups = [];
   let i = 0;
@@ -64,131 +69,106 @@ function getHoursDisplay(hours) {
 }
 
 export default function Home() {
-  const { data: settings = [] } = useQuery({
+  const { data: settings } = useQuery({
     queryKey: ['settings'],
-    queryFn: () => base44.entities.Settings.list()
+    queryFn: () => settingsService.getStoreSettings()
   });
 
-  const hours = useMemo(() => {
-    const s = settings.find(s => s.key === 'business_hours');
-    if (!s) return DEFAULT_HOURS;
-    const parsed = safeJsonParse(s.value, DEFAULT_HOURS);
-    return parsed && typeof parsed === 'object' ? parsed : DEFAULT_HOURS;
-  }, [settings]);
-
-  const whatsapp = settings.find(s => s.key === 'whatsapp_number')?.value || '';
+  const hours = settings?.business_hours || DEFAULT_HOURS;
+  const whatsapp = settings?.whatsapp_number || '';
+  const storeName = settings?.store_name || 'Milano Pizzaria';
 
   const open = isOpen(hours);
   const hoursGroups = getHoursDisplay(hours);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-orange-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 flex items-center justify-center p-4 pt-safe">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-4">
       <div className="text-center max-w-sm w-full">
-        {/* Logo */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: 'easeOut' }}
-          className="mb-6"
+          transition={{ duration: 0.5 }}
+          className="mb-8"
         >
-          <img
-            src="https://media.base44.com/images/public/698b33880f8f26bcac1c2f36/acd017143_Semttulo.jpg"
-            alt="Milano Pizzaria"
-            className="w-72 mx-auto rounded-xl mb-2"
-          />
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-xl mb-4 inline-block">
+             <Pizza className="w-16 h-16 text-red-600 mx-auto" />
+          </div>
+          <h1 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tighter">
+            {storeName}
+          </h1>
         </motion.div>
 
-        {/* Status aberto/fechado */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.4, delay: 0.15 }}
+          className={`inline-flex items-center gap-2 px-6 py-2.5 rounded-full font-bold text-xs uppercase tracking-widest mb-8 ${
+            open ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+          }`}
         >
-        <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full font-semibold text-sm mb-4 ${
-          open ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-        }`}>
-          {open ? <CheckCircle className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
+          <div className={`w-2 h-2 rounded-full ${open ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
           {open ? 'Aberto agora' : 'Fechado no momento'}
-        </div>
         </motion.div>
 
-        {/* Info Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.25 }}
-        >
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-4 mb-6 text-left space-y-3">
-          {/* Horários */}
-          <div className="flex gap-3">
-            <Clock className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
-            <div className="text-sm text-slate-700 space-y-0.5">
+        <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 p-6 mb-8 text-left space-y-5">
+          <div className="flex gap-4">
+            <Clock className="w-5 h-5 text-slate-400 shrink-0" />
+            <div className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
               {hoursGroups.map((g, i) => (
                 <div key={i}>
-                  <span className="font-medium">{g.label}:</span>{' '}
-                  {g.config?.closed
-                    ? <span className="text-slate-400">Fechado</span>
-                    : <span>{g.config?.open} às {g.config?.close}</span>
-                  }
+                  <span className="font-bold text-slate-900 dark:text-slate-200">{g.label}:</span>{' '}
+                  {g.config?.closed ? 'Fechado' : `${g.config?.open} às ${g.config?.close}`}
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Telefone */}
           {whatsapp && (
-            <div className="flex items-center gap-3">
-              <Phone className="w-4 h-4 text-slate-400 shrink-0" />
+            <div className="flex items-center gap-4">
+              <Phone className="w-5 h-5 text-slate-400 shrink-0" />
               <a href={`https://wa.me/${whatsapp}`} target="_blank" rel="noreferrer"
-                className="text-sm text-green-600 font-medium hover:underline">
-                WhatsApp: {whatsapp.replace(/^55/, '+55 ').replace(/(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3')}
+                className="text-xs text-green-600 font-bold hover:underline">
+                WhatsApp: {whatsapp}
               </a>
             </div>
           )}
 
-          {/* Endereço */}
-          <div className="flex items-start gap-3">
-            <MapPin className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
-            <p className="text-sm text-slate-700">
-              Rua das Pizzas, 123 — Centro<br />
-              <span className="text-slate-400 text-xs">Entrega e retirada no local</span>
+          <div className="flex items-start gap-4">
+            <MapPin className="w-5 h-5 text-slate-400 shrink-0" />
+            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+              <span className="font-bold text-slate-900 dark:text-slate-200">Rua das Pizzas, 123 — Centro</span><br />
+              Entregamos em toda a região
             </p>
           </div>
         </div>
-        </motion.div>
 
-        {/* Botões */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.35 }}
-          className="space-y-3"
-        >
+        <div className="space-y-4">
           <Link to={createPageUrl('Menu')} className="block">
-            <Button className="w-full h-14 bg-red-600 hover:bg-red-700 text-white text-lg font-bold shadow-md">
-              <Pizza className="w-5 h-5 mr-2" />
-              Fazer Pedido Online
+            <Button className="w-full h-16 bg-red-600 hover:bg-red-700 text-white text-lg font-black shadow-lg shadow-red-200 rounded-2xl transition-all hover:-translate-y-1">
+              <Pizza className="w-6 h-6 mr-3" />
+              VER CARDÁPIO & PEDIR
             </Button>
           </Link>
 
           <Link to={createPageUrl('MyOrders')} className="block">
-            <Button variant="outline" className="w-full h-11 border-2 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 font-semibold hover:bg-slate-50 dark:hover:bg-slate-700">
-              <ClipboardList className="w-4 h-4 mr-2" />
-              Meus Pedidos
+            <Button variant="outline" className="w-full h-14 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-50 dark:hover:bg-slate-800 rounded-2xl">
+              <ClipboardList className="w-5 h-5 mr-3 text-slate-400" />
+              ACOMPANHAR PEDIDOS
             </Button>
           </Link>
-        </motion.div>
+        </div>
 
-        <div className="mt-10 pt-5 border-t border-slate-200 dark:border-slate-700 space-y-2">
-          <Link to={createPageUrl('AdminHome')} className="block text-xs text-slate-400 hover:text-slate-600">
-            Acesso administrativo →
+        <div className="mt-12 pt-8 border-t border-slate-100 dark:border-slate-800 flex flex-col gap-4">
+          <Link to={createPageUrl('AdminHome')} className="text-[10px] text-slate-400 uppercase font-black tracking-widest hover:text-slate-900 transition-colors">
+            Painel Administrativo
           </Link>
-          <Link to={createPageUrl('DeleteAccount')} className="block text-xs text-slate-300 dark:text-slate-600 hover:text-red-400 dark:hover:text-red-500">
+          <Link to={createPageUrl('DeleteAccount')} className="text-[10px] text-slate-300 hover:text-red-500 transition-colors uppercase font-bold tracking-widest">
             Excluir minha conta
           </Link>
         </div>
 
-        <SliceOSFooter />
+        <div className="mt-8 opacity-50">
+           <SliceOSFooter />
+        </div>
       </div>
     </div>
   );

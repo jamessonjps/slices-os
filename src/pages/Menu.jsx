@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { createPageUrl } from '@/utils';
 import { safeLocalStorage } from '@/utils/storage';
@@ -11,17 +10,18 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { menuService } from '@/services/menuService';
 
 export default function Menu() {
   const [cart, setCart] = useState([]);
   const [suggestions, setSuggestions] = useState(null);
-  const [pizzaDialog, setPizzaDialog] = useState(null); // { pizza } being configured
+  const [pizzaDialog, setPizzaDialog] = useState(null); 
   const [pizzaConfig, setPizzaConfig] = useState({ size: 8, isHalf: false, flavor2: '' });
 
   const { data: menuItems = [] } = useQuery({
     queryKey: ['menu-items-public'],
     queryFn: async () => {
-      const items = await base44.entities.MenuItem.list();
+      const items = await menuService.listMenuItems();
       return items.filter(item => item.available);
     }
   });
@@ -137,31 +137,29 @@ export default function Menu() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-orange-50">
+    <div className="min-h-screen bg-slate-50">
       {/* Header */}
-      <div className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-4">
+      <div className="bg-white border-b border-slate-100 sticky top-0 z-50 shadow-sm">
+        <div className="max-w-3xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               <Link to={createPageUrl('Home')}>
-                <Button variant="ghost" size="icon">
-                  <ArrowLeft className="w-5 h-5 text-slate-600" />
+                <Button variant="ghost" size="icon" className="rounded-full hover:bg-slate-100">
+                  <ArrowLeft className="w-5 h-5 text-slate-900" />
                 </Button>
               </Link>
-              <img
-                src="https://media.base44.com/images/public/698b33880f8f26bcac1c2f36/acd017143_Semttulo.jpg"
-                alt="Pizza Millano Pizzaria"
-                className="h-10 w-auto rounded-lg"
-              />
               <div>
-                <h1 className="text-xl font-bold text-slate-900">Millano Pizzaria</h1>
-                <p className="text-xs text-slate-500">Faça seu pedido online</p>
+                <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tighter">Millano Pizzaria</h1>
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Aberto agora • Peça Online</p>
+                </div>
               </div>
             </div>
             {cart.length > 0 && (
-              <Badge className="bg-red-600 text-white">
-                {cart.reduce((sum, i) => sum + i.quantity, 0)} itens
-              </Badge>
+              <div className="bg-red-600 text-white px-3 py-1 rounded-full text-xs font-black">
+                {cart.reduce((sum, i) => sum + i.quantity, 0)}
+              </div>
             )}
           </div>
         </div>

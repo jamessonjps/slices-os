@@ -1,33 +1,61 @@
-import { database } from '@/data/database';
+import { supabase } from '@/lib/supabase';
 
 export const authService = {
   getCurrentUser: async () => {
-    return database.currentUser;
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return null;
+      return {
+        id: session.user.id,
+        email: session.user.email,
+        name: session.user.user_metadata?.name || session.user.email,
+        role: 'admin', // Simplificação para MVP: usuário autenticado é admin
+        store_id: session.user.user_metadata?.store_id || session.user.app_metadata?.store_id
+      };
+    } catch (error) {
+      console.error("Auth error:", error);
+      return null;
+    }
   },
+  
   isAuthenticated: async () => {
-    return Boolean(database.currentUser);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      return Boolean(session);
+    } catch (error) {
+      return false;
+    }
   },
+  
   logout: async () => {
-    database.currentUser = null;
+    await supabase.auth.signOut();
     return null;
   },
-  isAdmin: (user) => user?.role === 'admin',
-  hasRole: (user, roles = []) => {
-    const allowedRoles = Array.isArray(roles) ? roles : [roles];
-    return Boolean(user?.role && allowedRoles.includes(user.role));
+  
+  isAdmin: (user) => {
+    // No MVP, todo mundo que fez login no Supabase Auth tem acesso de admin
+    return Boolean(user);
   },
-  login: async (user) => {
-    const normalizedUser = {
-      id: user.id || `user-${Date.now()}`,
-      name: user.name || user.full_name || user.email,
-      full_name: user.full_name || user.name || user.email,
-      email: user.email,
-      role: user.role || 'user'
-    };
-    database.currentUser = normalizedUser;
-    if (!database.users.some((item) => item.email === normalizedUser.email)) {
-      database.users.push(normalizedUser);
+  
+  hasRole: (user, roles = []) => {
+    return Boolean(user);
+  },
+  
+  login: async ({ email, password }) => {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    
+    if (error) {
+      throw error;
     }
-    return database.currentUser;
+    
+    return {
+      id: data.user.id,
+      email: data.user.email,
+      role: 'admin',
+      store_id: data.user.app_metadata?.store_id
+    };
   }
 };

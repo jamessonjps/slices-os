@@ -1,24 +1,71 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { safeJsonParse } from '@/utils/storage';
-import { ArrowLeft, Save, MessageCircle, Clock } from 'lucide-react';
+import { ArrowLeft, Save, MessageCircle, Clock, Store, DollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import { settingsService } from '@/services/settingsService';
+import { useAuth } from '@/lib/AuthContext';
 
 const DAYS = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
+
+function GeneralSection({ settings, onSave }) {
+  const [formData, setFormData] = useState({ store_name: '', delivery_fee: 0 });
+
+  useEffect(() => {
+    if (settings) {
+      setFormData({ 
+        store_name: settings.store_name || '', 
+        delivery_fee: settings.delivery_fee || 0 
+      });
+    }
+  }, [settings]);
+
+  return (
+    <Card className="p-5">
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center">
+          <Store className="w-5 h-5 text-slate-600" />
+        </div>
+        <div>
+          <h2 className="font-semibold text-slate-900">Geral</h2>
+          <p className="text-sm text-slate-500">Configurações básicas da loja</p>
+        </div>
+      </div>
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <Label>Nome da Pizzaria</Label>
+          <Input 
+            value={formData.store_name} 
+            onChange={(e) => setFormData(prev => ({ ...prev, store_name: e.target.value }))} 
+          />
+        </div>
+        <div className="space-y-2">
+          <Label>Taxa de Entrega (R$)</Label>
+          <Input 
+            type="number"
+            value={formData.delivery_fee} 
+            onChange={(e) => setFormData(prev => ({ ...prev, delivery_fee: parseFloat(e.target.value) || 0 }))} 
+          />
+        </div>
+      </div>
+      <Button className="mt-4" onClick={() => onSave(formData)}>
+        <Save className="w-4 h-4 mr-2" />Salvar Alterações
+      </Button>
+    </Card>
+  );
+}
 
 function WhatsAppSection({ settings, onSave }) {
   const [whatsapp, setWhatsapp] = useState('');
 
   useEffect(() => {
-    const s = settings.find(s => s.key === 'whatsapp_number');
-    if (s) setWhatsapp(s.value);
+    if (settings?.whatsapp_number) setWhatsapp(settings.whatsapp_number);
   }, [settings]);
 
   return (
@@ -37,8 +84,8 @@ function WhatsAppSection({ settings, onSave }) {
         <Input value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder="Ex: 5511999999999" />
         <p className="text-xs text-slate-400">Formato: 55 + DDD + número. Ex: <strong>5511987654321</strong></p>
       </div>
-      <Button className="mt-4 bg-green-600 hover:bg-green-700 text-white" onClick={() => onSave('whatsapp_number', whatsapp)} disabled={!whatsapp}>
-        <Save className="w-4 h-4 mr-2" />Salvar
+      <Button className="mt-4 bg-green-600 hover:bg-green-700 text-white" onClick={() => onSave({ whatsapp_number: whatsapp })} disabled={!whatsapp}>
+        <Save className="w-4 h-4 mr-2" />Salvar WhatsApp
       </Button>
     </Card>
   );
@@ -49,12 +96,8 @@ function HoursSection({ settings, onSave }) {
   const [hours, setHours] = useState(defaultHours);
 
   useEffect(() => {
-    const s = settings.find(s => s.key === 'business_hours');
-    if (s) {
-      const parsed = safeJsonParse(s.value, null);
-      if (parsed && typeof parsed === 'object') {
-        setHours(parsed);
-      }
+    if (settings?.business_hours) {
+      setHours(settings.business_hours);
     }
   }, [settings]);
 
@@ -82,7 +125,7 @@ function HoursSection({ settings, onSave }) {
                 type="checkbox"
                 checked={hours[day]?.closed || false}
                 onChange={e => update(day, 'closed', e.target.checked)}
-                className="rounded"
+                className="rounded text-blue-600"
               />
               <span className="text-xs text-slate-500">Fechado</span>
             </label>
@@ -93,49 +136,35 @@ function HoursSection({ settings, onSave }) {
                 <Input type="time" value={hours[day]?.close || '23:00'} onChange={e => update(day, 'close', e.target.value)} className="h-8 w-28 text-sm" />
               </>
             )}
-            {hours[day]?.closed && <span className="text-sm text-slate-400 italic">Fechado</span>}
+            {hours[day]?.closed && <span className="text-sm text-slate-400 italic">Folga</span>}
           </div>
         ))}
       </div>
-      <Button className="mt-4" onClick={() => onSave('business_hours', JSON.stringify(hours))}>
+      <Button className="mt-4" onClick={() => onSave({ business_hours: hours })}>
         <Save className="w-4 h-4 mr-2" />Salvar Horários
       </Button>
     </Card>
   );
 }
 
-
 export default function Settings() {
   const queryClient = useQueryClient();
-  const [currentUser, setCurrentUser] = useState(null);
+  const { user } = useAuth();
 
-  useEffect(() => {
-    base44.auth.me().then(setCurrentUser).catch(() => {
-      setCurrentUser(null);
-    });
-  }, []);
-
-  const { data: settings = [] } = useQuery({
+  const { data: settings } = useQuery({
     queryKey: ['settings'],
-    queryFn: () => base44.entities.Settings.list()
+    queryFn: () => settingsService.getStoreSettings()
   });
 
   const saveMutation = useMutation({
-    mutationFn: async ({ key, value }) => {
-      const existing = settings.find(s => s.key === key);
-      if (existing) {
-        return base44.entities.Settings.update(existing.id, { value });
-      } else {
-        return base44.entities.Settings.create({ key, value });
-      }
-    },
+    mutationFn: (updates) => settingsService.updateSettings(updates),
     onSuccess: () => {
       queryClient.invalidateQueries(['settings']);
-      toast.success('Salvo com sucesso!');
+      toast.success('Configurações salvas!');
     }
   });
 
-  const isAdmin = currentUser?.role === 'admin';
+  const isAdmin = user?.role === 'admin';
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -150,9 +179,11 @@ export default function Settings() {
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
-        <WhatsAppSection settings={settings} onSave={(key, value) => saveMutation.mutate({ key, value })} />
-        <HoursSection settings={settings} onSave={(key, value) => saveMutation.mutate({ key, value })} />
+      <div className="max-w-2xl mx-auto px-4 py-6 space-y-4 pb-20">
+        <GeneralSection settings={settings} onSave={(updates) => saveMutation.mutate(updates)} />
+        <WhatsAppSection settings={settings} onSave={(updates) => saveMutation.mutate(updates)} />
+        <HoursSection settings={settings} onSave={(updates) => saveMutation.mutate(updates)} />
+        
         {isAdmin && (
           <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 flex items-center justify-between">
             <div>

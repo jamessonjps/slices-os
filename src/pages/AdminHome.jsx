@@ -4,33 +4,27 @@ import { createPageUrl } from '@/utils';
 import { ChefHat, ShoppingCart, BarChart3, Package, User, UtensilsCrossed, Settings, ArrowLeft, Users } from 'lucide-react';
 import SliceOSFooter from '@/components/SliceOSFooter';
 import { Button } from '@/components/ui/button';
-import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/lib/AuthContext';
 
 export default function AdminHome() {
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    base44.auth.me().then(setUser).catch(() => {
-      setUser(null);
-    });
-  }, []);
-
+  const { user, isAuthenticated } = useAuth();
   const isAdmin = user?.role === 'admin';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-50 flex items-center justify-center p-4">
-      <div className="text-center max-w-md w-full">
-        <div className="mb-8">
-          <img
-            src="https://media.base44.com/images/public/698b33880f8f26bcac1c2f36/acd017143_Semttulo.jpg"
-            alt="Milano Pizzaria"
-            className="w-56 mx-auto rounded-xl mb-3"
-          />
-          <p className="text-slate-500 text-sm font-medium uppercase tracking-widest">Painel Administrativo</p>
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-6">
+      <div className="text-center max-w-sm w-full">
+        <div className="mb-12">
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-xl mb-6 inline-block">
+            <ChefHat className="w-12 h-12 text-slate-900 dark:text-white" />
+          </div>
+          <h1 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tighter">Painel de Controle</h1>
           {user && (
-            <p className="text-xs text-slate-400 mt-1">
-              {user.full_name || user.email} — <span className={`font-semibold ${isAdmin ? 'text-purple-600' : 'text-blue-600'}`}>{isAdmin ? 'Administrador' : 'Funcionário'}</span>
-            </p>
+            <div className="mt-4 inline-flex items-center gap-2 px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-full">
+              <div className={`w-2 h-2 rounded-full ${isAdmin ? 'bg-purple-500' : 'bg-blue-500'}`} />
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                {user.full_name || user.email} • {isAdmin ? 'Admin' : 'Equipe'}
+              </p>
+            </div>
           )}
         </div>
 
