@@ -1,48 +1,75 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import React, { useEffect, useMemo } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { useNavigate, Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { safeJsonParse, safeLocalStorage } from '@/utils/storage';
-import { ArrowLeft, CreditCard, Smartphone, Banknote, ShoppingCart, Truck, MapPin, User, Phone } from 'lucide-react';
+import { ShoppingCart, ArrowLeft, Truck, Package, CreditCard, DollarSign, Wallet, MessageSquare, Loader2 } from 'lucide-react';
 import SliceOSFooter from '@/components/SliceOSFooter';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { toast } from 'sonner';
+import { safeLocalStorage } from '@/utils/storage';
+import { safeJsonParse } from '@/utils/json';
+import { formatCurrency } from '@/utils/format';
 import { orderService } from '@/services/orderService';
 import { settingsService } from '@/services/settingsService';
-import { formatCurrency } from '@/utils/format';
+import { toast } from 'sonner';
+
+const checkoutSchema = z.object({
+  customer_name: z.string().min(3, 'Nome muito curto'),
+  customer_phone: z.string().min(10, 'Telefone inválido'),
+  delivery_type: z.enum(['delivery', 'pickup']),
+  rua: z.string().optional(),
+  numero: z.string().optional(),
+  bairro: z.string().optional(),
+  complemento: z.string().optional(),
+  payment_method: z.enum(['cash', 'card', 'pix']),
+  notes: z.string().optional(),
+}).refine((data) => {
+  if (data.delivery_type === 'delivery') {
+    return data.rua && data.numero && data.bairro;
+  }
+  return true;
+}, {
+  message: "Preencha o endereço completo para entrega",
+  path: ["rua"],
+});
 
 export default function Checkout() {
-  const [cart, setCart] = useState([]);
   const navigate = useNavigate();
+  const [cart, setCart] = React.useState([]);
 
   const { data: settings } = useQuery({
     queryKey: ['settings'],
     queryFn: () => settingsService.getStoreSettings()
   });
 
-  const waPhone = settings?.whatsapp_number || '5511999999999';
-  const storeName = settings?.store_name || 'SliceOS';
   const deliveryFeeConfig = parseFloat(settings?.delivery_fee) || 0;
+  const storeName = settings?.store_name || 'SliceOS';
+  const waPhone = settings?.whatsapp_number || '';
 
-  const [formData, setFormData] = useState({
-    customer_name: '',
-    customer_phone: '',
-    delivery_type: 'delivery',
-    address_text: '',
-    payment_method: 'cash',
-    notes: ''
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    formState: { errors, isSubmitting }
+  } = useForm({
+    resolver: zodResolver(checkoutSchema),
+    defaultValues: {
+      delivery_type: 'delivery',
+      payment_method: 'cash',
+      customer_phone: safeLocalStorage.get('customer_phone') || ''
+    }
   });
 
-  const [addressFields, setAddressFields] = useState({
-    rua: '',
-    numero: '',
-    bairro: '',
-    complemento: ''
-  });
+  const deliveryType = watch('delivery_type');
+  const paymentMethod = watch('payment_method');
 
   useEffect(() => {
     const savedCart = safeLocalStorage.get('cart');
@@ -50,72 +77,58 @@ export default function Checkout() {
       const parsed = safeJsonParse(savedCart, []);
       setCart(Array.isArray(parsed) ? parsed : []);
     }
-    
-    const savedPhone = safeLocalStorage.get('customer_phone');
-    if (savedPhone) {
-      setFormData(prev => ({ ...prev, customer_phone: savedPhone }));
-    }
   }, []);
 
-  useEffect(() => {
-    const text = [
-      addressFields.rua,
-      addressFields.numero,
-      addressFields.bairro,
-      addressFields.complemento
-    ].filter(Boolean).join(', ');
-    
-    setFormData(prev => ({ ...prev, address_text: text }));
-  }, [addressFields]);
-
   const subtotal = useMemo(() => cart.reduce((sum, item) => sum + item.price * item.quantity, 0), [cart]);
-  const deliveryFee = formData.delivery_type === 'delivery' ? deliveryFeeConfig : 0;
+  const deliveryFee = deliveryType === 'delivery' ? deliveryFeeConfig : 0;
   const total = subtotal + deliveryFee;
 
   const createOrderMutation = useMutation({
     mutationFn: (data) => orderService.createOrder(data),
-    onSuccess: (order) => {
+    onSuccess: (order, variables) => {
       safeLocalStorage.remove('cart');
-      safeLocalStorage.set('customer_phone', formData.customer_phone);
+      safeLocalStorage.set('customer_phone', variables.customer_phone);
       toast.success('Pedido enviado com sucesso!');
 
       const itemsText = cart
         .map((i) => `• ${i.name} (${i.quantity}x) - ${formatCurrency(i.price * i.quantity)}`)
         .join('\n');
 
+      const addressText = variables.delivery_type === 'delivery' 
+        ? `${variables.rua}, ${variables.numero}${variables.complemento ? ', ' + variables.complemento : ''} - ${variables.bairro}`
+        : 'Retirada no Local';
+
       const msg = encodeURIComponent(
         `🍕 *NOVO PEDIDO - ${storeName}*\n` +
         `🔢 *ID:* #${order.id.slice(0, 8)}\n\n` +
-        `👤 *Cliente:* ${formData.customer_name}\n` +
-        `📞 *Tel:* ${formData.customer_phone}\n\n` +
+        `👤 *Cliente:* ${variables.customer_name}\n` +
+        `📞 *Tel:* ${variables.customer_phone}\n\n` +
         `🛒 *Itens:*\n${itemsText}\n\n` +
         `💰 *Subtotal:* ${formatCurrency(subtotal)}\n` +
         (deliveryFee > 0 ? `🚚 *Taxa:* ${formatCurrency(deliveryFee)}\n` : '') +
         `⭐ *TOTAL:* ${formatCurrency(total)}\n\n` +
         `💳 *Pagamento:* ${
-          formData.payment_method === 'cash' ? 'Dinheiro' : 
-          formData.payment_method === 'card' ? 'Cartão (Maquininha)' : 'PIX'
+          variables.payment_method === 'cash' ? 'Dinheiro' : 
+          variables.payment_method === 'card' ? 'Cartão (Maquininha)' : 'PIX'
         }\n` +
-        `📍 *Entrega:* ${formData.delivery_type === 'delivery' ? formData.address_text : 'Retirada no Local'}\n` +
-        (formData.notes ? `\n📝 *Obs:* ${formData.notes}` : '')
+        `📍 *Entrega:* ${addressText}\n` +
+        (variables.notes ? `\n📝 *Obs:* ${variables.notes}` : '')
       );
 
       window.open(`https://wa.me/${waPhone}?text=${msg}`, '_blank');
       navigate(createPageUrl('TrackOrder') + `?id=${order.id}`);
     },
-    onError: () => toast.error('Erro ao enviar pedido. Tente novamente.')
+    onError: (err) => toast.error('Erro ao enviar pedido: ' + err.message)
   });
 
-  const handleSubmit = () => {
-    if (!formData.customer_name || !formData.customer_phone) {
-      return toast.error('Por favor, preencha seu nome e telefone.');
-    }
-    if (formData.delivery_type === 'delivery' && !formData.address_text) {
-      return toast.error('Por favor, preencha o endereço de entrega.');
-    }
+  const onSubmit = (data) => {
+    const address_text = data.delivery_type === 'delivery'
+      ? `${data.rua}, ${data.numero}${data.complemento ? ', ' + data.complemento : ''} - ${data.bairro}`
+      : 'Retirada no Local';
 
     createOrderMutation.mutate({
-      ...formData,
+      ...data,
+      address_text,
       items: cart,
       total_amount: total,
       status: 'pending'
@@ -140,98 +153,90 @@ export default function Checkout() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-20">
+    <div className="min-h-screen bg-slate-50 pb-32">
       <div className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
         <div className="max-w-3xl mx-auto px-4 py-4 flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}><ArrowLeft className="h-5 w-5" /></Button>
-          <div>
-            <h1 className="text-xl font-bold text-slate-900 uppercase tracking-tighter">Checkout</h1>
-            <p className="text-xs text-slate-500 font-medium uppercase tracking-widest">Finalize seu pedido</p>
-          </div>
+          <Link to={createPageUrl('Menu')}>
+            <Button variant="ghost" size="icon"><ArrowLeft className="w-5 h-5" /></Button>
+          </Link>
+          <h1 className="text-xl font-bold text-slate-900">Finalizar Pedido</h1>
         </div>
       </div>
 
-      <div className="max-w-3xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-5 gap-8">
-        <div className="lg:col-span-3 space-y-6">
-          <Card className="p-6 border-0 shadow-sm">
-            <h3 className="font-bold text-slate-900 mb-6 flex items-center gap-2">
-              <User className="w-4 h-4" /> Seus Dados
-            </h3>
-            <div className="space-y-4">
+      <div className="max-w-xl mx-auto px-4 py-8 space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <Card className="p-6 border-0 shadow-sm space-y-4">
+            <h2 className="font-bold text-slate-900 flex items-center gap-2">
+              <span className="w-6 h-6 bg-slate-900 text-white rounded-full flex items-center justify-center text-xs">1</span>
+              Seus Dados
+            </h2>
+            <div className="grid grid-cols-1 gap-4">
               <div className="space-y-1">
-                <Label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Nome Completo</Label>
-                <Input
-                  value={formData.customer_name}
-                  onChange={(e) => setFormData(current => ({ ...current, customer_name: e.target.value }))}
-                  placeholder="Como devemos te chamar?"
-                  className="h-12"
-                />
+                <Label className="text-xs uppercase font-bold text-slate-400 ml-1">Nome Completo</Label>
+                <Input {...register('customer_name')} placeholder="Como devemos te chamar?" className={errors.customer_name ? 'border-red-500' : ''} />
+                {errors.customer_name && <p className="text-[10px] text-red-500 font-medium pl-1">{errors.customer_name.message}</p>}
               </div>
               <div className="space-y-1">
-                <Label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Telefone / WhatsApp</Label>
-                <Input
-                  value={formData.customer_phone}
-                  onChange={(e) => setFormData(current => ({ ...current, customer_phone: e.target.value }))}
-                  placeholder="(11) 99999-9999"
-                  className="h-12"
-                />
+                <Label className="text-xs uppercase font-bold text-slate-400 ml-1">WhatsApp</Label>
+                <Input {...register('customer_phone')} placeholder="(11) 99999-9999" className={errors.customer_phone ? 'border-red-500' : ''} />
+                {errors.customer_phone && <p className="text-[10px] text-red-500 font-medium pl-1">{errors.customer_phone.message}</p>}
               </div>
             </div>
           </Card>
 
-          <Card className="p-6 border-0 shadow-sm">
-            <h3 className="font-bold text-slate-900 mb-6 flex items-center gap-2">
-              <Truck className="w-4 h-4" /> Entrega
-            </h3>
-            <div className="flex gap-2 p-1 bg-slate-100 rounded-xl mb-6">
-              <button
-                onClick={() => setFormData(current => ({ ...current, delivery_type: 'delivery' }))}
-                className={`flex-1 py-3 text-xs font-bold rounded-lg transition-all ${
-                  formData.delivery_type === 'delivery' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500'
-                }`}
+          <Card className="p-6 border-0 shadow-sm space-y-4">
+            <h2 className="font-bold text-slate-900 flex items-center gap-2">
+              <span className="w-6 h-6 bg-slate-900 text-white rounded-full flex items-center justify-center text-xs">2</span>
+              Forma de Entrega
+            </h2>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant={deliveryType === 'delivery' ? 'default' : 'outline'}
+                className="flex-1 h-20 flex-col gap-2 rounded-2xl"
+                onClick={() => setValue('delivery_type', 'delivery')}
               >
-                DELIVERY
-              </button>
-              <button
-                onClick={() => setFormData(current => ({ ...current, delivery_type: 'pickup' }))}
-                className={`flex-1 py-3 text-xs font-bold rounded-lg transition-all ${
-                  formData.delivery_type === 'pickup' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500'
-                }`}
+                <Truck className="w-6 h-6" />
+                <span className="text-xs font-bold">Entrega</span>
+              </Button>
+              <Button
+                type="button"
+                variant={deliveryType === 'pickup' ? 'default' : 'outline'}
+                className="flex-1 h-20 flex-col gap-2 rounded-2xl"
+                onClick={() => setValue('delivery_type', 'pickup')}
               >
-                RETIRADA
-              </button>
+                <Package className="w-6 h-6" />
+                <span className="text-xs font-bold">Retirada</span>
+              </Button>
             </div>
 
-            {formData.delivery_type === 'delivery' && (
-              <div className="grid grid-cols-2 gap-4">
-                <div className="col-span-2 space-y-1">
-                  <Label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Rua / Avenida</Label>
-                  <Input value={addressFields.rua} onChange={(e) => setAddressFields(current => ({ ...current, rua: e.target.value }))} className="h-11" />
+            {deliveryType === 'delivery' && (
+              <div className="space-y-4 pt-4 border-t border-slate-50 mt-4">
+                <div className="grid grid-cols-4 gap-3">
+                  <div className="col-span-3 space-y-1">
+                    <Label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Rua / Avenida</Label>
+                    <Input {...register('rua')} placeholder="Ex: Av. Paulista" className={errors.rua ? 'border-red-500' : ''} />
+                  </div>
+                  <div className="col-span-1 space-y-1">
+                    <Label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Nº</Label>
+                    <Input {...register('numero')} placeholder="123" className={errors.numero ? 'border-red-500' : ''} />
+                  </div>
                 </div>
-                <div className="space-y-1">
-                  <Label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Número</Label>
-                  <Input value={addressFields.numero} onChange={(e) => setAddressFields(current => ({ ...current, numero: e.target.value }))} className="h-11" />
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Bairro</Label>
+                    <Input {...register('bairro')} placeholder="Ex: Centro" className={errors.bairro ? 'border-red-500' : ''} />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Complemento</Label>
+                    <Input {...register('complemento')} placeholder="Apto, Bloco..." />
+                  </div>
                 </div>
-                <div className="space-y-1">
-                  <Label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Bairro</Label>
-                  <Input value={addressFields.bairro} onChange={(e) => setAddressFields(current => ({ ...current, bairro: e.target.value }))} className="h-11" />
-                </div>
+                {errors.rua && <p className="text-[10px] text-red-500 font-medium pl-1 text-center">Por favor, preencha o endereço completo</p>}
               </div>
             )}
           </Card>
 
-          <Card className="p-6 border-0 shadow-sm">
-            <h3 className="font-bold text-slate-900 mb-6">Forma de Pagamento</h3>
-            <div className="grid grid-cols-3 gap-3">
-              {[
-                { id: 'cash', label: 'Dinheiro', icon: Banknote },
-                { id: 'card', label: 'Cartão', icon: CreditCard },
-                { id: 'pix', label: 'PIX', icon: Smartphone }
-              ].map(method => (
-                <button
-                  key={method.id}
-                  onClick={() => setFormData(current => ({ ...current, payment_method: method.id }))}
-                  className={`flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all ${
                     formData.payment_method === method.id ? 'border-red-600 bg-red-50' : 'border-slate-50 bg-slate-50'
                   }`}
                 >

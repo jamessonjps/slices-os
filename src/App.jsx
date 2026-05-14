@@ -11,6 +11,7 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import { Button } from '@/components/ui/button';
 import { ShieldAlert } from 'lucide-react';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -55,7 +56,9 @@ const RouteElement = ({ pageName, Page }) => {
 
   return (
     <LayoutWrapper currentPageName={pageName}>
-      <Page />
+      <ErrorBoundary>
+        <Page />
+      </ErrorBoundary>
     </LayoutWrapper>
   );
 };
