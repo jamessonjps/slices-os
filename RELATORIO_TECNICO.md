@@ -6,7 +6,7 @@ Data da última atualização: 2026-05-14
 
 **Estabilidade estimada: 95%+ (Production-Ready)**
 
-O sistema SliceOS foi completamente migrado de uma arquitetura legada baseada em mocks e stubs para uma solução moderna, robusta e escalável utilizando **Supabase** como backend central. A aplicação não possui mais dependências do framework legado `Base44` e está pronta para deploy em produção.
+O sistema SliceOS foi completamente migrado de uma arquitetura legada baseada em mocks e stubs para uma solução moderna, robusta e escalável utilizando **Supabase** como backend central. Foram corrigidas inconsistências de esquema na tabela de pedidos e ajustadas as políticas de segurança (RLS) para permitir operação pública fluida. A aplicação não possui mais dependências do framework legado `Base44` e está pronta para deploy em produção.
 
 **Estado do Frontend**: Moderno, responsivo e de alta fidelidade visual. Utiliza **Tailwind CSS** com uma configuração otimizada integrada diretamente no pipeline do Vite. Todos os fluxos críticos (Cardápio, Checkout, Cozinha e Administração) estão validados e integrados com persistência real de dados.
 
@@ -36,10 +36,9 @@ O sistema SliceOS foi completamente migrado de uma arquitetura legada baseada em
 
 ## Principais Melhorias e Correções Realizadas
 
-### 1. Migração para Supabase
-- **Persistência Real**: Substituição de todos os mocks e stubs por chamadas reais ao banco de dados PostgreSQL.
-- **Autenticação Robusta**: Implementação de Supabase Auth com proteção de rotas via `AuthGate` e `ProtectedRoute`.
-- **Schema JSONB**: Unificação dos itens do pedido em uma única coluna JSONB, simplificando a lógica de pizzas meio-a-meio e opcionais.
+- **Segurança e RLS**: Políticas de Row-Level Security (RLS) configuradas para permitir inserção pública de pedidos e clientes, mantendo o acesso administrativo restrito a usuários autenticados.
+- **Resiliência de Esquema**: Tabela de pedidos expandida para suportar observações (`notes`), múltiplos itens via JSONB e rastreamento de dados de entrega.
+- **Unificação do Cardápio**: Cardápio sincronizado com os novos níveis de preços (Tradicionais Nível 1, 2, Especiais e 6 Fatias).
 
 ### 2. Modernização da UI/UX
 - **Design Premium**: Aplicação de padrões modernos de design (glassmorphism, animações sutis, paletas de cores HSL).
