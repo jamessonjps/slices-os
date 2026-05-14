@@ -48,10 +48,10 @@ function getHoursDisplay(hours) {
   let i = 0;
   while (i < days.length) {
     const day = days[i];
-    const config = hours[day];
+    const config = hours[day] || { closed: true };
     let j = i + 1;
     while (j < days.length) {
-      const next = hours[days[j]];
+      const next = hours[days[j]] || { closed: true };
       const sameSchedule = config?.closed === next?.closed &&
         config?.open === next?.open &&
         config?.close === next?.close;
@@ -116,7 +116,10 @@ export default function Home() {
               {hoursGroups.map((g, i) => (
                 <div key={i}>
                   <span className="font-bold text-slate-900 dark:text-slate-200">{g.label}:</span>{' '}
-                  {g.config?.closed ? 'Fechado' : `${g.config?.open} às ${g.config?.close}`}
+                  {g.config?.closed 
+                    ? 'Fechado' 
+                    : `${g.config?.open || '--:--'} às ${g.config?.close || '--:--'}`
+                  }
                 </div>
               ))}
             </div>

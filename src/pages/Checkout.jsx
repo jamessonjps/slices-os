@@ -13,8 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { safeLocalStorage } from '@/utils/storage';
-import { safeJsonParse } from '@/utils/json';
+import { safeLocalStorage, safeJsonParse } from '@/utils/storage';
 import { formatCurrency } from '@/utils/format';
 import { orderService } from '@/services/orderService';
 import { settingsService } from '@/services/settingsService';
@@ -163,148 +162,174 @@ export default function Checkout() {
         </div>
       </div>
 
-      <div className="max-w-xl mx-auto px-4 py-8 space-y-6">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <Card className="p-6 border-0 shadow-sm space-y-4">
-            <h2 className="font-bold text-slate-900 flex items-center gap-2">
-              <span className="w-6 h-6 bg-slate-900 text-white rounded-full flex items-center justify-center text-xs">1</span>
-              Seus Dados
-            </h2>
-            <div className="grid grid-cols-1 gap-4">
-              <div className="space-y-1">
-                <Label className="text-xs uppercase font-bold text-slate-400 ml-1">Nome Completo</Label>
-                <Input {...register('customer_name')} placeholder="Como devemos te chamar?" className={errors.customer_name ? 'border-red-500' : ''} />
-                {errors.customer_name && <p className="text-[10px] text-red-500 font-medium pl-1">{errors.customer_name.message}</p>}
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs uppercase font-bold text-slate-400 ml-1">WhatsApp</Label>
-                <Input {...register('customer_phone')} placeholder="(11) 99999-9999" className={errors.customer_phone ? 'border-red-500' : ''} />
-                {errors.customer_phone && <p className="text-[10px] text-red-500 font-medium pl-1">{errors.customer_phone.message}</p>}
-              </div>
-            </div>
-          </Card>
-
-          <Card className="p-6 border-0 shadow-sm space-y-4">
-            <h2 className="font-bold text-slate-900 flex items-center gap-2">
-              <span className="w-6 h-6 bg-slate-900 text-white rounded-full flex items-center justify-center text-xs">2</span>
-              Forma de Entrega
-            </h2>
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                variant={deliveryType === 'delivery' ? 'default' : 'outline'}
-                className="flex-1 h-20 flex-col gap-2 rounded-2xl"
-                onClick={() => setValue('delivery_type', 'delivery')}
-              >
-                <Truck className="w-6 h-6" />
-                <span className="text-xs font-bold">Entrega</span>
-              </Button>
-              <Button
-                type="button"
-                variant={deliveryType === 'pickup' ? 'default' : 'outline'}
-                className="flex-1 h-20 flex-col gap-2 rounded-2xl"
-                onClick={() => setValue('delivery_type', 'pickup')}
-              >
-                <Package className="w-6 h-6" />
-                <span className="text-xs font-bold">Retirada</span>
-              </Button>
-            </div>
-
-            {deliveryType === 'delivery' && (
-              <div className="space-y-4 pt-4 border-t border-slate-50 mt-4">
-                <div className="grid grid-cols-4 gap-3">
-                  <div className="col-span-3 space-y-1">
-                    <Label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Rua / Avenida</Label>
-                    <Input {...register('rua')} placeholder="Ex: Av. Paulista" className={errors.rua ? 'border-red-500' : ''} />
-                  </div>
-                  <div className="col-span-1 space-y-1">
-                    <Label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Nº</Label>
-                    <Input {...register('numero')} placeholder="123" className={errors.numero ? 'border-red-500' : ''} />
-                  </div>
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+          <div className="lg:col-span-3 space-y-6">
+            <Card className="p-6 border-0 shadow-sm space-y-4">
+              <h2 className="font-bold text-slate-900 flex items-center gap-2">
+                <span className="w-6 h-6 bg-slate-900 text-white rounded-full flex items-center justify-center text-xs">1</span>
+                Seus Dados
+              </h2>
+              <div className="grid grid-cols-1 gap-4">
+                <div className="space-y-1">
+                  <Label className="text-xs uppercase font-bold text-slate-400 ml-1">Nome Completo</Label>
+                  <Input {...register('customer_name')} placeholder="Como devemos te chamar?" className={errors.customer_name ? 'border-red-500' : ''} />
+                  {errors.customer_name && <p className="text-[10px] text-red-500 font-medium pl-1">{errors.customer_name.message}</p>}
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <Label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Bairro</Label>
-                    <Input {...register('bairro')} placeholder="Ex: Centro" className={errors.bairro ? 'border-red-500' : ''} />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Complemento</Label>
-                    <Input {...register('complemento')} placeholder="Apto, Bloco..." />
-                  </div>
+                <div className="space-y-1">
+                  <Label className="text-xs uppercase font-bold text-slate-400 ml-1">WhatsApp</Label>
+                  <Input {...register('customer_phone')} placeholder="(11) 99999-9999" className={errors.customer_phone ? 'border-red-500' : ''} />
+                  {errors.customer_phone && <p className="text-[10px] text-red-500 font-medium pl-1">{errors.customer_phone.message}</p>}
                 </div>
-                {errors.rua && <p className="text-[10px] text-red-500 font-medium pl-1 text-center">Por favor, preencha o endereço completo</p>}
               </div>
-            )}
-          </Card>
+            </Card>
 
-                    formData.payment_method === method.id ? 'border-red-600 bg-red-50' : 'border-slate-50 bg-slate-50'
-                  }`}
+            <Card className="p-6 border-0 shadow-sm space-y-4">
+              <h2 className="font-bold text-slate-900 flex items-center gap-2">
+                <span className="w-6 h-6 bg-slate-900 text-white rounded-full flex items-center justify-center text-xs">2</span>
+                Forma de Entrega
+              </h2>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant={deliveryType === 'delivery' ? 'default' : 'outline'}
+                  className="flex-1 h-20 flex-col gap-2 rounded-2xl"
+                  onClick={() => setValue('delivery_type', 'delivery')}
                 >
-                  <method.icon className={`w-6 h-6 ${formData.payment_method === method.id ? 'text-red-600' : 'text-slate-400'}`} />
-                  <span className={`text-[10px] font-bold uppercase ${formData.payment_method === method.id ? 'text-red-700' : 'text-slate-500'}`}>
-                    {method.label}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </Card>
-        </div>
+                  <Truck className="w-6 h-6" />
+                  <span className="text-xs font-bold">Entrega</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant={deliveryType === 'pickup' ? 'default' : 'outline'}
+                  className="flex-1 h-20 flex-col gap-2 rounded-2xl"
+                  onClick={() => setValue('delivery_type', 'pickup')}
+                >
+                  <Package className="w-6 h-6" />
+                  <span className="text-xs font-bold">Retirada</span>
+                </Button>
+              </div>
 
-        <div className="lg:col-span-2 space-y-6">
-          <Card className="p-6 border-0 shadow-xl bg-slate-900 text-white sticky top-24">
-            <h3 className="font-bold text-xs uppercase tracking-widest text-slate-400 mb-6">Resumo do Pedido</h3>
-            <div className="space-y-4 mb-8">
-              {cart.map((item, i) => (
-                <div key={i} className="flex justify-between items-start text-sm">
-                  <div className="flex-1 pr-4">
-                    <p className="font-bold text-white leading-tight">{item.quantity}x {item.name}</p>
-                    {item.size && <p className="text-[10px] text-slate-400 uppercase mt-1">{item.size} fatias</p>}
+              {deliveryType === 'delivery' && (
+                <div className="space-y-4 pt-4 border-t border-slate-50 mt-4">
+                  <div className="grid grid-cols-4 gap-3">
+                    <div className="col-span-3 space-y-1">
+                      <Label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Rua / Avenida</Label>
+                      <Input {...register('rua')} placeholder="Ex: Av. Paulista" className={errors.rua ? 'border-red-500' : ''} />
+                    </div>
+                    <div className="col-span-1 space-y-1">
+                      <Label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Nº</Label>
+                      <Input {...register('numero')} placeholder="123" className={errors.numero ? 'border-red-500' : ''} />
+                    </div>
                   </div>
-                  <p className="font-bold">{formatCurrency(item.price * item.quantity)}</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Bairro</Label>
+                      <Input {...register('bairro')} placeholder="Ex: Centro" className={errors.bairro ? 'border-red-500' : ''} />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Complemento</Label>
+                      <Input {...register('complemento')} placeholder="Apto, Bloco..." />
+                    </div>
+                  </div>
+                  {errors.rua && <p className="text-[10px] text-red-500 font-medium pl-1 text-center">Por favor, preencha o endereço completo</p>}
                 </div>
-              ))}
-            </div>
+              )}
+            </Card>
 
-            <div className="space-y-2 border-t border-slate-800 pt-6 mb-6">
-              <div className="flex justify-between text-xs text-slate-400">
-                <span>Subtotal</span>
-                <span>{formatCurrency(subtotal)}</span>
+            <Card className="p-6 border-0 shadow-sm space-y-4">
+              <h2 className="font-bold text-slate-900 flex items-center gap-2">
+                <span className="w-6 h-6 bg-slate-900 text-white rounded-full flex items-center justify-center text-xs">3</span>
+                Pagamento
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                <Button
+                  type="button"
+                  variant={paymentMethod === 'cash' ? 'default' : 'outline'}
+                  className="justify-start h-14 rounded-xl px-4 gap-3"
+                  onClick={() => setValue('payment_method', 'cash')}
+                >
+                  <DollarSign className="w-5 h-5 text-green-500" />
+                  <span className="flex-1 text-left">Dinheiro</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant={paymentMethod === 'card' ? 'default' : 'outline'}
+                  className="justify-start h-14 rounded-xl px-4 gap-3"
+                  onClick={() => setValue('payment_method', 'card')}
+                >
+                  <CreditCard className="w-5 h-5 text-blue-500" />
+                  <span className="flex-1 text-left">Cartão</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant={paymentMethod === 'pix' ? 'default' : 'outline'}
+                  className="justify-start h-14 rounded-xl px-4 gap-3"
+                  onClick={() => setValue('payment_method', 'pix')}
+                >
+                  <Wallet className="w-5 h-5 text-purple-500" />
+                  <span className="flex-1 text-left">PIX</span>
+                </Button>
               </div>
-              <div className="flex justify-between text-xs text-slate-400">
-                <span>Taxa de Entrega</span>
-                <span>{formData.delivery_type === 'delivery' ? formatCurrency(deliveryFee) : 'R$ 0,00'}</span>
-              </div>
-              <div className="flex justify-between text-xl font-black pt-2">
-                <span>TOTAL</span>
-                <span className="text-red-500">{formatCurrency(total)}</span>
-              </div>
-            </div>
+            </Card>
+          </div>
 
-            <div className="space-y-4">
-              <div className="space-y-1">
-                <Label className="text-[10px] uppercase font-bold text-slate-500">Observações</Label>
-                <Textarea
-                  value={formData.notes}
-                  onChange={(e) => setFormData(current => ({ ...current, notes: e.target.value }))}
-                  placeholder="Ex: Tirar cebola, campainha estragada..."
-                  className="bg-slate-800 border-0 text-white placeholder:text-slate-600 h-20 resize-none text-xs"
-                />
+          <div className="lg:col-span-2 space-y-6">
+            <Card className="p-6 border-0 shadow-xl bg-slate-900 text-white sticky top-24">
+              <h3 className="font-bold text-xs uppercase tracking-widest text-slate-400 mb-6">Resumo do Pedido</h3>
+              <div className="space-y-4 mb-8">
+                {cart.map((item, i) => (
+                  <div key={i} className="flex justify-between items-start text-sm">
+                    <div className="flex-1 pr-4">
+                      <p className="font-bold text-white leading-tight">{item.quantity}x {item.name}</p>
+                      {item.size && <p className="text-[10px] text-slate-400 uppercase mt-1">{item.size} fatias</p>}
+                    </div>
+                    <p className="font-bold">{formatCurrency(item.price * item.quantity)}</p>
+                  </div>
+                ))}
               </div>
 
-              <Button
-                onClick={handleSubmit}
-                disabled={createOrderMutation.isLoading}
-                className="w-full h-16 bg-red-600 hover:bg-red-700 text-white font-black text-lg rounded-2xl shadow-2xl shadow-red-900/20"
-              >
-                {createOrderMutation.isLoading ? 'PROCESSANDO...' : 'CONFIRMAR PEDIDO'}
-              </Button>
-            </div>
-          </Card>
-        </div>
-      </div>
-      
-      <div className="mt-12 text-center opacity-30">
-        <SliceOSFooter />
+              <div className="space-y-2 border-t border-slate-800 pt-6 mb-6">
+                <div className="flex justify-between text-xs text-slate-400">
+                  <span>Subtotal</span>
+                  <span>{formatCurrency(subtotal)}</span>
+                </div>
+                <div className="flex justify-between text-xs text-slate-400">
+                  <span>Taxa de Entrega</span>
+                  <span>{deliveryType === 'delivery' ? formatCurrency(deliveryFee) : 'R$ 0,00'}</span>
+                </div>
+                <div className="flex justify-between text-xl font-black pt-2">
+                  <span>TOTAL</span>
+                  <span className="text-red-500">{formatCurrency(total)}</span>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="space-y-1">
+                  <Label className="text-[10px] uppercase font-bold text-slate-500">Observações</Label>
+                  <Textarea
+                    {...register('notes')}
+                    placeholder="Ex: Tirar cebola, campainha estragada..."
+                    className="bg-slate-800 border-0 text-white placeholder:text-slate-600 h-20 resize-none text-xs"
+                  />
+                </div>
+
+                <Button
+                  type="submit"
+                  disabled={isSubmitting || createOrderMutation.isPending}
+                  className="w-full h-16 bg-red-600 hover:bg-red-700 text-white font-black text-lg rounded-2xl shadow-2xl shadow-red-900/20"
+                >
+                  {isSubmitting || createOrderMutation.isPending ? (
+                    <Loader2 className="w-6 h-6 animate-spin" />
+                  ) : (
+                    'CONFIRMAR PEDIDO'
+                  )}
+                </Button>
+              </div>
+            </Card>
+            <SliceOSFooter />
+          </div>
+        </form>
       </div>
     </div>
   );
