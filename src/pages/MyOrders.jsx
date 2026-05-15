@@ -137,7 +137,6 @@ export default function MyOrders() {
                   const pizzaCount = items.filter(i => i.type === 'pizza').length;
                   const drinkCount = items.filter(i => i.type === 'drink').reduce((sum, d) => sum + (d.quantity || 1), 0);
 
-                  return (
                   const handleReorder = (e) => {
                     e.preventDefault();
                     e.stopPropagation();
