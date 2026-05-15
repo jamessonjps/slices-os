@@ -1,137 +1,94 @@
 # SliceOS
 
-Sistema web para operacao de pizzaria, com area publica de pedidos online e painel administrativo para pedidos, cozinha, clientes, estoque, cardapio, usuarios e relatorios.
+Sistema web para operação de pizzaria, com área pública de pedidos online e painel administrativo para pedidos, cozinha, clientes, estoque, cardápio, usuários e relatórios.
 
-## Visao Geral
+## Visão Geral
 
-O SliceOS e uma aplicacao frontend criada originalmente no Base44 e migrada para execucao local com React + Vite. O objetivo do sistema e centralizar o fluxo operacional de uma pizzaria: o cliente acessa o cardapio, monta o pedido e acompanha o status; a equipe administrativa gerencia pedidos, cozinha, clientes, estoque, configuracoes e indicadores.
+O SliceOS é uma aplicação fullstack moderna construída com React + Vite no frontend e **Supabase** no backend. O objetivo do sistema é centralizar o fluxo operacional de uma pizzaria: o cliente acessa o cardápio, monta o pedido e acompanha o status; a equipe administrativa gerencia pedidos, cozinha, clientes, estoque, configurações e indicadores.
 
-O projeto esta em fase de transicao tecnica. A interface compila e executa localmente, parte dos fluxos ja usa servicos mockados internos e parte ainda passa por stubs de compatibilidade com Base44. O backend real ainda nao esta integrado.
+A aplicação está totalmente integrada com um banco de dados real em produção (PostgreSQL via Supabase), possuindo sistema de Autenticação (Auth) e políticas rígidas de segurança (Row Level Security - RLS).
 
 ## Tecnologias Utilizadas
 
-- React 18
-- Vite 6
-- React Router DOM
-- TanStack React Query
-- Tailwind CSS
-- Radix UI
-- Lucide React
-- Sonner
-- date-fns
-- Recharts
-- Framer Motion
+- **Frontend:** React 18, Vite 6, React Router DOM, TanStack React Query v5
+- **Backend:** Supabase (PostgreSQL, Auth, Realtime)
+- **UI/Estilização:** Tailwind CSS, Radix UI, Lucide React, Framer Motion
+- **Validação e Formulários:** React Hook Form, Zod
+- **Utilitários:** date-fns, sonner (notificações)
 
 ## Estrutura do Projeto
 
 ```text
 src/
-  api/            Stubs e clientes de API para transicao fora do Base44
-  components/     Componentes compartilhados e componentes de UI
-  hooks/          Hooks utilitarios
-  lib/            Providers, contexto de autenticacao e utilitarios globais
-  mocks/          Dados fake usados pela aplicacao local
-  pages/          Telas publicas e administrativas
-  services/       Servicos locais que encapsulam dados mockados
-  utils/          Utilitarios de URL, storage e parsing seguro
-
-entities/         Esquemas legados exportados do Base44
-public/           Assets publicos
+  components/     Componentes compartilhados e componentes de UI (shadcn)
+  hooks/          Hooks utilitários
+  lib/            Providers, contexto de autenticação e configuração do Supabase
+  pages/          Telas públicas e administrativas
+  services/       Serviços de integração com o Supabase (pedidos, clientes, etc.)
+  utils/          Utilitários de URL, storage e cálculos de horário
 ```
 
 ## Funcionalidades
 
-- Pagina inicial publica da pizzaria
-- Cardapio online
-- Carrinho e checkout
-- Criacao de pedidos
-- Acompanhamento de pedido pelo cliente
-- Historico de pedidos por telefone
-- Painel administrativo
-- Gestao de pedidos
-- Tela de cozinha com avancos de status
-- Cadastro e consulta de clientes
-- Gestao de cardapio
-- Controle de estoque
-- Configuracoes de horario e WhatsApp
-- Gestao de usuarios
-- Relatorios de vendas
-- Solicitação de exclusao de conta
+**Área do Cliente:**
+- Página inicial pública com status de loja (Aberto/Fechado) sincronizado em tempo real
+- Cardápio online dinâmico
+- Carrinho e checkout inteligente (validação de endereço para Entrega vs. Retirada)
+- Criação de pedidos com integração automática via WhatsApp
+- Rastreamento de pedido pelo cliente
+- Solicitação de exclusão de conta (Conformidade LGPD)
 
-## Instalacao
+**Painel Administrativo:**
+- Gestão de pedidos e painel de status
+- Tela de cozinha otimizada para tablets (com sons de notificação e fluxo dinâmico para retirada/entrega)
+- Cadastro e consulta de clientes (CRM populado automaticamente a cada pedido)
+- Gestão de cardápio e produtos
+- Controle de configurações (Horários de funcionamento, WhatsApp, Taxa de Entrega)
+- Gestão de usuários (Admins/Funcionários)
 
+## Instalação e Execução
+
+### Pré-requisitos
+Certifique-se de configurar o arquivo `.env.local` na raiz do projeto com as credenciais do Supabase:
+```env
+VITE_SUPABASE_URL=sua_url_aqui
+VITE_SUPABASE_ANON_KEY=sua_chave_anonima_aqui
+VITE_STORE_ID=id_da_sua_loja
+```
+
+### Execução Local
 ```bash
 npm install
 npm run dev
 ```
 
-Por padrao, o Vite inicia em:
+Por padrão, o Vite inicia em `http://localhost:5173`.
 
-```text
-http://localhost:5173
-```
-
-Se a porta estiver ocupada, o Vite usara a proxima porta disponivel.
-
-## Build
-
+### Build de Produção
 ```bash
 npm run build
 ```
-
-O build gera os arquivos finais em `dist/`.
+O build gera os arquivos otimizados na pasta `dist/`.
 
 ## Estrutura de Rotas
 
-As rotas sao registradas em `src/pages.config.js`.
+As rotas são protegidas e registradas em `src/pages.config.js`.
 
-Principais rotas:
-
-- `/` - pagina inicial
-- `/Home` - pagina inicial
-- `/Menu` - cardapio publico
-- `/Checkout` - finalizacao de pedido
-- `/TrackOrder` - acompanhamento de pedido
-- `/MyOrders` - historico do cliente
-- `/AdminHome` - painel administrativo
-- `/Orders` - pedidos
-- `/NewOrder` - criacao manual de pedido
-- `/OrderDetail` - detalhes do pedido
-- `/Kitchen` - cozinha
-- `/Customers` - clientes
-- `/MenuManagement` - gestao de cardapio
-- `/Stock` - estoque
-- `/Reports` - relatorios
-- `/Settings` - configuracoes
-- `/UserManagement` - usuarios
-- `/DeleteAccount` - solicitacao de exclusao de conta
+- `/` e `/Home` - Página inicial
+- `/Menu` - Cardápio público
+- `/Checkout` - Finalização de pedido
+- `/TrackOrder` - Acompanhamento de pedido
+- `/DeleteAccount` - Solicitação de exclusão de dados
+- `/Login` - Autenticação da equipe
+- `/AdminHome` - Painel administrativo (Requer login)
+- `/Orders`, `/Kitchen`, `/Customers`, `/MenuManagement`, `/Settings`, `/UserManagement` - Módulos administrativos
 
 ## Estado Atual do Projeto
 
-O projeto foi migrado do Base44 para uma aplicacao local React/Vite. O plugin do Base44 esta comentado na configuracao do Vite e existe um stub local em `src/api/base44Client.js` para evitar dependencia obrigatoria do Base44 online durante o desenvolvimento.
+O projeto encontra-se em um estado **Production-Ready**. Toda a dívida técnica da migração de sistemas legados foi resolvida. O Supabase cuida da persistência, e a aplicação frontend reage de maneira otimista e segura.
 
-Parte da aplicacao ja usa servicos locais em `src/services`, alimentados por mocks em `src/mocks`. Outra parte ainda chama `base44.entities.*`, que atualmente retorna dados vazios ou respostas simuladas. Por isso, o frontend executa, mas algumas telas administrativas podem aparecer vazias ou nao persistir alteracoes reais.
+Políticas de segurança do Supabase (RLS) garantem que apenas administradores autenticados possam modificar configurações, enquanto o público pode criar pedidos e atualizar seu próprio cadastro.
 
-## Roadmap
+## Licença
 
-- Substituir chamadas restantes de `base44.entities.*` por servicos locais ou API real.
-- Implementar backend persistente para pedidos, clientes, cardapio, estoque, usuarios e configuracoes.
-- Criar autenticacao real com sessoes, papeis e protecao de rotas.
-- Normalizar modelos de dados entre `entities`, mocks e servicos.
-- Corrigir textos com problemas de encoding.
-- Reativar pipeline de CSS/Tailwind completo se necessario.
-- Adicionar testes focados nos fluxos criticos de pedido, checkout, cozinha e administracao.
-- Remover dependencias legadas nao utilizadas apos a migracao final.
-
-## Observacoes Tecnicas
-
-- O projeto ainda contem dependencias Base44 em `package.json`, mas o plugin Vite esta desativado.
-- `src/api/base44Client.js` e um stub de compatibilidade, nao um backend real.
-- Os dados mockados ficam em memoria e podem ser perdidos ao recarregar o ambiente.
-- A autenticacao atual e temporaria e baseada em usuario fake/admin.
-- Fluxos que dependem de WhatsApp abrem URLs externas via `wa.me`.
-- O sistema ainda nao deve ser considerado pronto para producao sem backend real, autenticacao real e persistencia.
-
-## Licenca
-
-Projeto privado. Defina uma licenca formal antes de publicar ou distribuir este repositorio.
+Projeto privado. Defina uma licença formal antes de publicar ou distribuir este repositório.

@@ -26,7 +26,7 @@ O sistema SliceOS foi completamente migrado de uma arquitetura legada baseada em
 - **Utilidades**: date-fns, sonner (notificações), canvas-confetti
 
 ### Organização do Código
-- `src/services/`: Camada de abstração para chamadas à API do Supabase (`orderService`, `menuService`, `settingsService`, etc.).
+- `src/services/`: Camada de abstração para chamadas à API do Supabase (`orderService`, `menuService`, `settingsService`, `customerService`, etc.).
 - `src/lib/`: Configurações centrais do Supabase, Query Client e utilitários de sistema.
 - `src/pages/`: Componentes de página refatorados para maior performance e separação de preocupações.
 - `src/components/ui/`: Biblioteca shadcn/ui customizada com design system consistente.
@@ -36,19 +36,20 @@ O sistema SliceOS foi completamente migrado de uma arquitetura legada baseada em
 
 ## Principais Melhorias e Correções Realizadas
 
-- **Segurança e RLS**: Políticas de Row-Level Security (RLS) configuradas para permitir inserção pública de pedidos e clientes, mantendo o acesso administrativo restrito a usuários autenticados.
+### 1. Resiliência de Dados e Banco
+- **Segurança e RLS**: Políticas de Row-Level Security (RLS) configuradas para permitir inserção pública de pedidos e clientes. O RLS de clientes foi ajustado para permitir comandos `upsert` baseados no número de telefone do usuário.
+- **Sincronização de CRM (Clientes)**: Implementado fluxo automático que registra novos clientes ou atualiza os dados de clientes existentes (via `upsertCustomerByPhone`) a cada novo pedido finalizado no Checkout, sem gerar erros silenciosos relacionados a colunas inexistentes (ex: `updated_at`).
 - **Resiliência de Esquema**: Tabela de pedidos expandida para suportar observações (`notes`), múltiplos itens via JSONB e rastreamento de dados de entrega.
-- **Unificação do Cardápio**: Cardápio sincronizado com os novos níveis de preços (Tradicionais Nível 1, 2, Especiais e 6 Fatias).
+- **Configurações Globais**: Refatoração do `settingsService` para garantir que as configurações da loja (horários, taxa de entrega) sejam lidas de forma robusta e imediatamente sincronizadas com o estado da aplicação usando o Query Client.
 
-### 2. Modernização da UI/UX
+### 2. Modernização da UI/UX e Fluxos
 - **Design Premium**: Aplicação de padrões modernos de design (glassmorphism, animações sutis, paletas de cores HSL).
-- **Tailwind Integrado**: Configuração de PostCSS injetada diretamente no `vite.config.js` para garantir 100% de consistência em ambientes Windows/Linux.
-- **Responsividade**: Interfaces adaptadas para mobile-first, essenciais para operação em tablets de cozinha e smartphones de clientes.
+- **Acessibilidade e Contraste**: Ajustes nos botões de navegação ("Voltar") em todas as rotas administrativas para garantir legibilidade tanto no tema claro quanto no escuro.
+- **Fluxo Dinâmico de Cozinha**: Otimização do fluxo de pedidos na cozinha para distinguir "Entrega" vs. "Retirada". Pedidos de retirada agora pulam o status "Saiu para Entrega" e vão direto para conclusão.
+- **Sincronização do Checkout**: Implementado "Loading State" (Sincronizando com a loja...) no Checkout para garantir que o sistema sempre aguarde o carregamento das configurações do servidor antes de bloquear novos pedidos baseado no horário.
 
-### 3. Resiliência e Performance
-- **Retry com Exponential Backoff**: Implementação de estratégia de re-tentativa automática (com jitter) para lidar com erros de rede ou indisponibilidade temporária (Erro 503).
-- **Error Boundaries**: Captura de erros de renderização para evitar crashes totais da aplicação.
-- **Lazy Loading**: Otimização do bundle via carregamento sob demanda de rotas administrativas.
+### 3. Conformidade e Privacidade (LGPD)
+- **DeleteData / Privacidade**: Adicionada rota e formulário `/DeleteAccount` acessível via rodapé público, permitindo que clientes comuns solicitem exclusão instantânea de seus dados pessoais do banco de dados (Tabela Customers) usando apenas validação de telefone.
 
 ### 4. Integração WhatsApp
 - **Checkout Automatizado**: O processo de finalização de pedido gera automaticamente uma mensagem estruturada e rica para o WhatsApp da loja, incluindo ID do pedido, detalhes dos itens e endereço formatado.
@@ -60,13 +61,15 @@ O sistema SliceOS foi completamente migrado de uma arquitetura legada baseada em
 ### Cliente (Public)
 - **`/Home`**: Totalmente funcional, carrega horários e configurações da loja em tempo real.
 - **`/Menu`**: Lista produtos por categorias, suporta seleção de tamanhos e sabores para pizzas.
-- **`/Checkout`**: Validação condicional de endereço (Entrega vs Retirada) via Zod.
+- **`/Checkout`**: Validação condicional de endereço (Entrega vs Retirada) via Zod. Aguarda carga síncrona das configurações da loja.
 - **`/TrackOrder`**: Rastreamento em tempo real do status do pedido.
+- **`/DeleteAccount`**: Rota de privacidade para auto-exclusão de dados de cliente.
 
 ### Operacional e Admin
-- **`/Kitchen`**: Painel de controle de produção com atualização de status e edição rápida de pedidos.
+- **`/Kitchen`**: Painel de controle de produção com atualização de status e edição rápida de pedidos. Compatível com pedidos de Entrega e Retirada.
 - **`/Orders`**: Histórico completo de pedidos com filtros.
-- **`/Settings`**: Gestão completa de horários, taxas de entrega e dados da loja.
+- **`/Customers`**: Painel de CRM listando todos os clientes da loja, com estatísticas de compras, endereços salvos e anotações customizadas.
+- **`/Settings`**: Gestão completa de horários, taxas de entrega e dados da loja com re-fetch imediato para garantir feedback visual instantâneo.
 - **`/MenuManagement`**: CRUD completo de produtos integrado ao Supabase Storage.
 
 ---
