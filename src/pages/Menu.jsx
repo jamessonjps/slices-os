@@ -205,12 +205,7 @@ export default function Menu() {
                         <p className="text-sm text-slate-600 dark:text-slate-400">{pizza.description}</p>
                       )}
                     </div>
-                    {pizza.is_promotion && (
-                      <Badge className="bg-red-600 text-white">
-                        <Sparkles className="w-3 h-3 mr-1" />
-                        Promoção
-                      </Badge>
-                    )}
+
                   </div>
                   <Button
                     className="w-full bg-red-600 hover:bg-red-700 text-white"
@@ -230,7 +225,7 @@ export default function Menu() {
           <div className="mb-8">
             <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Pizzas Tradicionais</h2>
             <p className="text-sm text-slate-500 mb-1">8 fatias a partir de R$ 35,00</p>
-            <p className="text-xs text-amber-700 bg-amber-50 rounded-lg px-3 py-1.5 mb-4 inline-block">⭐ Promoção: 6 fatias (1 sabor) R$ 28,00 — sabores selecionados</p>
+
             <div className="space-y-4">
               {pizzasTradicionais.map((pizza) => (
                 <Card key={pizza.id} className="p-4 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
@@ -241,12 +236,7 @@ export default function Menu() {
                         <p className="text-sm text-slate-600 dark:text-slate-400">{pizza.description}</p>
                       )}
                     </div>
-                    {pizza.is_promotion && (
-                      <Badge className="bg-red-600 text-white">
-                        <Sparkles className="w-3 h-3 mr-1" />
-                        Promoção
-                      </Badge>
-                    )}
+
                   </div>
                   <Button
                     className="w-full bg-red-600 hover:bg-red-700 text-white"
@@ -266,7 +256,7 @@ export default function Menu() {
           <div className="mb-8">
             <h2 className="text-2xl font-bold text-slate-900 mb-1">Pizzas 6 Fatias</h2>
             <p className="text-sm text-slate-500 mb-1">Apenas 1 sabor • R$ 28,00</p>
-            <p className="text-xs text-amber-700 bg-amber-50 rounded-lg px-3 py-1.5 mb-4 inline-block">⭐ Promoção especial — somente esses sabores</p>
+
             <div className="space-y-4">
               {pizzas6Fatias.map((pizza) => (
                 <Card key={pizza.id} className="p-4 border-amber-200 bg-amber-50/30">
