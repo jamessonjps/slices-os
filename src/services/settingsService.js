@@ -23,7 +23,8 @@ export const settingsService = {
       store_name: "Pizzaria SliceOS",
       whatsapp_number: "",
       delivery_fee: 0,
-      business_hours: {}
+      business_hours: {},
+      pix_key: ""
     };
   },
 

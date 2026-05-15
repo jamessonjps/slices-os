@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+﻿import React, { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useLocation } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -209,7 +209,7 @@ export default function TrackOrder() {
         </div>
 
         <p className="text-center text-[10px] text-slate-400 uppercase tracking-widest py-8">
-          Pedido realizado em {format(new Date(order.created_date), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+          Pedido realizado em {format(new Date(order.created_date), "dd/MM/yyyy 'Á s' HH:mm", { locale: ptBR })}
         </p>
 
         <SliceOSFooter />

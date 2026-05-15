@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -187,7 +187,7 @@ export default function Stock() {
                         {product.quantity} <span className="text-sm font-normal">{product.unit}</span>
                       </p>
                       <p className="text-[10px] text-slate-500 mt-1 uppercase tracking-tighter">
-                        Mínimo: {product.min_quantity} {product.unit} • Custo: R$ {product.price?.toFixed(2)}
+                        Mínimo: {product.min_quantity} {product.unit} â€¢ Custo: R$ {product.price?.toFixed(2)}
                       </p>
                     </div>
                     <div className="flex gap-1">

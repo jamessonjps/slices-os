@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { customerService } from '@/services/customerService';
 import { orderService } from '@/services/orderService';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -173,7 +173,7 @@ export default function Customers() {
                       </p>
                       {stats.lastOrder && (
                         <p className="text-xs text-slate-500">
-                          Último: {format(new Date(stats.lastOrder), 'dd/MM/yyyy', { locale: ptBR })}
+                          Ášltimo: {format(new Date(stats.lastOrder), 'dd/MM/yyyy', { locale: ptBR })}
                         </p>
                       )}
                     </div>
@@ -260,7 +260,7 @@ export default function Customers() {
                           </p>
                           <p className="text-sm text-slate-600">
                             {addr.district}
-                            {addr.city && ` • ${addr.city}`}
+                            {addr.city && ` â€¢ ${addr.city}`}
                           </p>
                         </Card>
                       ))}
@@ -288,10 +288,10 @@ export default function Customers() {
                                 Pedido #{order.id.slice(0, 8)}
                               </p>
                               <p className="text-xs text-slate-500">
-                                {format(new Date(order.created_date), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                                {format(new Date(order.created_date), "dd/MM/yyyy 'Á s' HH:mm", { locale: ptBR })}
                               </p>
                               <p className="text-xs text-slate-600 mt-1">
-                                {order.pizzas?.length || 0} pizza(s) • {order.drinks?.reduce((sum, d) => sum + d.quantity, 0) || 0} bebida(s)
+                                {order.pizzas?.length || 0} pizza(s) â€¢ {order.drinks?.reduce((sum, d) => sum + d.quantity, 0) || 0} bebida(s)
                               </p>
                             </div>
                             <div className="text-right">

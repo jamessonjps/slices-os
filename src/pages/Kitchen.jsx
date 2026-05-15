@@ -49,9 +49,9 @@ const statusConfig = {
 };
 
 /**
- * @param {{ order: KitchenOrderItem | null; open: boolean; onClose: () => void; onSave: (data: any) => void; waPhone: string }} props
+ * @param {{ order: KitchenOrderItem | null; open: boolean; onClose: () => void; onSave: (data: any) => void; waPhone: string; settings?: any }} props
  */
-function EditOrderDialog({ order, open, onClose, onSave, waPhone }) {
+function EditOrderDialog({ order, open, onClose, onSave, waPhone, settings }) {
   const [items, setItems] = useState([]);
 
   useEffect(() => {
@@ -85,11 +85,32 @@ function EditOrderDialog({ order, open, onClose, onSave, waPhone }) {
       return `• ${p.name} (${p.quantity || 1}x) - R$ ${((p.price) * (p.quantity || 1)).toFixed(2)}`;
     }).join('\n');
 
-    const paymentLabel = order.payment_method === 'cash' ? 'Dinheiro' : order.payment_method === 'card' ? 'Cartão' : 'PIX';
+    const msgLines = [
+      `\u{1F355} *ATUALIZAÇÁO DO PEDIDO - Millano Pizzaria*`,
+      `\u{1F522} *ID:* #${order.id.slice(0, 8)}`,
+      ``,
+      `\u{1F464} *Cliente:* ${order.customer_name}`,
+      `\u{1F4DE} *Tel:* ${order.customer_phone}`,
+      ``,
+      `\u{1F6D2} *Itens atualizados:*`,
+      allItems,
+      ``,
+      `\u{1F4B0} *Subtotal:* R$ ${sub.toFixed(2)}`,
+      ...(deliveryFee > 0 ? [`\u{1F69A} *Taxa:* R$ ${deliveryFee.toFixed(2)}`] : []),
+      `\u2B50 *TOTAL:* R$ ${total.toFixed(2)}`,
+      ``,
+      `\u{1F4B3} *Pagamento:* ${
+        order.payment_method === 'cash' ? `Dinheiro${order.change_for ? ` (Troco para R$ ${order.change_for})` : ''}` : 
+        order.payment_method === 'card' ? 'Cart\u00E3o' : `PIX${settings?.pix_key ? `\n\u{1F511} *Chave PIX:* ${settings.pix_key}` : ''}\n\u26A0\uFE0F *Aguardando comprovante para confirmar pedido!*`
+      }`,
+      ``,
+      `\u{1F4CD} *Entrega:* ${order.delivery_type === 'delivery' ? order.address_text : 'Retirada no Local'}`,
+      ...(order.notes ? [``, `\u{1F4DD} *Obs:* ${order.notes}`] : []),
+      ``,
+      `\u{1F4CD} *Para agilizar a entrega, por favor nos envie sua localiza\u00E7\u00E3o pelo WhatsApp!*`
+    ];
 
-    const msg = encodeURIComponent(
-      `🍕 *Atualização do seu Pedido - Millano Pizzaria*\n\n*Cliente:* ${order.customer_name}\n*Tel:* ${order.customer_phone}\n\n*Itens:*\n${allItems}\n\n*Subtotal:* R$ ${sub.toFixed(2)}\n${deliveryFee > 0 ? `*Taxa de entrega:* R$ ${deliveryFee.toFixed(2)}\n` : ''}*Total:* R$ ${total.toFixed(2)}\n\n*Pagamento:* ${paymentLabel}\n*Entrega:* ${order.delivery_type === 'delivery' ? order.address_text : 'Retirada'}\n\n📍 *Para agilizar a entrega, por favor nos envie sua localização pelo WhatsApp!*`
-    );
+    const msg = encodeURIComponent(msgLines.join('\n'));
 
     const phone = order.customer_phone?.replace(/\D/g, '');
     window.open(`https://wa.me/55${phone}?text=${msg}`, '_blank');
@@ -98,66 +119,87 @@ function EditOrderDialog({ order, open, onClose, onSave, waPhone }) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
         <DialogHeader>
-          <DialogTitle>Editar Pedido — {order.customer_name}</DialogTitle>
+          <DialogTitle className="text-slate-900 dark:text-white">Editar Pedido</DialogTitle>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Cliente: <strong className="text-slate-700 dark:text-slate-200">{order.customer_name}</strong>
+          </p>
         </DialogHeader>
         <div className="space-y-4 pt-2">
-          {/* Pizzas */}
+          {/* Itens */}
           <div>
-            <div className="flex items-center justify-between">
-              <Label className="text-sm font-semibold">Itens do Pedido</Label>
-              <Button variant="ghost" size="sm" onClick={() => addItem('drink')} className="h-7 text-xs">
-                <Plus className="w-3 h-3 mr-1" /> Adicionar Bebida
+            <div className="flex items-center justify-between mb-2">
+              <Label className="text-sm font-semibold text-slate-900 dark:text-white">Itens no Pedido</Label>
+              <Button variant="outline" size="sm" onClick={() => addItem('item')} className="h-7 text-xs border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800">
+                <Plus className="w-3 h-3 mr-1" /> Adicionar Item
               </Button>
             </div>
-            <div className="space-y-2 mt-2">
+            
+            <div className="space-y-2 bg-slate-50 dark:bg-slate-800 p-2 rounded-lg border border-slate-200 dark:border-slate-700 overflow-x-auto">
+              {items.length > 0 && (
+                <div className="flex gap-2 px-1 text-[11px] uppercase font-bold text-slate-500 dark:text-slate-400">
+                  <div className="flex-1 min-w-[150px]">Item / Descrição</div>
+                  <div className="w-16 text-center">Qtd</div>
+                  <div className="w-20 text-center">R$ Unit</div>
+                  <div className="w-8"></div>
+                </div>
+              )}
               {items.map((item, i) => (
-                <div key={i} className="flex gap-2 items-center bg-slate-50 rounded-lg p-2">
-                  <div className="flex-1 min-w-0">
+                <div key={i} className="flex gap-2 items-center">
+                  <div className="flex-1 min-w-[150px]">
                     <Input
-                      className="h-8 text-sm mb-1"
+                      className="h-8 text-sm bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white"
                       value={item.name}
                       onChange={(e) => updateItem(i, 'name', e.target.value)}
                       placeholder="Nome do item"
                     />
-                    <div className="flex gap-2">
-                      <Input
-                        type="number"
-                        className="w-14 h-7 text-xs"
-                        value={item.quantity}
-                        onChange={(e) => updateItem(i, 'quantity', e.target.value)}
-                        placeholder="Qtd"
-                      />
-                      <Input
-                        type="number"
-                        className="w-20 h-7 text-xs"
-                        value={item.price}
-                        onChange={(e) => updateItem(i, 'price', e.target.value)}
-                        placeholder="R$"
-                      />
-                    </div>
                   </div>
-                  <button onClick={() => removeItem(i)} className="text-red-400 hover:text-red-600 px-1">
+                  <div className="w-16">
+                    <Input
+                      type="number"
+                      className="h-8 text-sm text-center bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white px-1"
+                      value={item.quantity}
+                      onChange={(e) => updateItem(i, 'quantity', e.target.value)}
+                    />
+                  </div>
+                  <div className="w-20">
+                    <Input
+                      type="number"
+                      className="h-8 text-sm text-center bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white px-1"
+                      value={item.price}
+                      onChange={(e) => updateItem(i, 'price', e.target.value)}
+                    />
+                  </div>
+                  <button onClick={() => removeItem(i)} className="text-red-500 hover:text-red-700 w-8 h-8 flex items-center justify-center bg-red-50 dark:bg-red-900/30 rounded-md transition-colors" title="Remover item">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               ))}
+              {items.length === 0 && (
+                <p className="text-xs text-center text-slate-500 dark:text-slate-400 py-4">Nenhum item no pedido.</p>
+              )}
             </div>
           </div>
 
-          <div className="bg-slate-100 rounded-lg p-3 text-sm font-semibold text-slate-800 flex justify-between">
-            <span>Total</span>
-            <span>R$ {calcTotal().toFixed(2)}</span>
+          {/* Total */}
+          <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-4 flex justify-between items-center border border-slate-200 dark:border-slate-700">
+            <span className="text-sm font-semibold text-slate-600 dark:text-slate-300">Total do Pedido</span>
+            <span className="text-lg font-black text-slate-900 dark:text-white">R$ {calcTotal().toFixed(2)}</span>
           </div>
 
-          <Button
-            className="w-full bg-green-600 hover:bg-green-700 text-white"
-            onClick={handleSendWhatsApp}
-          >
-            <Send className="w-4 h-4 mr-2" />
-            Salvar e Enviar WhatsApp ao Cliente
-          </Button>
+          <div className="pt-2">
+            <Button
+              className="w-full h-12 bg-green-600 hover:bg-green-700 text-white font-bold"
+              onClick={handleSendWhatsApp}
+            >
+              <Send className="w-5 h-5 mr-2" />
+              Salvar e Notificar Cliente
+            </Button>
+            <p className="text-[11px] text-center text-slate-500 dark:text-slate-400 mt-2">
+              Ao clicar, o pedido será atualizado e o WhatsApp web abrirá com a nova mensagem.
+            </p>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
@@ -252,10 +294,10 @@ function KitchenContent() {
     const phone = order.customer_phone?.replace(/\D/g, '');
     if (!phone) return;
     const statusMessages = {
-      preparing: `🍕 Olá ${order.customer_name}! Seu pedido foi *confirmado* e está sendo preparado agora! ⏱️`,
-      ready: `✅ Olá ${order.customer_name}! Sua pizza está *pronta*!${order.delivery_type === 'pickup' ? ' Pode vir buscar! 😊' : ' Já vamos embalar para entrega.'}`,
-      delivering: `🛵 Olá ${order.customer_name}! Seu pedido *saiu para entrega*! Em breve estará na sua porta. 🍕\n\n📍 Por favor, nos envie sua localização para agilizar a entrega!`,
-      completed: `✅ Olá ${order.customer_name}! Seu pedido foi *entregue*! Obrigado pela preferência! 🍕❤️\n\n*Millano Pizzaria*`
+      preparing: `\u{1F355} Ol\u00E1 ${order.customer_name}! Seu pedido foi *confirmado* e est\u00E1 sendo preparado agora! \u23F1\uFE0F`,
+      ready: `\u2705 Ol\u00E1 ${order.customer_name}! Sua pizza est\u00E1 *pronta*!${order.delivery_type === 'pickup' ? ' Pode vir buscar! \u{1F60A}' : ' J\u00E1 vamos embalar para entrega.'}`,
+      delivering: `\u{1F6F5} Ol\u00E1 ${order.customer_name}! Seu pedido *saiu para entrega*! Em breve estar\u00E1 na sua porta. \u{1F355}\n\n\u{1F4CD} Por favor, nos envie sua localiza\u00E7\u00E3o para agilizar a entrega!`,
+      completed: `\u2705 Ol\u00E1 ${order.customer_name}! Seu pedido foi *entregue*! Obrigado pela prefer\u00EAncia! \u{1F355}\u2764\uFE0F\n\n*Millano Pizzaria*`
     };
     const msg = statusMessages[newStatus];
     if (msg) {
@@ -325,6 +367,7 @@ function KitchenContent() {
         onClose={() => setEditingOrder(null)}
         onSave={(data) => editingOrder && handleSaveEdit(editingOrder, data)}
         waPhone={waPhone}
+        settings={settingsQuery.data}
       />
       {/* Header */}
       <div className="bg-slate-800 border-b border-slate-700 sticky top-0 z-50">
@@ -367,7 +410,7 @@ function KitchenContent() {
           <div className="text-center py-12">
             <CheckCircle className="w-16 h-16 text-slate-600 mx-auto mb-4" />
             <p className="text-xl text-slate-400">Nenhum pedido ativo</p>
-            <p className="text-sm text-slate-500 mt-2">Todos os pedidos foram concluídos! 🎉</p>
+            <p className="text-sm text-slate-500 mt-2">Todos os pedidos foram concluídos! ðŸŽ‰</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -540,11 +583,17 @@ function OrderCard({ order, onAdvance, onToggleItem, onEdit, updating }) {
                 <Circle className="w-4 h-4 text-slate-400" />
               ) : null}
             </div>
-            <p className="text-sm text-white font-medium">
-              {item.quantity > 1 && <span className="text-amber-400 mr-1">{item.quantity}x</span>}
-              {item.name}
-              {item.size && <span className="text-[10px] text-slate-400 ml-1">({item.size}f)</span>}
-            </p>
+            <div>
+              <p className="text-sm text-white font-medium">
+                {item.quantity > 1 && <span className="text-amber-400 mr-1">{item.quantity}x</span>}
+                {item.name}
+              </p>
+              {item.type === 'pizza' && item.size && (
+                <p className="text-[11px] font-bold mt-1 text-amber-300">
+                  {item.size === 6 ? 'TAMANHO P (6 FATIAS)' : 'TAMANHO M (8 FATIAS)'}
+                </p>
+              )}
+            </div>
           </div>
         ))}
       </div>

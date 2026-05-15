@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -70,7 +70,7 @@ export default function Login() {
               className={`w-full p-3 border rounded-xl focus:ring-2 focus:ring-slate-900 focus:outline-none transition-all ${
                 errors.password ? 'border-red-500' : 'border-slate-200'
               }`}
-              placeholder="••••••••" 
+              placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" 
             />
             {errors.password && <p className="text-xs text-red-500 font-medium pl-1">{errors.password.message}</p>}
           </div>

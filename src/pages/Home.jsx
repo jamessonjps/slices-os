@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+﻿import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Pizza, ClipboardList, Phone, MapPin, Clock, CheckCircle, XCircle } from 'lucide-react';
@@ -70,7 +70,7 @@ export default function Home() {
                   <span className="font-bold text-slate-900 dark:text-slate-200">{g.label}:</span>{' '}
                   {g.config?.closed 
                     ? 'Fechado' 
-                    : `${g.config?.open || '--:--'} às ${g.config?.close || '--:--'}`
+                    : `${g.config?.open || '--:--'} Á s ${g.config?.close || '--:--'}`
                   }
                 </div>
               ))}
@@ -90,7 +90,7 @@ export default function Home() {
           <div className="flex items-start gap-4">
             <MapPin className="w-5 h-5 text-slate-400 shrink-0" />
             <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-              <span className="font-bold text-slate-900 dark:text-slate-200">Rua das Pizzas, 123 — Centro</span><br />
+              <span className="font-bold text-slate-900 dark:text-slate-200">Rua das Pizzas, 123 â€” Centro</span><br />
               Entregamos em toda a região
             </p>
           </div>
@@ -100,7 +100,7 @@ export default function Home() {
           <Link to={createPageUrl('Menu')} className="block">
             <Button className="w-full h-16 bg-red-600 hover:bg-red-700 text-white text-lg font-black shadow-lg shadow-red-200 rounded-2xl transition-all hover:-translate-y-1">
               <Pizza className="w-6 h-6 mr-3" />
-              VER CARDÁPIO & PEDIR
+              VER CARDÁPIO & PEDIR
             </Button>
           </Link>
 

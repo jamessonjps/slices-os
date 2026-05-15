@@ -5,7 +5,7 @@ import * as z from 'zod';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useNavigate, Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { ShoppingCart, ArrowLeft, Truck, Package, CreditCard, DollarSign, Wallet, MessageSquare, Loader2 } from 'lucide-react';
+import { ShoppingCart, ArrowLeft, Truck, Package, CreditCard, DollarSign, Wallet, MessageSquare, Loader2, Copy } from 'lucide-react';
 import SliceOSFooter from '@/components/SliceOSFooter';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -30,6 +30,7 @@ const checkoutSchema = z.object({
   complemento: z.string().optional(),
   payment_method: z.enum(['cash', 'card', 'pix']),
   notes: z.string().optional(),
+  change_for: z.string().optional(),
 }).refine((data) => {
   if (data.delivery_type === 'delivery') {
     return data.rua && data.numero && data.bairro;
@@ -105,29 +106,40 @@ export default function Checkout() {
       toast.success('Pedido enviado com sucesso!');
 
       const itemsText = cart
-        .map((i) => `• ${i.name} (${i.quantity}x) - ${formatCurrency(i.price * i.quantity)}`)
+        .map((i) => {
+          const suffix = i.type === 'pizza' ? (i.size === 6 ? ' - Tamanho P (6 Fatias)' : ' - Tamanho M (8 Fatias)') : '';
+          return `\u2022 ${i.name}${suffix} (${i.quantity}x) - ${formatCurrency(i.price * i.quantity)}`;
+        })
         .join('\n');
 
       const addressText = variables.delivery_type === 'delivery' 
         ? `${variables.rua}, ${variables.numero}${variables.complemento ? ', ' + variables.complemento : ''} - ${variables.bairro}`
         : 'Retirada no Local';
 
-      const msg = encodeURIComponent(
-        `🍕 *NOVO PEDIDO - ${storeName}*\n` +
-        `🔢 *ID:* #${order.id.slice(0, 8)}\n\n` +
-        `👤 *Cliente:* ${variables.customer_name}\n` +
-        `📞 *Tel:* ${variables.customer_phone}\n\n` +
-        `🛒 *Itens:*\n${itemsText}\n\n` +
-        `💰 *Subtotal:* ${formatCurrency(subtotal)}\n` +
-        (deliveryFee > 0 ? `🚚 *Taxa:* ${formatCurrency(deliveryFee)}\n` : '') +
-        `⭐ *TOTAL:* ${formatCurrency(total)}\n\n` +
-        `💳 *Pagamento:* ${
-          variables.payment_method === 'cash' ? 'Dinheiro' : 
-          variables.payment_method === 'card' ? 'Cartão (Maquininha)' : 'PIX'
-        }\n` +
-        `📍 *Entrega:* ${addressText}\n` +
-        (variables.notes ? `\n📝 *Obs:* ${variables.notes}` : '')
-      );
+      const msgLines = [
+        `\u{1F355} *NOVO PEDIDO - ${storeName}*`,
+        `\u{1F522} *ID:* #${order.id.slice(0, 8)}`,
+        ``,
+        `\u{1F464} *Cliente:* ${variables.customer_name}`,
+        `\u{1F4DE} *Tel:* ${variables.customer_phone}`,
+        ``,
+        `\u{1F6D2} *Itens:*`,
+        itemsText,
+        ``,
+        `\u{1F4B0} *Subtotal:* ${formatCurrency(subtotal)}`,
+        ...(deliveryFee > 0 ? [`\u{1F69A} *Taxa:* ${formatCurrency(deliveryFee)}`] : []),
+        `\u2B50 *TOTAL:* ${formatCurrency(total)}`,
+        ``,
+        `\u{1F4B3} *Pagamento:* ${
+          variables.payment_method === 'cash' ? `Dinheiro${variables.change_for ? ` (Troco para R$ ${variables.change_for})` : ''}` : 
+          variables.payment_method === 'card' ? 'Cart\u00E3o (Maquininha)' : `PIX${settings?.pix_key ? `\n\u{1F511} *Chave PIX:* ${settings.pix_key}` : ''}\n\u26A0\uFE0F *Aguardando comprovante para confirmar pedido!*`
+        }`,
+        ``,
+        `\u{1F4CD} *Entrega:* ${addressText}`,
+        ...(variables.notes ? [``, `\u{1F4DD} *Obs:* ${variables.notes}`] : [])
+      ];
+
+      const msg = encodeURIComponent(msgLines.join('\n'));
 
       window.open(`https://wa.me/${waPhone}?text=${msg}`, '_blank');
       navigate(createPageUrl('TrackOrder') + `?id=${order.id}`);
@@ -140,9 +152,14 @@ export default function Checkout() {
       ? `${data.rua}, ${data.numero}${data.complemento ? ', ' + data.complemento : ''} - ${data.bairro}`
       : 'Retirada no Local';
 
+    const finalNotes = data.change_for && data.payment_method === 'cash'
+      ? `Troco para R$ ${data.change_for}${data.notes ? `\n\n${data.notes}` : ''}`
+      : data.notes;
+
     createOrderMutation.mutate({
       ...data,
       address_text,
+      notes: finalNotes,
       items: cart,
       total_amount: total,
       status: 'pending'
@@ -286,6 +303,33 @@ export default function Checkout() {
                   <span className="flex-1 text-left">PIX</span>
                 </Button>
               </div>
+
+              {paymentMethod === 'pix' && settings?.pix_key && (
+                <div className="mt-4 p-4 bg-purple-50 border border-purple-100 rounded-xl text-center space-y-3">
+                  <div>
+                    <p className="text-xs text-purple-600 uppercase font-bold mb-1">Chave PIX da Loja</p>
+                    <div className="flex items-center justify-center gap-2">
+                      <p className="font-mono font-bold text-purple-900 text-lg">{settings.pix_key}</p>
+                      <button type="button" onClick={() => {
+                        navigator.clipboard.writeText(settings.pix_key);
+                        toast.success('Chave PIX copiada!');
+                      }} className="text-purple-600 hover:text-purple-800 bg-purple-100 hover:bg-purple-200 p-2 rounded-md transition-colors">
+                        <Copy className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="bg-purple-100 text-purple-800 text-[11px] p-2 rounded font-medium">
+                    âš ï¸ Importante: Após enviar o pedido, mande o comprovante do PIX pelo WhatsApp para confirmarmos a produção.
+                  </div>
+                </div>
+              )}
+
+              {paymentMethod === 'cash' && (
+                <div className="mt-4 space-y-2">
+                  <Label className="text-xs uppercase font-bold text-slate-400 ml-1">Precisa de troco? Para quanto? (Opcional)</Label>
+                  <Input {...register('change_for')} placeholder="Ex: 50" className="h-12" />
+                </div>
+              )}
             </Card>
           </div>
 

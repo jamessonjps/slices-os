@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -60,7 +60,7 @@ export default function OrderDetail() {
       return;
     }
 
-    const message = `Olá ${order.customer_name || 'cliente'}! Seu pedido #${order.id?.slice(0, 8) || ''} está ${config.label.toLowerCase()}. 🍕`;
+    const message = `Olá ${order.customer_name || 'cliente'}! Seu pedido #${order.id?.slice(0, 8) || ''} está ${config.label.toLowerCase()}. ðŸ•`;
     window.open(`https://wa.me/55${phone}?text=${encodeURIComponent(message)}`, '_blank');
   };
 
@@ -201,7 +201,7 @@ export default function OrderDetail() {
         </Card>
 
         <p className="text-center text-[10px] text-slate-400 uppercase tracking-widest pt-4">
-          Criado em {format(new Date(order.created_date), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+          Criado em {format(new Date(order.created_date), "dd/MM/yyyy 'Á s' HH:mm", { locale: ptBR })}
         </p>
       </div>
     </div>

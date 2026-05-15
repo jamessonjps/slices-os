@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { ChefHat, ShoppingCart, BarChart3, Package, User, UtensilsCrossed, Settings, ArrowLeft, Users } from 'lucide-react';
@@ -22,7 +22,7 @@ export default function AdminHome() {
             <div className="mt-4 inline-flex items-center gap-2 px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-full">
               <div className={`w-2 h-2 rounded-full ${isAdmin ? 'bg-purple-500' : 'bg-blue-500'}`} />
               <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                {user.full_name || user.email} • {isAdmin ? 'Admin' : 'Equipe'}
+                {user.full_name || user.email} â€¢ {isAdmin ? 'Admin' : 'Equipe'}
               </p>
             </div>
           )}
@@ -37,7 +37,7 @@ export default function AdminHome() {
           </Link>
 
           <Link to={createPageUrl('Kitchen')} className="block">
-            <Button variant="outline" className="w-full h-14 border-2 border-slate-300 text-slate-900 text-lg font-semibold hover:bg-slate-50">
+            <Button variant="outline" className="w-full h-14 border-2 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-lg font-semibold hover:bg-slate-50 dark:hover:bg-slate-800">
               <ChefHat className="w-5 h-5 mr-2" />
               Cozinha
             </Button>
@@ -45,7 +45,7 @@ export default function AdminHome() {
 
           <div className="grid grid-cols-2 gap-3 pt-1">
             <Link to={createPageUrl('Customers')} className="block col-span-2">
-              <Button variant="outline" className="w-full h-12 border-2 border-slate-300 text-slate-900 font-semibold hover:bg-slate-50">
+              <Button variant="outline" className="w-full h-12 border-2 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-semibold hover:bg-slate-50 dark:hover:bg-slate-800">
                 <User className="w-4 h-4 mr-2" />
                 Clientes
               </Button>
@@ -54,35 +54,35 @@ export default function AdminHome() {
             {isAdmin && (
               <>
                 <Link to={createPageUrl('Reports')} className="block">
-                  <Button variant="outline" className="w-full h-12 border-2 border-slate-300 text-slate-900 font-semibold hover:bg-slate-50">
+                  <Button variant="outline" className="w-full h-12 border-2 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-semibold hover:bg-slate-50 dark:hover:bg-slate-800">
                     <BarChart3 className="w-4 h-4 mr-2" />
                     Relatórios
                   </Button>
                 </Link>
 
                 <Link to={createPageUrl('Stock')} className="block">
-                  <Button variant="outline" className="w-full h-12 border-2 border-slate-300 text-slate-900 font-semibold hover:bg-slate-50">
+                  <Button variant="outline" className="w-full h-12 border-2 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-semibold hover:bg-slate-50 dark:hover:bg-slate-800">
                     <Package className="w-4 h-4 mr-2" />
                     Estoque
                   </Button>
                 </Link>
 
                 <Link to={createPageUrl('MenuManagement')} className="block">
-                  <Button variant="outline" className="w-full h-12 border-2 border-slate-300 text-slate-900 font-semibold hover:bg-slate-50">
+                  <Button variant="outline" className="w-full h-12 border-2 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-semibold hover:bg-slate-50 dark:hover:bg-slate-800">
                     <UtensilsCrossed className="w-4 h-4 mr-2" />
                     Cardápio
                   </Button>
                 </Link>
 
                 <Link to={createPageUrl('Settings')} className="block">
-                  <Button variant="outline" className="w-full h-12 border-2 border-slate-300 text-slate-700 font-semibold hover:bg-slate-50">
+                  <Button variant="outline" className="w-full h-12 border-2 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-semibold hover:bg-slate-50 dark:hover:bg-slate-800">
                     <Settings className="w-4 h-4 mr-2" />
                     Configurações
                   </Button>
                 </Link>
 
                 <Link to={createPageUrl('UserManagement')} className="block col-span-2">
-                  <Button variant="outline" className="w-full h-12 border-2 border-purple-300 text-purple-700 font-semibold hover:bg-purple-50">
+                  <Button variant="outline" className="w-full h-12 border-2 border-purple-300 dark:border-purple-800 text-purple-700 dark:text-purple-300 font-semibold hover:bg-purple-50 dark:hover:bg-purple-900">
                     <Users className="w-4 h-4 mr-2" />
                     Gestão de Usuários
                   </Button>

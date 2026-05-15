@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -215,7 +215,7 @@ export default function NewOrder() {
                   <Input value={bairro} onChange={(e) => setBairro(e.target.value)} />
                 </div>
                 <div className="space-y-1">
-                  <Label>Número / Complemento *</Label>
+                  <Label>NÁºmero / Complemento *</Label>
                   <Input value={numero} onChange={(e) => setNumero(e.target.value)} placeholder="Ex: 123, Apto 4" />
                 </div>
               </div>

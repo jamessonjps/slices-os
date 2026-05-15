@@ -35,6 +35,7 @@ CREATE TABLE settings (
     delivery_fee DECIMAL(10, 2) DEFAULT 0.00,
     store_name TEXT,
     business_hours JSONB DEFAULT '{}',
+    pix_key TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
     UNIQUE(store_id)
 );
