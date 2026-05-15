@@ -5,7 +5,6 @@ const getDefaultStoreId = () => import.meta.env.VITE_STORE_ID || '11111111-1111-
 
 export const menuService = {
   listMenuItems: async (sortString = 'name') => {
-    // Para listar, usamos a loja default (cliente) ou a loja do admin
     const user = await authService.getCurrentUser();
     const storeId = user?.store_id || getDefaultStoreId();
 
@@ -19,7 +18,13 @@ export const menuService = {
       .order(sortColumn, { ascending: isAscending });
 
     if (error) throw error;
-    return data;
+    return data.map(item => ({
+      ...item,
+      price: item.price != null ? Number(item.price) : null,
+      price_small: item.price_small != null ? Number(item.price_small) : null,
+      price_medium: item.price_medium != null ? Number(item.price_medium) : null,
+      price_large: item.price_large != null ? Number(item.price_large) : null,
+    }));
   },
 
   getMenuItemById: async (id) => {
@@ -29,8 +34,15 @@ export const menuService = {
       .eq('id', id)
       .single();
 
-    if (error && error.code !== 'PGRST116') throw error; // PGRST116 = not found
-    return data || null;
+    if (error && error.code !== 'PGRST116') throw error;
+    if (!data) return null;
+    return {
+      ...data,
+      price: data.price != null ? Number(data.price) : null,
+      price_small: data.price_small != null ? Number(data.price_small) : null,
+      price_medium: data.price_medium != null ? Number(data.price_medium) : null,
+      price_large: data.price_large != null ? Number(data.price_large) : null,
+    };
   },
 
   filterMenuItems: async (filter = {}) => {
@@ -39,19 +51,24 @@ export const menuService = {
 
     let query = supabase.from('menu_items').select('*').eq('store_id', storeId);
 
-    // Aplica os filtros básicos (igualdade)
     Object.entries(filter).forEach(([key, value]) => {
       query = query.eq(key, value);
     });
 
     const { data, error } = await query;
     if (error) throw error;
-    return data;
+    return data.map(item => ({
+      ...item,
+      price: item.price != null ? Number(item.price) : null,
+      price_small: item.price_small != null ? Number(item.price_small) : null,
+      price_medium: item.price_medium != null ? Number(item.price_medium) : null,
+      price_large: item.price_large != null ? Number(item.price_large) : null,
+    }));
   },
 
   createMenuItem: async (productData) => {
     const user = await authService.getCurrentUser();
-    if (!user?.store_id) throw new Error("Usuário não tem loja associada.");
+    if (!user?.store_id) throw new Error("Usu\u00E1rio n\u00E3o tem loja associada.");
 
     const { data, error } = await supabase
       .from('menu_items')
@@ -78,7 +95,46 @@ export const menuService = {
     return data;
   },
 
+  toggleAvailability: async (id, currentStatus) => {
+    const { data, error } = await supabase
+      .from('menu_items')
+      .update({ available: !currentStatus })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  toggleHalfHalf: async (id, currentStatus) => {
+    const { data, error } = await supabase
+      .from('menu_items')
+      .update({ allow_half_half: !currentStatus })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
   deleteMenuItem: async (id) => {
+    // Soft delete: marca como indispon\u00edvel em vez de deletar
+    // Isso protege o hist\u00f3rico de pedidos que referenciam este item
+    const { data, error } = await supabase
+      .from('menu_items')
+      .update({ available: false })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  hardDeleteMenuItem: async (id) => {
+    // Delete real - usar apenas quando o item nunca foi vendido
     const { data, error } = await supabase
       .from('menu_items')
       .delete()

@@ -20,6 +20,11 @@ export default function Menu() {
   const [pizzaDialog, setPizzaDialog] = useState(null); 
   const [pizzaConfig, setPizzaConfig] = useState({ size: 8, isHalf: false, flavor2: '' });
 
+  const formatPrice = (val) => {
+    if (val == null || isNaN(val)) return '0.00';
+    return Number(val).toFixed(2);
+  };
+
   const { data: menuItems = [] } = useQuery({
     queryKey: ['menu-items-public'],
     queryFn: async () => {
@@ -61,8 +66,8 @@ export default function Menu() {
 
   const getHalfPrice = (pizza1, flavor2Name) => {
     if (!pizza1) return 0;
-    // Garante que pega a vers\u00E3o da pizza de tamanho M (exclui 6 fatias)
-    const pizza2 = pizzas.find(p => p.name === flavor2Name && p.category !== 'pizza_6_fatias');
+    // Busca apenas pizzas que permitem meio a meio
+    const pizza2 = pizzas.find(p => p.name === flavor2Name && p.allow_half_half);
     if (!pizza2) return pizza1.price_medium || 0;
     return getHalfValue(pizza1) + getHalfValue(pizza2);
   };
@@ -93,7 +98,7 @@ export default function Menu() {
     };
     setCart([...cart, newItem]);
     setPizzaDialog(null);
-    toast.success('Pizza adicionada ao carrinho! ðŸ•');
+    toast.success('Pizza adicionada ao carrinho!');
     if (!cart.some(i => i.type === 'drink')) {
       setSuggestions({ type: 'drink', message: 'Que tal uma bebida gelada?' });
     }
@@ -162,7 +167,7 @@ export default function Menu() {
                 <div className="flex items-center gap-2">
                   <span className={`w-2 h-2 rounded-full ${open ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                    {open ? 'Aberto agora â€¢ Peça Online' : 'Fechado no momento'}
+                    {open ? 'Aberto agora • Peça Online' : 'Fechado no momento'}
                   </p>
                 </div>
               </div>
@@ -225,7 +230,7 @@ export default function Menu() {
           <div className="mb-8">
             <h2 className="text-2xl font-bold text-slate-900 mb-2">Pizzas Tradicionais</h2>
             <p className="text-sm text-slate-500 mb-1">8 fatias a partir de R$ 35,00</p>
-            <p className="text-xs text-amber-700 bg-amber-50 rounded-lg px-3 py-1.5 mb-4 inline-block">â­ Promoção: 6 fatias (1 sabor) R$ 28,00 â€” sabores selecionados</p>
+            <p className="text-xs text-amber-700 bg-amber-50 rounded-lg px-3 py-1.5 mb-4 inline-block">⭐ Promoção: 6 fatias (1 sabor) R$ 28,00 — sabores selecionados</p>
             <div className="space-y-4">
               {pizzasTradicionais.map((pizza) => (
                 <Card key={pizza.id} className="p-4">
@@ -260,8 +265,8 @@ export default function Menu() {
         {pizzas6Fatias.length > 0 && (
           <div className="mb-8">
             <h2 className="text-2xl font-bold text-slate-900 mb-1">Pizzas 6 Fatias</h2>
-            <p className="text-sm text-slate-500 mb-1">Apenas 1 sabor â€¢ R$ 28,00</p>
-            <p className="text-xs text-amber-700 bg-amber-50 rounded-lg px-3 py-1.5 mb-4 inline-block">â­ Promoção especial â€” somente esses sabores</p>
+            <p className="text-sm text-slate-500 mb-1">Apenas 1 sabor • R$ 28,00</p>
+            <p className="text-xs text-amber-700 bg-amber-50 rounded-lg px-3 py-1.5 mb-4 inline-block">⭐ Promoção especial — somente esses sabores</p>
             <div className="space-y-4">
               {pizzas6Fatias.map((pizza) => (
                 <Card key={pizza.id} className="p-4 border-amber-200 bg-amber-50/30">
@@ -278,8 +283,8 @@ export default function Menu() {
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-lg font-bold text-slate-900">R$ {pizza.price_small?.toFixed(2)}</span>
-                    <span className="text-xs text-slate-500">8 fatias: R$ {pizza.price_medium?.toFixed(2)}</span>
+                    <span className="text-lg font-bold text-slate-900">R$ {formatPrice(pizza.price_small)}</span>
+                    <span className="text-xs text-slate-500">8 fatias: R$ {formatPrice(pizza.price_medium)}</span>
                   </div>
                   <Button
                     className="w-full bg-red-600 hover:bg-red-700 text-white"
@@ -327,7 +332,7 @@ export default function Menu() {
                 <Card key={drink.id} className="p-4">
                   <h3 className="font-semibold text-slate-900 mb-2">{drink.name}</h3>
                   <div className="flex items-center justify-between">
-                    <span className="text-lg font-bold text-slate-900">R$ {drink.price?.toFixed(2)}</span>
+                    <span className="text-lg font-bold text-slate-900">R$ {formatPrice(drink.price)}</span>
                     <Button size="sm" onClick={() => addDrink(drink)}>
                       <Plus className="w-4 h-4" />
                     </Button>
@@ -350,7 +355,7 @@ export default function Menu() {
                     <p className="text-xs text-slate-600 mb-2">{dessert.description}</p>
                   )}
                   <div className="flex items-center justify-between">
-                    <span className="text-lg font-bold text-slate-900">R$ {dessert.price?.toFixed(2)}</span>
+                    <span className="text-lg font-bold text-slate-900">R$ {formatPrice(dessert.price)}</span>
                     <Button size="sm" onClick={() => addDessert(dessert)}>
                       <Plus className="w-4 h-4" />
                     </Button>
@@ -367,7 +372,7 @@ export default function Menu() {
       <Dialog open={!!pizzaDialog} onOpenChange={(open) => { if (!open) setPizzaDialog(null); }}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>ðŸ• {pizzaDialog?.name}</DialogTitle>
+            <DialogTitle>{'🍕'} {pizzaDialog?.name}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-2">
           {pizzaDialog && (<>
@@ -386,7 +391,7 @@ export default function Menu() {
                   >
                     <div className="font-bold">6 fatias</div>
                     <div className="text-xs text-slate-500 mb-1">apenas 1 sabor</div>
-                    <div className="font-bold text-base">R$ {pizzaDialog.price_small.toFixed(2)}</div>
+                    <div className="font-bold text-base">R$ {formatPrice(pizzaDialog.price_small)}</div>
                   </button>
                 )}
                 <button
@@ -399,12 +404,12 @@ export default function Menu() {
                 >
                   <div className="font-bold">8 fatias</div>
                   <div className="text-xs text-slate-500 mb-1">pode meio a meio</div>
-                  <div className="font-bold text-base">R$ {pizzaDialog?.price_medium?.toFixed(2)}</div>
+                  <div className="font-bold text-base">R$ {formatPrice(pizzaDialog?.price_medium)}</div>
                 </button>
               </div>
             </div>
 
-            {/* Half/Half toggle â€” só para 8 fatias */}
+            {/* Half/Half toggle — só para 8 fatias */}
             {pizzaConfig.size === 8 && (
               <div className="flex items-center justify-between border rounded-lg p-3">
                 <div>
@@ -426,7 +431,7 @@ export default function Menu() {
                 <p className="text-sm font-medium text-slate-700 mb-1">Segundo sabor</p>
                 <p className="text-xs text-slate-500 mb-2">Preço = metade de cada sabor somados</p>
                 <div className="max-h-40 overflow-y-auto space-y-1 border rounded-lg p-2">
-                  {pizzas.filter(p => p.id !== pizzaDialog?.id && p.category !== 'pizza_6_fatias').map(p => (
+                  {pizzas.filter(p => p.id !== pizzaDialog?.id && p.allow_half_half).map(p => (
                     <button
                       key={p.id}
                       onClick={() => setPizzaConfig(c => ({ ...c, flavor2: p.name }))}
@@ -437,7 +442,7 @@ export default function Menu() {
                       }`}
                     >
                       <span>{p.name}</span>
-                      <span className="text-xs text-slate-400">R$ {getHalfValue(p).toFixed(2)}</span>
+                      <span className="text-xs text-slate-400">R$ {formatPrice(getHalfValue(p))}</span>
                     </button>
                   ))}
                 </div>
@@ -446,7 +451,7 @@ export default function Menu() {
 
             {pizzaConfig.size === 6 && (
               <p className="text-xs text-amber-600 bg-amber-50 rounded-lg px-3 py-2">
-                \u2B50 Promo\u00E7\u00E3o! Pizza de 6 fatias aceita apenas 1 sabor
+                {'⭐'} Promoção! Pizza de 6 fatias aceita apenas 1 sabor
               </p>
             )}
 
@@ -455,12 +460,12 @@ export default function Menu() {
               disabled={pizzaConfig.size === 8 && pizzaConfig.isHalf && !pizzaConfig.flavor2}
               onClick={confirmPizza}
             >
-              Adicionar â€” R$ {
+              Adicionar {'—'} R$ {
                 pizzaConfig.size === 6
-                  ? pizzaDialog?.price_small?.toFixed(2)
+                  ? formatPrice(pizzaDialog?.price_small)
                   : (pizzaConfig.isHalf && pizzaConfig.flavor2)
-                    ? getHalfPrice(pizzaDialog, pizzaConfig.flavor2).toFixed(2)
-                    : pizzaDialog?.price_medium?.toFixed(2)
+                    ? formatPrice(getHalfPrice(pizzaDialog, pizzaConfig.flavor2))
+                    : formatPrice(pizzaDialog?.price_medium)
               }
             </Button>
           </>)}
@@ -486,7 +491,7 @@ export default function Menu() {
                   setSuggestions(null);
                 }}>
                   <p className="font-semibold text-sm">{drink.name}</p>
-                  <p className="text-slate-900 font-bold">R$ {drink.price?.toFixed(2)}</p>
+                  <p className="text-slate-900 font-bold">R$ {formatPrice(drink.price)}</p>
                 </Card>
               ))}
             </div>
@@ -520,7 +525,7 @@ export default function Menu() {
                     <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => updateQuantity(i, 1)}>
                       <Plus className="w-3 h-3" />
                     </Button>
-                    <span className="text-slate-600 ml-1 text-sm w-16 text-right">R$ {(item.price * item.quantity).toFixed(2)}</span>
+                    <span className="text-slate-600 ml-1 text-sm w-16 text-right">R$ {formatPrice(item.price * item.quantity)}</span>
                   </div>
                 </div>
               ))}
@@ -528,7 +533,7 @@ export default function Menu() {
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="text-sm text-slate-500">Total</p>
-                <p className="text-2xl font-bold text-slate-900">R$ {total.toFixed(2)}</p>
+                <p className="text-2xl font-bold text-slate-900">R$ {formatPrice(total)}</p>
               </div>
               <Button
                 onClick={handleCheckout}

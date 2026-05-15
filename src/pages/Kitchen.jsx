@@ -210,7 +210,18 @@ function KitchenContent() {
   const queryClient = useQueryClient();
   const [lastOrderCount, setLastOrderCount] = useState(0);
   const [editingOrder, setEditingOrder] = useState(/** @type {KitchenOrderItem | null} */ (null));
-  const [autoNotify, setAutoNotify] = useState(true);
+  const [autoNotify, setAutoNotify] = useState(() => {
+    const saved = localStorage.getItem('sliceos_kitchen_notify');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+
+  const toggleAutoNotify = () => {
+    setAutoNotify(prev => {
+      const next = !prev;
+      localStorage.setItem('sliceos_kitchen_notify', JSON.stringify(next));
+      return next;
+    });
+  };
 
   const settingsQuery = useQuery({
     queryKey: ['settings'],
@@ -235,8 +246,8 @@ function KitchenContent() {
       // Invalida o cache para recarregar os dados
       queryClient.invalidateQueries(['kitchen-orders']);
       
-      // Se for um novo pedido, toca o som
-      if (eventType === 'INSERT') {
+      // Se for um novo pedido e notificação estiver ativa, toca o som
+      if (eventType === 'INSERT' && autoNotify) {
         const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBiWLz/LDdykGIm6+8N6URAwSWK3n8KRYE');
         audio.volume = 0.5;
         audio.play().catch(() => {});
@@ -244,7 +255,7 @@ function KitchenContent() {
     });
 
     return () => subscription.unsubscribe();
-  }, [queryClient]);
+  }, [queryClient, autoNotify]);
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => orderService.updateOrder(id, data),
@@ -385,7 +396,7 @@ function KitchenContent() {
               <Button 
                 variant={autoNotify ? "default" : "outline"}
                 size="sm"
-                onClick={() => setAutoNotify(!autoNotify)}
+                onClick={toggleAutoNotify}
                 className={autoNotify ? "bg-green-600 hover:bg-green-700" : "text-slate-400 border-slate-700"}
               >
                 {autoNotify ? <Bell className="w-4 h-4 mr-2" /> : <BellOff className="w-4 h-4 mr-2" />}
@@ -410,7 +421,7 @@ function KitchenContent() {
           <div className="text-center py-12">
             <CheckCircle className="w-16 h-16 text-slate-600 mx-auto mb-4" />
             <p className="text-xl text-slate-400">Nenhum pedido ativo</p>
-            <p className="text-sm text-slate-500 mt-2">Todos os pedidos foram concluídos! ðŸŽ‰</p>
+            <p className="text-sm text-slate-500 mt-2">Todos os pedidos foram concluídos! {'🎉'}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

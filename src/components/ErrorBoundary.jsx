@@ -25,9 +25,22 @@ class ErrorBoundary extends React.Component {
               <AlertCircle className="w-6 h-6 text-red-600" />
             </div>
             <h2 className="text-lg font-bold text-slate-900 mb-2">Ops! Algo deu errado</h2>
-            <p className="text-sm text-slate-500 mb-6">
+            <p className="text-sm text-slate-500 mb-2">
               Ocorreu um erro inesperado nesta seção. Tente recarregar ou volte mais tarde.
             </p>
+            {this.state.error && (
+              <div className="bg-red-50 p-3 rounded-lg mb-6 text-left overflow-auto">
+                <p className="text-xs font-mono text-red-800 break-words font-bold">
+                  ERRO TÉCNICO:
+                </p>
+                <p className="text-xs font-mono text-red-600 break-words mt-1">
+                  {this.state.error.toString()}
+                </p>
+                <p className="text-[10px] font-mono text-red-400 break-words mt-2 whitespace-pre-wrap">
+                  {this.state.error.stack?.substring(0, 300)}...
+                </p>
+              </div>
+            )}
             <Button 
               onClick={() => window.location.reload()} 
               variant="outline"
