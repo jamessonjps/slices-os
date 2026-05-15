@@ -1,6 +1,6 @@
 # Relatório Técnico do Projeto SliceOS
 
-Data da última atualização: 2026-05-14
+Data da última atualização: 2026-05-15
 
 ## Status Geral do Projeto
 
@@ -39,13 +39,14 @@ O sistema SliceOS foi completamente migrado de uma arquitetura legada baseada em
 ### 1. Resiliência de Dados e Banco
 - **Segurança e RLS**: Políticas de Row-Level Security (RLS) configuradas para permitir inserção pública de pedidos e clientes. O RLS de clientes foi ajustado para permitir comandos `upsert` baseados no número de telefone do usuário.
 - **Sincronização de CRM (Clientes)**: Implementado fluxo automático que registra novos clientes ou atualiza os dados de clientes existentes (via `upsertCustomerByPhone`) a cada novo pedido finalizado no Checkout, sem gerar erros silenciosos relacionados a colunas inexistentes (ex: `updated_at`).
-- **Resiliência de Esquema**: Tabela de pedidos expandida para suportar observações (`notes`), múltiplos itens via JSONB e rastreamento de dados de entrega.
-- **Configurações Globais**: Refatoração do `settingsService` para garantir que as configurações da loja (horários, taxa de entrega) sejam lidas de forma robusta e imediatamente sincronizadas com o estado da aplicação usando o Query Client.
+- **Resiliência de Esquema**: Tabela de pedidos expandida para suportar observações (`notes`), múltiplos itens via JSONB e rastreamento de dados de entrega, incluindo `driver_id` para atribuição de entregadores.
+- **Tipagem Defensiva (Preços)**: Implementada camada de sanitização no `menuService.js` e no componente `Menu.jsx` para converter preços do banco (que podem vir como strings) em números e garantir que falhas de formatação não causem crash no React (ErrorBoundary).
 
 ### 2. Modernização da UI/UX e Fluxos
 - **Design Premium**: Aplicação de padrões modernos de design (glassmorphism, animações sutis, paletas de cores HSL).
 - **Acessibilidade e Contraste**: Ajustes nos botões de navegação ("Voltar") em todas as rotas administrativas para garantir legibilidade tanto no tema claro quanto no escuro.
 - **Fluxo Dinâmico de Cozinha**: Otimização do fluxo de pedidos na cozinha para distinguir "Entrega" vs. "Retirada". Pedidos de retirada agora pulam o status "Saiu para Entrega" e vão direto para conclusão.
+- **Persistência de Notificações**: Configurações de notificação sonora da cozinha agora são persistidas no `localStorage`, respeitando a preferência do usuário entre sessões.
 - **Sincronização do Checkout**: Implementado "Loading State" (Sincronizando com a loja...) no Checkout para garantir que o sistema sempre aguarde o carregamento das configurações do servidor antes de bloquear novos pedidos baseado no horário.
 
 ### 3. Conformidade e Privacidade (LGPD)
@@ -70,7 +71,9 @@ O sistema SliceOS foi completamente migrado de uma arquitetura legada baseada em
 - **`/Orders`**: Histórico completo de pedidos com filtros.
 - **`/Customers`**: Painel de CRM listando todos os clientes da loja, com estatísticas de compras, endereços salvos e anotações customizadas.
 - **`/Settings`**: Gestão completa de horários, taxas de entrega e dados da loja com re-fetch imediato para garantir feedback visual instantâneo.
-- **`/MenuManagement`**: CRUD completo de produtos integrado ao Supabase Storage.
+- **`/MenuManagement`**: CRUD completo de produtos e categorias dinâmicas com suporte a ícones customizados.
+- **`/DeliveryDashboard`**: Painel mobile-first para entregadores aceitarem corridas, visualizarem endereços com link para WhatsApp e confirmarem entregas com segurança.
+- **`/UserManagement`**: Controle de permissões (RBAC) para gerenciar administradores e entregadores.
 
 ---
 

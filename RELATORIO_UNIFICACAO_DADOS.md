@@ -1,6 +1,6 @@
 # Relatório de Unificação e Persistência de Dados (Supabase)
 
-Data da última atualização: 2026-05-14
+Data da última atualização: 2026-05-15
 
 ## O Que Foi Unificado
 A aplicação agora possui uma fonte de verdade única e persistente: **Supabase (PostgreSQL)**. O antigo banco de dados em memória (`src/data/database.js`) foi desativado em favor de uma integração direta via serviços assíncronos.
@@ -16,11 +16,11 @@ React Components
 ## Dados Centralizados e Persistentes
 O Supabase centraliza as seguintes entidades, agora com IDs UUID e relacionamentos reais:
 
-- **`orders`**: Pedidos persistentes com esquema unificado.
-- **`menu_items`**: Cardápio editável via painel administrativo.
+- **`orders`**: Pedidos persistentes com esquema unificado, incluindo rastreamento de entregador (`driver_id`) e taxas de entrega (`delivery_fee`).
+- **`menu_items`**: Cardápio editável com suporte a categorias dinâmicas.
 - **`settings`**: Configurações da loja (nome, WhatsApp, taxas, horários).
 - **`customers`**: Perfis de clientes criados/atualizados automaticamente no checkout.
-- **`staff_profiles`**: Controle de acesso administrativo.
+- **`users`**: Perfis de funcionários e entregadores com controle de acesso (roles).
 
 ## Unificação do Esquema de Itens (JSONB)
 Uma das maiores evoluções desta etapa foi a unificação do campo `items` na tabela `orders` utilizando o tipo **JSONB**. Isso resolveu a inconsistência entre diferentes tipos de produtos:
