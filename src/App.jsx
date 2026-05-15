@@ -32,7 +32,8 @@ const ADMIN_PAGES = new Set([
   'Stock',
   'Settings',
   'MenuManagement',
-  'UserManagement'
+  'UserManagement',
+  'DeliveryDashboard'
 ]);
 
 const AccessDenied = () => (
@@ -57,7 +58,17 @@ const RouteElement = ({ pageName, Page }) => {
     return <Navigate to="/Login" replace />;
   }
 
-  if (requiresAdmin && user?.role !== 'admin') {
+  if (requiresAdmin && !user) {
+    return <AccessDenied />;
+  }
+
+  // Se a rota for o painel de entrega, permite admin ou delivery
+  if (pageName === 'DeliveryDashboard') {
+    if (user?.role !== 'admin' && user?.role !== 'delivery') {
+      return <AccessDenied />;
+    }
+  // Para todas as outras rotas administrativas, apenas admin
+  } else if (requiresAdmin && user?.role !== 'admin') {
     return <AccessDenied />;
   }
 

@@ -20,6 +20,7 @@ const Settings = lazy(() => import('./pages/Settings'));
 const AdminHome = lazy(() => import('./pages/AdminHome'));
 const UserManagement = lazy(() => import('./pages/UserManagement'));
 const DeleteAccount = lazy(() => import('./pages/DeleteAccount'));
+const DeliveryDashboard = lazy(() => import('./pages/DeliveryDashboard'));
 
 // Arquivo que criamos manualmente para o login
 const Login = lazy(() => import('./pages/Login'));
@@ -42,6 +43,7 @@ export const PAGES = {
     "AdminHome": AdminHome,
     "UserManagement": UserManagement,
     "DeleteAccount": DeleteAccount,
+    "DeliveryDashboard": DeliveryDashboard,
     "Login": Login,
 }
 

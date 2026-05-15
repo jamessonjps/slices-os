@@ -1,7 +1,7 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { ChefHat, ShoppingCart, BarChart3, Package, User, UtensilsCrossed, Settings, ArrowLeft, Users } from 'lucide-react';
+import { ChefHat, ShoppingCart, BarChart3, Package, User, UtensilsCrossed, Settings, ArrowLeft, Users, Bike } from 'lucide-react';
 import SliceOSFooter from '@/components/SliceOSFooter';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/lib/AuthContext';
@@ -40,6 +40,13 @@ export default function AdminHome() {
             <Button variant="outline" className="w-full h-14 border-2 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-lg font-semibold hover:bg-slate-50 dark:hover:bg-slate-800">
               <ChefHat className="w-5 h-5 mr-2" />
               Cozinha
+            </Button>
+          </Link>
+
+          <Link to={createPageUrl('DeliveryDashboard')} className="block">
+            <Button variant="outline" className="w-full h-14 border-2 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-lg font-semibold hover:bg-slate-50 dark:hover:bg-slate-800">
+              <Bike className="w-5 h-5 mr-2" />
+              Painel de Entregas
             </Button>
           </Link>
 

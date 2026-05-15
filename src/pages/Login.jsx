@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -28,10 +28,14 @@ export default function Login() {
 
   const onSubmit = async (data) => {
     try {
-      await authService.login(data);
+      const user = await authService.login(data);
       await checkUserAuth();
       toast.success('Bem-vindo de volta!');
-      navigate('/AdminHome');
+      if (user.role === 'delivery') {
+        navigate('/DeliveryDashboard');
+      } else {
+        navigate('/AdminHome');
+      }
     } catch (error) {
       toast.error("Erro ao fazer login: " + error.message);
     }
@@ -70,7 +74,7 @@ export default function Login() {
               className={`w-full p-3 border rounded-xl focus:ring-2 focus:ring-slate-900 focus:outline-none transition-all ${
                 errors.password ? 'border-red-500' : 'border-slate-200'
               }`}
-              placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" 
+              placeholder="••••••••" 
             />
             {errors.password && <p className="text-xs text-red-500 font-medium pl-1">{errors.password.message}</p>}
           </div>

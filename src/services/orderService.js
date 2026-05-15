@@ -116,6 +116,76 @@ export const orderService = {
     return data;
   },
 
+  listDeliveryOrders: async () => {
+    const user = await authService.getCurrentUser();
+    const storeId = user?.store_id || getDefaultStoreId();
+
+    const { data, error } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('store_id', storeId)
+      .eq('delivery_type', 'delivery')
+      .in('status', ['ready', 'out_for_delivery'])
+      .order('created_date', { ascending: true });
+
+    if (error) throw error;
+    return data;
+  },
+
+  getDriverHistory: async (driverId, dateStr) => {
+    const user = await authService.getCurrentUser();
+    const storeId = user?.store_id || getDefaultStoreId();
+
+    let query = supabase
+      .from('orders')
+      .select('*')
+      .eq('store_id', storeId)
+      .eq('status', 'delivered')
+      .eq('driver_id', driverId)
+      .order('created_date', { ascending: false });
+
+    if (dateStr) {
+      query = query.gte('created_date', `${dateStr}T00:00:00`)
+                   .lte('created_date', `${dateStr}T23:59:59`);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+    return data;
+  },
+
+  acceptDelivery: async (orderId, driverId) => {
+    const user = await authService.getCurrentUser();
+    const storeId = user?.store_id || getDefaultStoreId();
+
+    const { data, error } = await supabase
+      .from('orders')
+      .update({ status: 'out_for_delivery', driver_id: driverId })
+      .eq('id', orderId)
+      .eq('store_id', storeId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  confirmDelivery: async (orderId) => {
+    const user = await authService.getCurrentUser();
+    const storeId = user?.store_id || getDefaultStoreId();
+
+    const { data, error } = await supabase
+      .from('orders')
+      .update({ status: 'delivered' })
+      .eq('id', orderId)
+      .eq('store_id', storeId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
   listKitchenOrders: async () => {
     const user = await authService.getCurrentUser();
     const storeId = user?.store_id || getDefaultStoreId();
