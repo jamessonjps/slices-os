@@ -6,7 +6,7 @@ const getDefaultStoreId = () => import.meta.env.VITE_STORE_ID || '11111111-1111-
 export const customerService = {
   listCustomers: async (sortString = 'name') => {
     const user = await authService.getCurrentUser();
-    if (!user?.store_id) return [];
+    const storeId = user?.store_id || getDefaultStoreId();
 
     const sortColumn = sortString.replace(/^-/, '');
     const isAscending = !sortString.startsWith('-');
@@ -14,11 +14,14 @@ export const customerService = {
     const { data, error } = await supabase
       .from('customers')
       .select('*')
-      .eq('store_id', user.store_id)
+      .eq('store_id', storeId)
       .order(sortColumn, { ascending: isAscending });
 
-    if (error) throw error;
-    return data;
+    if (error) {
+      console.error("Erro ao carregar clientes:", error);
+      throw error;
+    }
+    return data ?? [];
   },
 
   getCustomerById: async (id) => {
@@ -83,8 +86,7 @@ export const customerService = {
       .upsert({ 
         ...customerData, 
         phone, 
-        store_id: storeId,
-        updated_at: new Date().toISOString()
+        store_id: storeId
       }, { 
         onConflict: 'store_id,phone' 
       })

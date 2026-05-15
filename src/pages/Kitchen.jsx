@@ -172,15 +172,9 @@ function KitchenContent() {
 
   const settingsQuery = useQuery({
     queryKey: ['settings'],
-    queryFn: () => settingsService.listSettings()
+    queryFn: () => settingsService.getStoreSettings()
   });
-  const settings = /** @type {{ key: string; value: string }[]} */ (
-    settingsQuery.data ?? []
-  );
-  const waPhone = settings.find(
-    /** @param {{ key: string; value: string }} s */
-    (s) => s.key === 'whatsapp_number'
-  )?.value || '5511999999999';
+  const waPhone = settingsQuery.data?.whatsapp_number || '5511999999999';
 
   const ordersQuery = useQuery({
     queryKey: ['kitchen-orders'],
