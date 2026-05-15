@@ -13,6 +13,20 @@ ALTER TABLE stores ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Lojas públicas para leitura" ON stores FOR SELECT USING (true);
 CREATE POLICY "Admins podem atualizar sua loja" ON stores FOR UPDATE USING (id = auth.jwt() ->> 'store_id'::uuid);
 
+-- 1.1 Tabela de Usuários (Profiles)
+CREATE TABLE users (
+    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    store_id UUID NOT NULL REFERENCES stores(id) ON DELETE CASCADE,
+    full_name TEXT,
+    email TEXT,
+    role TEXT DEFAULT 'staff', -- 'admin', 'staff'
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Usuários veem perfis da sua loja" ON users FOR SELECT USING (store_id = (SELECT store_id FROM users WHERE id = auth.uid()));
+CREATE POLICY "Admins gerenciam perfis da sua loja" ON users FOR ALL USING (store_id = (SELECT store_id FROM users WHERE id = auth.uid()));
+
 -- 2. Tabela de Configurações (Settings)
 CREATE TABLE settings (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
