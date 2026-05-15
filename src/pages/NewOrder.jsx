@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -215,7 +215,7 @@ export default function NewOrder() {
                   <Input value={bairro} onChange={(e) => setBairro(e.target.value)} />
                 </div>
                 <div className="space-y-1">
-                  <Label>NÁºmero / Complemento *</Label>
+                  <Label>Número / Complemento *</Label>
                   <Input value={numero} onChange={(e) => setNumero(e.target.value)} placeholder="Ex: 123, Apto 4" />
                 </div>
               </div>
@@ -248,7 +248,7 @@ export default function NewOrder() {
                 )}
                 <div className="grid grid-cols-2 gap-4 mb-4">
                   <div className="space-y-1">
-                    <Label>Tamanho</Label>
+                    <Label>Tamanho *</Label>
                     <Select value={pizza.size} onValueChange={(v) => updatePizza(index, 'size', v)}>
                       <SelectTrigger className="bg-white"><SelectValue /></SelectTrigger>
                       <SelectContent>
@@ -266,7 +266,7 @@ export default function NewOrder() {
                 
                 <div className="space-y-3">
                   <div className="space-y-1">
-                    <Label>{pizza.is_half ? 'Primeiro Sabor' : 'Sabor da Pizza'}</Label>
+                    <Label>{pizza.is_half ? 'Primeiro Sabor *' : 'Sabor da Pizza *'}</Label>
                     <Select value={pizza.flavor1} onValueChange={(v) => updatePizza(index, 'flavor1', v)}>
                       <SelectTrigger className="bg-white"><SelectValue placeholder="Escolha um sabor" /></SelectTrigger>
                       <SelectContent>

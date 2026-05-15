@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -22,7 +22,8 @@ function GeneralSection({ settings, onSave, loading }) {
       setFormData({ 
         store_name: settings.store_name || '', 
         delivery_fee: settings.delivery_fee || 0,
-        pix_key: settings.pix_key || ''
+        pix_key: settings.pix_key || '',
+        address: settings.address || ''
       });
     }
   }, [settings]);
@@ -40,7 +41,7 @@ function GeneralSection({ settings, onSave, loading }) {
       </div>
       <div className="space-y-4">
         <div className="space-y-2">
-          <Label>Nome da Pizzaria</Label>
+          <Label>Nome da Pizzaria *</Label>
           <Input 
             value={formData.store_name} 
             onChange={(e) => setFormData(prev => ({ ...prev, store_name: e.target.value }))} 
@@ -62,6 +63,14 @@ function GeneralSection({ settings, onSave, loading }) {
             placeholder="CNPJ, E-mail, Celular ou Chave Aleatória"
           />
           <p className="text-[10px] text-slate-500">Esta chave será mostrada aos clientes no Checkout se selecionarem PIX.</p>
+        </div>
+        <div className="space-y-2">
+          <Label>Endereço da Empresa</Label>
+          <Input 
+            value={formData.address} 
+            onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))} 
+            placeholder="Ex: Rua das Flores, 123 - Centro"
+          />
         </div>
       </div>
       <Button className="mt-4" onClick={() => onSave(formData)} disabled={loading}>
@@ -86,13 +95,13 @@ function WhatsAppSection({ settings, onSave, loading }) {
         </div>
         <div>
           <h2 className="font-semibold text-slate-900">WhatsApp da Pizzaria</h2>
-          <p className="text-sm text-slate-500">NÁºmero para receber pedidos via WhatsApp</p>
+          <p className="text-sm text-slate-500">Número para receber pedidos via WhatsApp</p>
         </div>
       </div>
       <div className="space-y-2">
-        <Label>NÁºmero (com código do país, sem espaços ou símbolos)</Label>
+        <Label>Número (com código do país, sem espaços ou símbolos)</Label>
         <Input value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder="Ex: 5511999999999" />
-        <p className="text-xs text-slate-400">Formato: 55 + DDD + nÁºmero. Ex: <strong>5511987654321</strong></p>
+        <p className="text-xs text-slate-400">Formato: 55 + DDD + número. Ex: <strong>5511987654321</strong></p>
       </div>
       <Button className="mt-4 bg-green-600 hover:bg-green-700 text-white" onClick={() => onSave({ whatsapp_number: whatsapp })} disabled={!whatsapp || loading}>
         {loading ? "Salvando..." : <><Save className="w-4 h-4 mr-2" />Salvar WhatsApp</>}
@@ -142,7 +151,7 @@ function HoursSection({ settings, onSave, loading }) {
             {!hours[day]?.closed && (
               <>
                 <Input type="time" value={hours[day]?.open || '18:00'} onChange={e => update(day, 'open', e.target.value)} className="h-8 w-28 text-sm" />
-                <span className="text-slate-400 text-sm">Á s</span>
+                <span className="text-slate-400 text-sm">às</span>
                 <Input type="time" value={hours[day]?.close || '23:00'} onChange={e => update(day, 'close', e.target.value)} className="h-8 w-28 text-sm" />
               </>
             )}

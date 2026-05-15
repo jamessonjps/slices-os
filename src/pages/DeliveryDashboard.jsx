@@ -3,17 +3,51 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { orderService } from '@/services/orderService';
 import { authService } from '@/services/authService';
 import { settingsService } from '@/services/settingsService';
-import { Bike, CheckCircle, Package, MessageCircle, MapPin, RefreshCcw, Home } from 'lucide-react';
+import { Bike, CheckCircle, Package, MessageCircle, MapPin, RefreshCcw, Home, ArrowLeft, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
 
 export default function DeliveryDashboard() {
   const queryClient = useQueryClient();
-  const [confirmDialog, setConfirmDialog] = useState(null); // armazena o pedido que está sendo confirmado
+  const [confirmDialog, setConfirmDialog] = useState(null);
+
+  // Função para gerar som de alerta estilo Uber via Web Audio API
+  const playNotificationSound = () => {
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      const context = new AudioContext();
+      
+      const playTone = (freq, startTime, duration) => {
+        const osc = context.createOscillator();
+        const gain = context.createGain();
+        
+        osc.type = 'triangle'; // Som mais suave estilo campainha
+        osc.frequency.setValueAtTime(freq, startTime);
+        
+        gain.gain.setValueAtTime(0, startTime);
+        gain.gain.linearRampToValueAtTime(0.4, startTime + 0.1);
+        gain.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+        
+        osc.connect(gain);
+        gain.connect(context.destination);
+        
+        osc.start(startTime);
+        osc.stop(startTime + duration);
+      };
+
+      // Toca um som de "duas notas" (Ding-Dong)
+      const now = context.currentTime;
+      playTone(660, now, 0.6); // Nota Mi
+      playTone(554, now + 0.3, 0.8); // Nota Ré sustenido
+    } catch (e) {
+      console.error('Erro ao gerar som:', e);
+    }
+  };
 
   // Obter usuário logado
   const { data: user } = useQuery({
@@ -37,11 +71,26 @@ export default function DeliveryDashboard() {
 
   // Subscrição Realtime
   useEffect(() => {
-    const sub = orderService.subscribe(() => {
+    if (!user?.store_id) return;
+
+    const sub = orderService.subscribe((newOrder, eventType, oldOrder) => {
       queryClient.invalidateQueries(['delivery-orders']);
-    });
+
+      // Toca som se um pedido novo entrar ou se um pedido mudar para 'ready'
+      const isNewReady = eventType === 'INSERT' && newOrder.status === 'ready' && newOrder.delivery_type === 'delivery';
+      const becameReady = eventType === 'UPDATE' && newOrder.status === 'ready' && oldOrder?.status !== 'ready' && newOrder.delivery_type === 'delivery';
+
+      if (isNewReady || becameReady) {
+        playNotificationSound();
+        toast.info('Novo pedido disponível para entrega!', {
+          icon: '🍕',
+          duration: 5000
+        });
+      }
+    }, user.store_id);
+
     return () => sub.unsubscribe();
-  }, [queryClient]);
+  }, [queryClient, user?.store_id]);
 
   // Mutações
   const acceptMutation = useMutation({
@@ -93,13 +142,35 @@ export default function DeliveryDashboard() {
                 </p>
               </div>
             </div>
-            {user?.role === 'admin' && (
-              <Link to="/AdminHome">
+            <div className="flex items-center gap-2">
+              <Link to={createPageUrl('AdminHome')}>
                 <Button variant="ghost" size="icon" className="text-white hover:bg-red-700">
-                  <Home className="w-5 h-5" />
+                  <ArrowLeft className="w-5 h-5" />
                 </Button>
               </Link>
-            )}
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="text-white hover:bg-red-700"
+                  onClick={() => {
+                    playNotificationSound();
+                    toast.success('Campainha ativada!');
+                  }}
+                >
+                  <RefreshCcw className="w-5 h-5" />
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="text-white hover:bg-red-700"
+                  onClick={async () => {
+                    await authService.logout();
+                    window.location.href = createPageUrl('Login');
+                  }}
+                >
+                  <LogOut className="w-5 h-5" />
+                </Button>
+            </div>
           </div>
         </div>
       </div>

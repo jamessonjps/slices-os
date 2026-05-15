@@ -151,19 +151,19 @@ export default function Menu() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
       {/* Header */}
-      <div className="bg-white border-b border-slate-100 sticky top-0 z-50 shadow-sm">
+      <div className="bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 sticky top-0 z-50 shadow-sm">
         <div className="max-w-3xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Link to={createPageUrl('Home')}>
-                <Button variant="ghost" size="icon" className="rounded-full hover:bg-slate-100">
-                  <ArrowLeft className="w-5 h-5 text-slate-900" />
+                <Button variant="ghost" size="icon" className="rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">
+                  <ArrowLeft className="w-5 h-5 text-slate-900 dark:text-white" />
                 </Button>
               </Link>
               <div>
-                <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tighter">Millano Pizzaria</h1>
+                <h1 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tighter">Millano Pizzaria</h1>
                 <div className="flex items-center gap-2">
                   <span className={`w-2 h-2 rounded-full ${open ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
@@ -193,16 +193,16 @@ export default function Menu() {
         {/* Pizzas Especiais */}
         {pizzasEspeciais.length > 0 && (
           <div className="mb-8">
-            <h2 className="text-2xl font-bold text-slate-900 mb-2">Pizzas Especiais</h2>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Pizzas Especiais</h2>
             <p className="text-sm text-slate-500 mb-4">8 fatias R$ 50,00</p>
             <div className="space-y-4">
               {pizzasEspeciais.map((pizza) => (
-                <Card key={pizza.id} className="p-4">
+                <Card key={pizza.id} className="p-4 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
                   <div className="flex justify-between items-start mb-3">
                     <div>
-                      <h3 className="font-bold text-lg text-slate-900">{pizza.name}</h3>
+                      <h3 className="font-bold text-lg text-slate-900 dark:text-white">{pizza.name}</h3>
                       {pizza.description && (
-                        <p className="text-sm text-slate-600">{pizza.description}</p>
+                        <p className="text-sm text-slate-600 dark:text-slate-400">{pizza.description}</p>
                       )}
                     </div>
                     {pizza.is_promotion && (
@@ -228,17 +228,17 @@ export default function Menu() {
         {/* Pizzas Tradicionais */}
         {pizzasTradicionais.length > 0 && (
           <div className="mb-8">
-            <h2 className="text-2xl font-bold text-slate-900 mb-2">Pizzas Tradicionais</h2>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Pizzas Tradicionais</h2>
             <p className="text-sm text-slate-500 mb-1">8 fatias a partir de R$ 35,00</p>
             <p className="text-xs text-amber-700 bg-amber-50 rounded-lg px-3 py-1.5 mb-4 inline-block">⭐ Promoção: 6 fatias (1 sabor) R$ 28,00 — sabores selecionados</p>
             <div className="space-y-4">
               {pizzasTradicionais.map((pizza) => (
-                <Card key={pizza.id} className="p-4">
+                <Card key={pizza.id} className="p-4 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
                   <div className="flex justify-between items-start mb-3">
                     <div>
-                      <h3 className="font-bold text-lg text-slate-900">{pizza.name}</h3>
+                      <h3 className="font-bold text-lg text-slate-900 dark:text-white">{pizza.name}</h3>
                       {pizza.description && (
-                        <p className="text-sm text-slate-600">{pizza.description}</p>
+                        <p className="text-sm text-slate-600 dark:text-slate-400">{pizza.description}</p>
                       )}
                     </div>
                     {pizza.is_promotion && (
@@ -302,13 +302,13 @@ export default function Menu() {
         {/* Pizzas Doces */}
         {pizzasDoces.length > 0 && (
           <div className="mb-8">
-            <h2 className="text-2xl font-bold text-slate-900 mb-4">Pizzas Doces</h2>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Pizzas Doces</h2>
             <div className="space-y-4">
               {pizzasDoces.map((pizza) => (
-                <Card key={pizza.id} className="p-4">
-                  <h3 className="font-bold text-lg text-slate-900 mb-3">{pizza.name}</h3>
+                <Card key={pizza.id} className="p-4 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+                  <h3 className="font-bold text-lg text-slate-900 dark:text-white mb-3">{pizza.name}</h3>
                   {pizza.description && (
-                    <p className="text-sm text-slate-600 mb-3">{pizza.description}</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">{pizza.description}</p>
                   )}
                   <Button
                     className="w-full bg-red-600 hover:bg-red-700 text-white"
@@ -326,14 +326,14 @@ export default function Menu() {
         {/* Drinks */}
         {drinks.length > 0 && (
           <div className="mb-8">
-            <h2 className="text-2xl font-bold text-slate-900 mb-4">Bebidas</h2>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Bebidas</h2>
             <div className="grid grid-cols-2 gap-3">
               {drinks.map((drink) => (
-                <Card key={drink.id} className="p-4">
-                  <h3 className="font-semibold text-slate-900 mb-2">{drink.name}</h3>
+                <Card key={drink.id} className="p-4 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+                  <h3 className="font-semibold text-slate-900 dark:text-white mb-2">{drink.name}</h3>
                   <div className="flex items-center justify-between">
-                    <span className="text-lg font-bold text-slate-900">R$ {formatPrice(drink.price)}</span>
-                    <Button size="sm" onClick={() => addDrink(drink)}>
+                    <span className="text-lg font-bold text-slate-900 dark:text-white">R$ {formatPrice(drink.price)}</span>
+                    <Button size="sm" onClick={() => addDrink(drink)} className="bg-red-600 hover:bg-red-700 text-white">
                       <Plus className="w-4 h-4" />
                     </Button>
                   </div>
@@ -346,7 +346,7 @@ export default function Menu() {
         {/* Desserts */}
         {desserts.length > 0 && (
           <div className="mb-8">
-            <h2 className="text-2xl font-bold text-slate-900 mb-4">Sobremesas</h2>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Sobremesas</h2>
             <div className="grid grid-cols-2 gap-3">
               {desserts.map((dessert) => (
                 <Card key={dessert.id} className="p-4">
@@ -504,7 +504,7 @@ export default function Menu() {
 
       {/* Cart Fixed Bottom */}
       {cart.length > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 shadow-lg">
+        <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 shadow-lg">
           <div className="max-w-7xl mx-auto px-4 py-4">
             <div className="mb-3 max-h-40 overflow-y-auto space-y-2">
               {cart.map((item, i) => (
@@ -513,19 +513,19 @@ export default function Menu() {
                     <button onClick={() => removeItem(i)} className="text-red-400 hover:text-red-600 flex-shrink-0">
                       <Trash2 className="w-3 h-3" />
                     </button>
-                    <span className="text-slate-900 text-xs truncate">
+                    <span className="text-slate-900 dark:text-slate-100 text-xs truncate">
                       {item.type === 'pizza' ? `${item.name} (${item.size}f)` : item.name}
                     </span>
                   </div>
                   <div className="flex items-center gap-1 flex-shrink-0">
-                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => updateQuantity(i, -1)}>
+                    <Button variant="ghost" size="icon" className="h-6 w-6 dark:text-slate-100" onClick={() => updateQuantity(i, -1)}>
                       <Minus className="w-3 h-3" />
                     </Button>
-                    <span className="w-5 text-center text-sm">{item.quantity}</span>
-                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => updateQuantity(i, 1)}>
+                    <span className="w-5 text-center text-sm dark:text-slate-100">{item.quantity}</span>
+                    <Button variant="ghost" size="icon" className="h-6 w-6 dark:text-slate-100" onClick={() => updateQuantity(i, 1)}>
                       <Plus className="w-3 h-3" />
                     </Button>
-                    <span className="text-slate-600 ml-1 text-sm w-16 text-right">R$ {formatPrice(item.price * item.quantity)}</span>
+                    <span className="text-slate-600 dark:text-slate-400 ml-1 text-sm w-16 text-right">R$ {formatPrice(item.price * item.quantity)}</span>
                   </div>
                 </div>
               ))}
@@ -533,7 +533,7 @@ export default function Menu() {
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="text-sm text-slate-500">Total</p>
-                <p className="text-2xl font-bold text-slate-900">R$ {formatPrice(total)}</p>
+                <p className="text-2xl font-bold text-slate-900 dark:text-white">R$ {formatPrice(total)}</p>
               </div>
               <Button
                 onClick={handleCheckout}

@@ -4,7 +4,8 @@ import { settingsService } from '@/services/settingsService';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { ChefHat, Clock, CheckCircle, Truck, ArrowRight, Home, Circle, Pencil, Send, Plus, Trash2, Bell, BellOff, Printer } from 'lucide-react';
+import { ChefHat, Clock, CheckCircle, Truck, ArrowRight, Home, Circle, Pencil, Send, Plus, Trash2, Bell, BellOff, Printer, LogOut } from 'lucide-react';
+import { authService } from '@/services/authService';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
@@ -36,8 +37,8 @@ import PrintableTicket from '@/components/PrintableTicket';
 const statusFlow = {
   pending: 'preparing',
   preparing: 'ready',
-  ready: 'delivering',
-  delivering: 'completed',
+  ready: 'out_for_delivery',
+  out_for_delivery: 'completed',
   completed: 'completed'
 };
 
@@ -45,7 +46,7 @@ const statusConfig = {
   pending: { label: 'Pendente', color: 'bg-amber-500', nextLabel: 'Iniciar Preparo' },
   preparing: { label: 'Preparando', color: 'bg-blue-500', nextLabel: 'Marcar Pronto' },
   ready: { label: 'Pronto', color: 'bg-green-500', nextLabel: 'Saiu p/ Entrega' },
-  delivering: { label: 'Em Entrega', color: 'bg-purple-500', nextLabel: 'Concluir' },
+  out_for_delivery: { label: 'Em Entrega', color: 'bg-purple-500', nextLabel: 'Concluir' },
   completed: { label: 'Concluído', color: 'bg-slate-500', nextLabel: 'Concluído' }
 };
 
@@ -78,6 +79,7 @@ function EditOrderDialog({ order, open, onClose, onSave, waPhone, settings }) {
   };
 
   const handleSendWhatsApp = () => {
+    console.log('Enviando WhatsApp para o pedido:', order.id);
     const sub = items.reduce((s, i) => s + (i.price * (i.quantity || 1)), 0);
     const deliveryFee = order.delivery_type === 'delivery' ? (order.delivery_fee || 0) : 0;
     const total = sub + deliveryFee;
@@ -209,6 +211,65 @@ function EditOrderDialog({ order, open, onClose, onSave, waPhone, settings }) {
 
 function KitchenContent() {
   const queryClient = useQueryClient();
+  const [autoPrint, setAutoPrint] = useState(false); // Controle de impressão automática
+  
+  // Função para gerar som de alerta via Web Audio API (mais robusto que arquivos)
+  const playNotificationSound = async () => {
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      const context = new AudioContext();
+      
+      // Se o contexto estiver suspenso (bloqueio do navegador), tentamos retomar
+      if (context.state === 'suspended') {
+        await context.resume();
+      }
+
+      const playTone = (freq, startTime, duration) => {
+        const osc = context.createOscillator();
+        const gain = context.createGain();
+        
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, startTime);
+        osc.frequency.exponentialRampToValueAtTime(freq / 2, startTime + duration);
+        
+        gain.gain.setValueAtTime(0, startTime);
+        gain.gain.linearRampToValueAtTime(0.5, startTime + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+        
+        osc.connect(gain);
+        gain.connect(context.destination);
+        
+        osc.start(startTime);
+        osc.stop(startTime + duration);
+      };
+
+      // Toca 3 bips rápidos (estilo alerta)
+      const now = context.currentTime;
+      playTone(880, now, 0.3);
+      playTone(880, now + 0.4, 0.3);
+      playTone(880, now + 0.8, 0.5);
+    } catch (e) {
+      console.error('Erro ao gerar som:', e);
+    }
+  };
+
+  // Efeito para "destravar" o áudio no primeiro clique do usuário na página
+  useEffect(() => {
+    const unlockAudio = () => {
+      const context = new (window.AudioContext || window.webkitAudioContext)();
+      if (context.state === 'suspended') {
+        context.resume().then(() => {
+          console.log('Áudio destravado com sucesso!');
+          window.removeEventListener('click', unlockAudio);
+        });
+      } else {
+        window.removeEventListener('click', unlockAudio);
+      }
+    };
+    window.addEventListener('click', unlockAudio);
+    return () => window.removeEventListener('click', unlockAudio);
+  }, []);
+
   const [lastOrderCount, setLastOrderCount] = useState(0);
   const [editingOrder, setEditingOrder] = useState(/** @type {KitchenOrderItem | null} */ (null));
   const [printingOrder, setPrintingOrder] = useState(null);
@@ -224,6 +285,8 @@ function KitchenContent() {
       return next;
     });
   };
+
+  const toggleAutoPrint = () => setAutoPrint(prev => !prev);
 
   const settingsQuery = useQuery({
     queryKey: ['settings'],
@@ -244,20 +307,58 @@ function KitchenContent() {
 
   // Realtime Integration
   useEffect(() => {
+    if (!settingsQuery.data?.store_id) {
+      console.log('Aguardando carregar store_id das configurações...');
+      return;
+    }
+
+    const currentStoreId = settingsQuery.data.store_id;
+    console.log('Iniciando Realtime para a loja:', currentStoreId);
+
     const subscription = orderService.subscribe((payload, eventType) => {
-      // Invalida o cache para recarregar os dados
-      queryClient.invalidateQueries(['kitchen-orders']);
-      
-      // Se for um novo pedido e notificação estiver ativa, toca o som
+      console.log('Evento Realtime Recebido:', eventType, payload);
+
+      // ATUALIZAÇÃO INSTANTÂNEA DO CACHE
+      queryClient.setQueryData(['kitchen-orders'], (oldOrders = []) => {
+        if (eventType === 'INSERT') {
+          // Adiciona o novo pedido no topo da lista se ele já não estiver lá
+          if (oldOrders.find(o => o.id === payload.id)) return oldOrders;
+          return [payload, ...oldOrders];
+        }
+        if (eventType === 'UPDATE') {
+          // Atualiza os dados do pedido existente
+          return oldOrders.map(o => o.id === payload.id ? { ...o, ...payload } : o);
+        }
+        if (eventType === 'DELETE') {
+          // Remove o pedido da lista
+          return oldOrders.filter(o => o.id !== payload.id);
+        }
+        return oldOrders;
+      });
+
+      // NOTIFICAÇÕES (Som e Toast)
       if (eventType === 'INSERT' && autoNotify) {
-        const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBiWLz/LDdykGIm6+8N6URAwSWK3n8KRYE');
-        audio.volume = 0.5;
-        audio.play().catch(() => {});
+        playNotificationSound();
+        
+        // Se a impressão automática estiver ligada, imprime na hora
+        if (autoPrint) {
+          handlePrint(payload);
+        }
+
+        toast.info('NOVO PEDIDO RECEBIDO!', {
+          duration: 15000,
+          icon: '🍕',
+          action: {
+            label: 'IMPRIMIR AGORA',
+            onClick: () => handlePrint(payload)
+          },
+          style: { backgroundColor: '#ef4444', color: '#fff', fontWeight: 'bold', border: '2px solid white' }
+        });
       }
-    });
+    }, settingsQuery.data.store_id);
 
     return () => subscription.unsubscribe();
-  }, [queryClient, autoNotify]);
+  }, [queryClient, autoNotify, settingsQuery.data?.store_id]);
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => orderService.updateOrder(id, data),
@@ -339,12 +440,11 @@ function KitchenContent() {
 
     if (nextStatus) {
       updateMutation.mutate({ id: order.id, data: { status: nextStatus } }, {
-        onSuccess: () => {
-          // Imprimir automaticamente ao aceitar o pedido
-          if (nextStatus === 'preparing') {
-            handlePrint(order);
-          }
-
+        onSuccess: (updatedOrder) => {
+          queryClient.setQueryData(['kitchen-orders'], (old = []) => 
+            old.map(o => o.id === updatedOrder.id ? updatedOrder : o)
+          );
+          
           if (autoNotify) {
             sendStatusWhatsApp(order, nextStatus);
           } else {
@@ -383,7 +483,7 @@ function KitchenContent() {
     pending: sortedOrders.filter(o => o.status === 'pending'),
     preparing: sortedOrders.filter(o => o.status === 'preparing'),
     ready: sortedOrders.filter(o => o.status === 'ready'),
-    delivering: sortedOrders.filter(o => o.status === 'delivering')
+    out_for_delivery: sortedOrders.filter(o => o.status === 'out_for_delivery')
   };
 
   return (
@@ -417,6 +517,42 @@ function KitchenContent() {
               >
                 {autoNotify ? <Bell className="w-4 h-4 mr-2" /> : <BellOff className="w-4 h-4 mr-2" />}
                 {autoNotify ? "Notificação: ON" : "Notificação: OFF"}
+              </Button>
+
+              <Button 
+                variant="outline"
+                size="sm"
+                onClick={toggleAutoPrint}
+                className={`transition-colors ${autoPrint ? 'bg-green-600 border-green-500 text-white hover:bg-green-700' : 'bg-slate-800 border-slate-700 text-slate-400'}`}
+              >
+                <Printer className="w-4 h-4 mr-2" />
+                Auto-Imprimir: {autoPrint ? "ON" : "OFF"}
+              </Button>
+
+              <Button 
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  playNotificationSound();
+                  toast.success('Som de alerta ativado!');
+                }}
+                className="bg-amber-600 hover:bg-amber-700 text-white border-0 font-bold"
+              >
+                <Bell className="w-4 h-4 mr-2" />
+                Ativar/Testar Som
+              </Button>
+
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-red-400 hover:text-red-300 border border-red-900/50"
+                onClick={async () => {
+                  await authService.logout();
+                  window.location.href = createPageUrl('Login');
+                }}
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Sair
               </Button>
 
               <Link to={createPageUrl('AdminHome')}>
@@ -508,10 +644,10 @@ function KitchenContent() {
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-3 h-3 rounded-full bg-purple-500" />
-                <h2 className="font-semibold text-white">Em Entrega ({groupedOrders.delivering.length})</h2>
+                <h2 className="font-semibold text-white">Em Entrega ({groupedOrders.out_for_delivery.length})</h2>
               </div>
               <div className="space-y-3">
-                {groupedOrders.delivering.map(order => (
+                {groupedOrders.out_for_delivery.map(order => (
                   <OrderCard 
                     key={order.id} 
                     order={order} 
@@ -658,7 +794,13 @@ function OrderCard({ order, onAdvance, onToggleItem, onEdit, onPrint, updating }
       {order.notes && (
         <p className="text-xs text-slate-400 mt-3 italic">"{order.notes}"</p>
       )}
-
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => onEdit(order)}
+        className="w-full mt-3 border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white text-xs"
+      >
+        <Pencil className="w-3 h-3 mr-1" />
         Editar e Notificar Cliente
       </Button>
 

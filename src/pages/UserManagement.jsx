@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -17,6 +17,7 @@ const emptyForm = {
   full_name: '',
   email: '',
   role: 'staff',
+  status: 'active'
 };
 
 export default function UserManagement() {
@@ -38,7 +39,10 @@ export default function UserManagement() {
       toast.success('Usuário cadastrado!'); 
       closeForm(); 
     },
-    onError: () => toast.error('Erro ao cadastrar usuário.')
+    onError: (err) => {
+      console.error("Erro no cadastro:", err);
+      toast.error(`Erro: ${err.message || 'Falha ao cadastrar'}`);
+    }
   });
 
   const updateMutation = useMutation({
@@ -60,7 +64,7 @@ export default function UserManagement() {
   });
 
   const openNew = () => { setEditing(null); setForm(emptyForm); setShowForm(true); };
-  const openEdit = (u) => { setEditing(u); setForm({ full_name: u.full_name, email: u.email, role: u.role }); setShowForm(true); };
+  const openEdit = (u) => { setEditing(u); setForm({ full_name: u.full_name, email: u.email, role: u.role, status: u.status || 'active' }); setShowForm(true); };
   const closeForm = () => { setShowForm(false); setEditing(null); };
 
   const handleSubmit = (e) => {
@@ -128,28 +132,43 @@ export default function UserManagement() {
           </div>
         ) : (
           users.map(u => (
-            <Card key={u.id} className="p-4">
+            <Card key={u.id} className="p-4 hover:border-slate-300 transition-colors">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-start gap-3 flex-1 min-w-0">
-                  <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center shrink-0 font-semibold text-slate-600">
-                    {u.full_name?.charAt(0)?.toUpperCase() || '?'}
+                  <div className="relative">
+                    <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center shrink-0 font-bold text-slate-600 text-lg border border-slate-200">
+                      {u.full_name?.charAt(0)?.toUpperCase() || '?'}
+                    </div>
+                    {new Date(u.created_at) > new Date(Date.now() - 24 * 60 * 60 * 1000) && (
+                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full border-2 border-white animate-pulse" />
+                    )}
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-semibold text-slate-900">{u.full_name}</p>
-                      <Badge className={u.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}>
-                        {u.role === 'admin' ? 'Admin' : 'Staff'}
+                      <p className="font-bold text-slate-900">{u.full_name}</p>
+                      <Badge className={
+                        u.role === 'admin' ? 'bg-purple-100 text-purple-700 border-purple-200' : 
+                        u.role === 'delivery' ? 'bg-orange-100 text-orange-700 border-orange-200' : 
+                        'bg-blue-100 text-blue-700 border-blue-200'
+                      }>
+                        {u.role === 'admin' ? 'Administrador' : u.role === 'delivery' ? 'Entregador' : 'Equipe (Staff)'}
                       </Badge>
+                      {u.status === 'pending' && (
+                        <Badge className="bg-amber-100 text-amber-700 border-amber-200">Aguardando Aprovação</Badge>
+                      )}
                     </div>
-                    <p className="text-sm text-slate-500">{u.email}</p>
+                    <p className="text-sm text-slate-500 truncate">{u.email}</p>
+                    <p className="text-[10px] text-slate-400 mt-1">
+                      Desde {new Date(u.created_at).toLocaleDateString('pt-BR')}
+                    </p>
                   </div>
                 </div>
-                <div className="flex gap-2 shrink-0">
-                  <Button variant="ghost" size="icon" onClick={() => openEdit(u)}>
-                    <Pencil className="w-4 h-4 text-slate-500" />
+                <div className="flex flex-col gap-1">
+                  <Button variant="outline" size="sm" className="h-8 text-xs font-semibold" onClick={() => openEdit(u)}>
+                    <Pencil className="w-3 h-3 mr-1.5" /> Editar
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={() => handleDelete(u.id)}>
-                    <Trash2 className="w-4 h-4 text-red-400" />
+                  <Button variant="ghost" size="sm" className="h-8 text-xs text-red-500 hover:text-red-600 hover:bg-red-50" onClick={() => handleDelete(u.id)}>
+                    <Trash2 className="w-3 h-3 mr-1.5" /> Remover
                   </Button>
                 </div>
               </div>
@@ -180,7 +199,20 @@ export default function UserManagement() {
                 className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
               >
                 <option value="staff">Funcionário (Staff)</option>
+                <option value="delivery">Entregador (Delivery)</option>
                 <option value="admin">Administrador</option>
+              </select>
+            </div>
+            <div className="space-y-1">
+              <Label>Status da Conta</Label>
+              <select
+                value={form.status}
+                onChange={f('status')}
+                className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+              >
+                <option value="active">Ativo / Aprovado</option>
+                <option value="pending">Pendente de Aprovação</option>
+                <option value="blocked">Bloqueado / Inativo</option>
               </select>
             </div>
 

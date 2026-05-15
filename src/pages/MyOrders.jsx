@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -67,7 +67,7 @@ export default function MyOrders() {
           <Card className="p-8 text-center border-0 shadow-sm">
             <Package className="w-16 h-16 text-slate-200 mx-auto mb-4" />
             <h2 className="text-xl font-bold text-slate-900 mb-2">Acompanhe seus pedidos</h2>
-            <p className="text-slate-500 text-sm mb-6">Insira o nÁºmero do seu celular para ver o histórico e status atual.</p>
+            <p className="text-slate-500 text-sm mb-6">Insira o número do seu celular para ver o histórico e status atual.</p>
             <form onSubmit={handleSearch} className="space-y-4 max-w-xs mx-auto">
               <div className="text-left">
                 <Label className="text-xs uppercase text-slate-400 font-bold ml-1">Celular / WhatsApp</Label>
@@ -108,7 +108,7 @@ export default function MyOrders() {
                   safeLocalStorage.remove('customer_phone');
                 }}
               >
-                Trocar nÁºmero
+                Trocar número
               </Button>
             </div>
 
@@ -121,7 +121,7 @@ export default function MyOrders() {
               <div className="text-center py-20 bg-white rounded-2xl shadow-sm border border-slate-100">
                 <Package className="w-16 h-16 text-slate-200 mx-auto mb-4" />
                 <h3 className="text-lg font-bold text-slate-900 mb-1">Nenhum pedido ainda</h3>
-                <p className="text-slate-500 text-sm mb-6">Você ainda não realizou pedidos com este nÁºmero.</p>
+                <p className="text-slate-500 text-sm mb-6">Você ainda não realizou pedidos com este número.</p>
                 <Link to={createPageUrl('Home')}>
                   <Button className="bg-slate-900 h-12 px-8">
                     Pedir uma Pizza Agora
@@ -155,7 +155,7 @@ export default function MyOrders() {
                               {drinkCount > 0 ? `${drinkCount} Bebida${drinkCount > 1 ? 's' : ''}` : ''}
                             </h3>
                             <p className="text-xs text-slate-400">
-                              {format(new Date(order.created_date), "eeee, d 'de' MMMM 'Á s' HH:mm", { locale: ptBR })}
+                              {format(new Date(order.created_date), "eeee, d 'de' MMMM 'às' HH:mm", { locale: ptBR })}
                             </p>
                           </div>
                           <div className="text-right">

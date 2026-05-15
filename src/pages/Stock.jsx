@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -101,11 +101,11 @@ export default function Stock() {
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <Label>Nome</Label>
+                  <Label>Nome *</Label>
                   <Input name="name" defaultValue={editingProduct?.name} required />
                 </div>
                 <div>
-                  <Label>Categoria</Label>
+                  <Label>Categoria *</Label>
                   <Select value={formCategory} onValueChange={setFormCategory}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -117,7 +117,7 @@ export default function Stock() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label>Quantidade</Label>
+                    <Label>Quantidade *</Label>
                     <Input name="quantity" type="number" step="0.01" defaultValue={editingProduct?.quantity} required />
                   </div>
                   <div>
@@ -187,7 +187,7 @@ export default function Stock() {
                         {product.quantity} <span className="text-sm font-normal">{product.unit}</span>
                       </p>
                       <p className="text-[10px] text-slate-500 mt-1 uppercase tracking-tighter">
-                        Mínimo: {product.min_quantity} {product.unit} â€¢ Custo: R$ {product.price?.toFixed(2)}
+                        Mínimo: {product.min_quantity} {product.unit} • Custo: R$ {product.price?.toFixed(2)}
                       </p>
                     </div>
                     <div className="flex gap-1">

@@ -24,6 +24,8 @@ const DeliveryDashboard = lazy(() => import('./pages/DeliveryDashboard'));
 
 // Arquivo que criamos manualmente para o login
 const Login = lazy(() => import('./pages/Login'));
+const SignUp = lazy(() => import('./pages/SignUp'));
+const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 
 export const PAGES = {
     "Checkout": Checkout,
@@ -45,6 +47,8 @@ export const PAGES = {
     "DeleteAccount": DeleteAccount,
     "DeliveryDashboard": DeliveryDashboard,
     "Login": Login,
+    "SignUp": SignUp,
+    "ResetPassword": ResetPassword,
 }
 
 export const pagesConfig = {

@@ -10,20 +10,37 @@ export const userService = {
       .eq('store_id', storeId)
       .order('full_name');
 
-    if (error) throw error;
+    if (error) {
+      console.error("Error listing users:", error);
+      throw error;
+    }
     return data;
   },
 
   createUser: async (userData) => {
-    const storeId = await authService.getStoreId();
-    const { data, error } = await supabase
-      .from('users')
-      .insert([{ ...userData, store_id: storeId }])
-      .select()
-      .single();
+    try {
+      const storeId = await authService.getStoreId();
+      console.log("Tentando cadastrar usuário na loja:", storeId);
+      
+      if (!storeId) {
+        throw new Error("Seu perfil não tem uma Loja (Store ID) vinculada. Verifique as configurações.");
+      }
+      
+      const { data, error } = await supabase
+        .from('users')
+        .insert([{ ...userData, store_id: storeId }])
+        .select()
+        .single();
 
-    if (error) throw error;
-    return data;
+      if (error) {
+        console.error("Supabase Error:", error);
+        throw new Error(error.message || "Erro no banco de dados ao salvar.");
+      }
+      return data;
+    } catch (err) {
+      console.error("Create user exception:", err);
+      throw err;
+    }
   },
 
   updateUser: async (id, userData) => {
@@ -34,7 +51,10 @@ export const userService = {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error("Error updating user:", error);
+      throw error;
+    }
     return data;
   },
 
@@ -44,7 +64,10 @@ export const userService = {
       .delete()
       .eq('id', id);
 
-    if (error) throw error;
+    if (error) {
+      console.error("Error deleting user:", error);
+      throw error;
+    }
     return true;
   }
 };

@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { Toaster } from "@/components/ui/toaster"
 import { Toaster as SonnerToaster } from "sonner"
 import { QueryClientProvider } from '@tanstack/react-query'
@@ -62,14 +62,22 @@ const RouteElement = ({ pageName, Page }) => {
     return <AccessDenied />;
   }
 
-  // Se a rota for o painel de entrega, permite admin ou delivery
-  if (pageName === 'DeliveryDashboard') {
-    if (user?.role !== 'admin' && user?.role !== 'delivery') {
-      return <AccessDenied />;
+  // Regras de acesso baseadas em função (Role)
+  if (requiresAdmin) {
+    const role = user?.role;
+
+    // Entregador só vê DeliveryDashboard
+    if (role === 'delivery') {
+      if (pageName !== 'DeliveryDashboard') return <AccessDenied />;
     }
-  // Para todas as outras rotas administrativas, apenas admin
-  } else if (requiresAdmin && user?.role !== 'admin') {
-    return <AccessDenied />;
+
+    // Staff vê Pedidos, Cozinha, Delivery e Home
+    if (role === 'staff') {
+      const staffPages = ['AdminHome', 'Orders', 'NewOrder', 'OrderDetail', 'Kitchen', 'DeliveryDashboard'];
+      if (!staffPages.includes(pageName)) return <AccessDenied />;
+    }
+
+    // Admin vê tudo, não precisa de filtro extra aqui
   }
 
   return (
@@ -129,6 +137,28 @@ const AuthenticatedApp = () => {
 
 
 function App() {
+  // Sincronizar com o modo claro/escuro do sistema
+  useEffect(() => {
+    const root = window.document.documentElement;
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    
+    const applyTheme = (isDark) => {
+      if (isDark) {
+        root.classList.add('dark');
+      } else {
+        root.classList.remove('dark');
+      }
+    };
+
+    // Aplicar inicialmente
+    applyTheme(mediaQuery.matches);
+
+    // Ouvir mudanças em tempo real
+    const listener = (e) => applyTheme(e.matches);
+    mediaQuery.addEventListener('change', listener);
+    
+    return () => mediaQuery.removeEventListener('change', listener);
+  }, []);
 
   return (
     <AuthProvider>

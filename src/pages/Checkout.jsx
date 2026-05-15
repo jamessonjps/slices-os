@@ -204,12 +204,12 @@ export default function Checkout() {
               </h2>
               <div className="grid grid-cols-1 gap-4">
                 <div className="space-y-1">
-                  <Label className="text-xs uppercase font-bold text-slate-400 ml-1">Nome Completo</Label>
+                  <Label className="text-xs uppercase font-bold text-slate-400 ml-1">Nome Completo *</Label>
                   <Input {...register('customer_name')} placeholder="Como devemos te chamar?" className={errors.customer_name ? 'border-red-500' : ''} />
                   {errors.customer_name && <p className="text-[10px] text-red-500 font-medium pl-1">{errors.customer_name.message}</p>}
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs uppercase font-bold text-slate-400 ml-1">WhatsApp</Label>
+                  <Label className="text-xs uppercase font-bold text-slate-400 ml-1">WhatsApp *</Label>
                   <Input {...register('customer_phone')} placeholder="(11) 99999-9999" className={errors.customer_phone ? 'border-red-500' : ''} />
                   {errors.customer_phone && <p className="text-[10px] text-red-500 font-medium pl-1">{errors.customer_phone.message}</p>}
                 </div>
@@ -246,17 +246,17 @@ export default function Checkout() {
                 <div className="space-y-4 pt-4 border-t border-slate-50 mt-4">
                   <div className="grid grid-cols-4 gap-3">
                     <div className="col-span-3 space-y-1">
-                      <Label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Rua / Avenida</Label>
+                      <Label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Rua / Avenida *</Label>
                       <Input {...register('rua')} placeholder="Ex: Av. Paulista" className={errors.rua ? 'border-red-500' : ''} />
                     </div>
                     <div className="col-span-1 space-y-1">
-                      <Label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Nº</Label>
+                      <Label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Nº *</Label>
                       <Input {...register('numero')} placeholder="123" className={errors.numero ? 'border-red-500' : ''} />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1">
-                      <Label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Bairro</Label>
+                      <Label className="text-[10px] uppercase font-bold text-slate-400 ml-1">Bairro *</Label>
                       <Input {...register('bairro')} placeholder="Ex: Centro" className={errors.bairro ? 'border-red-500' : ''} />
                     </div>
                     <div className="space-y-1">
@@ -319,7 +319,7 @@ export default function Checkout() {
                     </div>
                   </div>
                   <div className="bg-purple-100 text-purple-800 text-[11px] p-2 rounded font-medium">
-                    âš ï¸ Importante: Após enviar o pedido, mande o comprovante do PIX pelo WhatsApp para confirmarmos a produção.
+                    ⚠️ Importante: Após enviar o pedido, mande o comprovante do PIX pelo WhatsApp para confirmarmos a produção.
                   </div>
                 </div>
               )}

@@ -176,7 +176,7 @@ export const orderService = {
 
     const { data, error } = await supabase
       .from('orders')
-      .update({ status: 'delivered' })
+      .update({ status: 'completed' })
       .eq('id', orderId)
       .eq('store_id', storeId)
       .select()
@@ -194,7 +194,7 @@ export const orderService = {
       .from('orders')
       .select('*')
       .eq('store_id', storeId)
-      .in('status', ['pending', 'preparing', 'ready', 'delivering'])
+      .in('status', ['pending', 'preparing', 'ready', 'out_for_delivery'])
       .order('created_date', { ascending: false });
 
     if (error) throw error;
@@ -239,33 +239,28 @@ export const orderService = {
     return data;
   },
 
-  // Inscrição em tempo real (Supabase Realtime)
-  subscribe: (callback) => {
-    const userStoreId = getDefaultStoreId(); // Ou pegue do auth caso consiga injetar aqui
+  // Inscrição em tempo real (Supabase Realtime) - Versão Ultra Robusta
+  subscribe: (callback, storeId) => {
+    const userStoreId = storeId || getDefaultStoreId();
 
     const channel = supabase
-      .channel('orders-changes')
+      .channel('public:orders') // Canal padrão simplificado
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
-          table: 'orders',
-          filter: `store_id=eq.${userStoreId}`
+          table: 'orders'
         },
         (payload) => {
-          console.log("Realtime Update in orders:", payload);
-          callback(payload.new, payload.eventType);
+          // Filtramos no código do cliente para garantir que funciona sempre
+          const data = payload.new || payload.old;
+          if (data && data.store_id === userStoreId) {
+            callback(payload.new, payload.eventType, payload.old);
+          }
         }
       )
-      .subscribe((status, err) => {
-        if (status === 'SUBSCRIBED') {
-          console.log("Conectado ao Supabase Realtime (Orders)");
-        } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
-          console.error("Realtime offline:", status, err);
-          // O fallback é feito no componente através de polling ou aviso
-        }
-      });
+      .subscribe();
 
     return {
       unsubscribe: () => {
