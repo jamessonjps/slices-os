@@ -12,7 +12,13 @@ SliceOS é uma plataforma moderna e robusta para gestão de pizzarias e delivery
 
 ### 👨‍🍳 Operacional e Cozinha
 - **Painel de Produção (KDS)**: Gestão de pedidos em tempo real com notificações sonoras e visuais.
+- **Impressão de Comanda**: Sistema de impressão térmica (80mm) automática ao aceitar pedidos e manual via botão dedicado.
 - **Controle de Status**: Fluxo simplificado de produção: Pendente → Preparando → Pronto → Saiu para Entrega → Entregue.
+
+### 📱 PWA (Progressive Web App)
+- **Instalável**: O sistema pode ser instalado como um App nativo no Android, iOS e Desktop.
+- **Modo Offline**: Carregamento instantâneo e suporte básico para operação em redes instáveis.
+- **Standalone**: Interface limpa sem barras de navegação para maior imersão.
 
 ### 🛵 Módulo do Entregador
 - **Dashboard Mobile-First**: Interface otimizada para smartphones.

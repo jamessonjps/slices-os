@@ -4,7 +4,7 @@ import { settingsService } from '@/services/settingsService';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { ChefHat, Clock, CheckCircle, Truck, ArrowRight, Home, Circle, Pencil, Send, Plus, Trash2, Bell, BellOff } from 'lucide-react';
+import { ChefHat, Clock, CheckCircle, Truck, ArrowRight, Home, Circle, Pencil, Send, Plus, Trash2, Bell, BellOff, Printer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
@@ -16,6 +16,7 @@ import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
 import AuthGate from '@/components/AuthGate';
 import { cn } from '@/lib/utils';
+import PrintableTicket from '@/components/PrintableTicket';
 
 /**
  * @typedef {Object} KitchenOrderItem
@@ -210,6 +211,7 @@ function KitchenContent() {
   const queryClient = useQueryClient();
   const [lastOrderCount, setLastOrderCount] = useState(0);
   const [editingOrder, setEditingOrder] = useState(/** @type {KitchenOrderItem | null} */ (null));
+  const [printingOrder, setPrintingOrder] = useState(null);
   const [autoNotify, setAutoNotify] = useState(() => {
     const saved = localStorage.getItem('sliceos_kitchen_notify');
     return saved !== null ? JSON.parse(saved) : true;
@@ -318,6 +320,15 @@ function KitchenContent() {
 
   /** @param {KitchenOrderItem} order */
   /** @param {KitchenOrderItem} order */
+  const handlePrint = (order) => {
+    setPrintingOrder(order);
+    // Pequeno delay para garantir que o DOM renderizou o componente invis\u00EDvel
+    setTimeout(() => {
+      window.print();
+    }, 100);
+  };
+
+  /** @param {KitchenOrderItem} order */
   const handleAdvanceStatus = (order) => {
     let nextStatus = /** @type {'preparing'|'ready'|'delivering'|'completed'} */ (statusFlow[order.status ?? 'pending']);
     
@@ -329,6 +340,11 @@ function KitchenContent() {
     if (nextStatus) {
       updateMutation.mutate({ id: order.id, data: { status: nextStatus } }, {
         onSuccess: () => {
+          // Imprimir automaticamente ao aceitar o pedido
+          if (nextStatus === 'preparing') {
+            handlePrint(order);
+          }
+
           if (autoNotify) {
             sendStatusWhatsApp(order, nextStatus);
           } else {
@@ -439,6 +455,7 @@ function KitchenContent() {
                     onAdvance={handleAdvanceStatus}
                     onToggleItem={toggleItemReady}
                     onEdit={setEditingOrder}
+                    onPrint={handlePrint}
                     updating={updateMutation.isPending}
                   />
                 ))}
@@ -459,6 +476,7 @@ function KitchenContent() {
                     onAdvance={handleAdvanceStatus}
                     onToggleItem={toggleItemReady}
                     onEdit={setEditingOrder}
+                    onPrint={handlePrint}
                     updating={updateMutation.isPending}
                   />
                 ))}
@@ -479,6 +497,7 @@ function KitchenContent() {
                     onAdvance={handleAdvanceStatus}
                     onToggleItem={toggleItemReady}
                     onEdit={setEditingOrder}
+                    onPrint={handlePrint}
                     updating={updateMutation.isPending}
                   />
                 ))}
@@ -499,6 +518,7 @@ function KitchenContent() {
                     onAdvance={handleAdvanceStatus}
                     onToggleItem={toggleItemReady}
                     onEdit={setEditingOrder}
+                    onPrint={handlePrint}
                     updating={updateMutation.isPending}
                   />
                 ))}
@@ -507,6 +527,11 @@ function KitchenContent() {
           </div>
         )}
       </div>
+
+      {/* Componente Invisível para Impressão */}
+      {printingOrder && (
+        <PrintableTicket order={printingOrder} settings={settingsQuery.data} />
+      )}
     </div>
   );
 }
@@ -519,7 +544,7 @@ export default function Kitchen() {
   );
 }
 
-function OrderCard({ order, onAdvance, onToggleItem, onEdit, updating }) {
+function OrderCard({ order, onAdvance, onToggleItem, onEdit, onPrint, updating }) {
   const config = statusConfig[order.status ?? 'pending'];
   const timeAgo = format(new Date(order.created_date || 0), 'HH:mm', { locale: ptBR });
   const minutesAgo = differenceInMinutes(new Date(), new Date(order.created_date || 0));
@@ -634,14 +659,17 @@ function OrderCard({ order, onAdvance, onToggleItem, onEdit, updating }) {
         <p className="text-xs text-slate-400 mt-3 italic">"{order.notes}"</p>
       )}
 
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => onEdit(order)}
-        className="w-full mt-2 text-slate-400 hover:text-white hover:bg-slate-700 text-xs"
-      >
-        <Pencil className="w-3 h-3 mr-1" />
         Editar e Notificar Cliente
+      </Button>
+
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => onPrint(order)}
+        className="w-full mt-2 border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white text-xs"
+      >
+        <Printer className="w-3 h-3 mr-1" />
+        Imprimir Comanda
       </Button>
     </Card>
   );

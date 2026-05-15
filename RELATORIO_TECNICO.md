@@ -1,6 +1,6 @@
 # Relatório Técnico do Projeto SliceOS
 
-Data da última atualização: 2026-05-15
+Data da última atualização: 2026-05-15 (PWA & Printing Update)
 
 ## Status Geral do Projeto
 
@@ -21,6 +21,8 @@ O sistema SliceOS foi completamente migrado de uma arquitetura legada baseada em
 - **Backend-as-a-Service**: Supabase (PostgreSQL, Auth, Realtime)
 - **Gerenciamento de Estado**: TanStack React Query v5 (cache e sincronização de dados do servidor)
 - **Estilização**: Tailwind CSS + Radix UI (Aesthetics Premium)
+- **PWA**: vite-plugin-pwa (Service Workers, Manifest, Standalone mode)
+- **Impressão**: CSS @media print (Otimizado para impressoras térmicas de 80mm)
 - **Formulários e Validação**: React Hook Form + Zod (Validação rigorosa no cliente)
 - **Ícones e Animações**: Lucide React + Framer Motion
 - **Utilidades**: date-fns, sonner (notificações), canvas-confetti
@@ -48,6 +50,8 @@ O sistema SliceOS foi completamente migrado de uma arquitetura legada baseada em
 - **Fluxo Dinâmico de Cozinha**: Otimização do fluxo de pedidos na cozinha para distinguir "Entrega" vs. "Retirada". Pedidos de retirada agora pulam o status "Saiu para Entrega" e vão direto para conclusão.
 - **Persistência de Notificações**: Configurações de notificação sonora da cozinha agora são persistidas no `localStorage`, respeitando a preferência do usuário entre sessões.
 - **Sincronização do Checkout**: Implementado "Loading State" (Sincronizando com a loja...) no Checkout para garantir que o sistema sempre aguarde o carregamento das configurações do servidor antes de bloquear novos pedidos baseado no horário.
+-- **Módulo de Impressão Térmica**: Criado componente `PrintableTicket` com CSS específico para impressoras de cupom (80mm), incluindo impressão automática ao iniciar preparo de pedidos.
+-- **Experiência PWA**: Configuração completa de manifesto e Service Worker, permitindo instalação do sistema como um aplicativo autônomo com ícones customizados.
 
 ### 3. Conformidade e Privacidade (LGPD)
 - **DeleteData / Privacidade**: Adicionada rota e formulário `/DeleteAccount` acessível via rodapé público, permitindo que clientes comuns solicitem exclusão instantânea de seus dados pessoais do banco de dados (Tabela Customers) usando apenas validação de telefone.
@@ -85,7 +89,7 @@ O sistema SliceOS foi completamente migrado de uma arquitetura legada baseada em
 
 ### Dívida Técnica Remanescente
 - **Testes E2E**: Recomenda-se a implementação de testes automatizados com Playwright para o fluxo crítico de pedidos.
-- **PWA**: A configuração do manifest.json está pendente para permitir a instalação da aplicação como um App nativo no Android/iOS.
+- **PWA**: Configuração completa do manifest.json e Service Worker implementada.
 
 ---
 

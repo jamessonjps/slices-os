@@ -1,6 +1,6 @@
 # Relatório de Unificação e Persistência de Dados (Supabase)
 
-Data da última atualização: 2026-05-15
+Data da última atualização: 2026-05-15 (PWA & Printing Support)
 
 ## O Que Foi Unificado
 A aplicação agora possui uma fonte de verdade única e persistente: **Supabase (PostgreSQL)**. O antigo banco de dados em memória (`src/data/database.js`) foi desativado em favor de uma integração direta via serviços assíncronos.
