@@ -63,5 +63,30 @@ export const settingsService = {
       throw error;
     }
     return data;
+  },
+  
+  // Script para rodar no SQL Editor do Supabase para resetar a numeração (IDs):
+  // TRUNCATE public.orders CASCADE;
+  // ALTER SEQUENCE orders_id_seq RESTART WITH 1;
+  // DELETE FROM public.users WHERE role != 'admin';
+  
+  resetSystem: async () => {
+    // 1. Deletar todos os pedidos
+    const { error: orderError } = await supabase
+      .from('orders')
+      .delete()
+      .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete everything
+      
+    if (orderError) throw orderError;
+    
+    // 2. Deletar usuários que não são admins
+    const { error: userError } = await supabase
+      .from('users')
+      .delete()
+      .neq('role', 'admin');
+      
+    if (userError) throw userError;
+    
+    return true;
   }
 };

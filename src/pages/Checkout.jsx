@@ -92,7 +92,19 @@ export default function Checkout() {
       const parsed = safeJsonParse(savedCart, []);
       setCart(Array.isArray(parsed) ? parsed : []);
     }
-  }, []);
+
+    const lastAddress = safeLocalStorage.get('last_address');
+    if (lastAddress) {
+      const addr = safeJsonParse(lastAddress, null);
+      if (addr) {
+        setValue('customer_name', addr.customer_name || '');
+        setValue('rua', addr.rua || '');
+        setValue('numero', addr.numero || '');
+        setValue('bairro', addr.bairro || '');
+        setValue('complemento', addr.complemento || '');
+      }
+    }
+  }, [setValue]);
 
   const calculateSubtotal = () => {
     return (cart || []).reduce((sum, item) => sum + (Number(item.price || 0) * (item.quantity || 1)), 0);
@@ -113,6 +125,18 @@ export default function Checkout() {
     onSuccess: (order, variables) => {
       safeLocalStorage.remove('cart');
       safeLocalStorage.set('customer_phone', variables.customer_phone);
+      
+      // Salva o último endereço para facilitar o "Refazer Pedido"
+      if (variables.delivery_type === 'delivery') {
+        safeLocalStorage.set('last_address', JSON.stringify({
+          rua: variables.rua,
+          numero: variables.numero,
+          bairro: variables.bairro,
+          complemento: variables.complemento,
+          customer_name: variables.customer_name
+        }));
+      }
+
       toast.success('Pedido enviado com sucesso!');
 
       const itemsText = cart

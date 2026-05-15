@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { safeLocalStorage } from '@/utils/storage';
-import { ArrowLeft, Package, Clock, CheckCircle, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Package, Clock, CheckCircle, ChevronRight, Plus } from 'lucide-react';
 import SliceOSFooter from '@/components/SliceOSFooter';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -24,6 +24,7 @@ const statusConfig = {
 };
 
 export default function MyOrders() {
+  const navigate = useNavigate();
   const [phone, setPhone] = useState('');
   const [searchPhone, setSearchPhone] = useState('');
 
@@ -137,36 +138,80 @@ export default function MyOrders() {
                   const drinkCount = items.filter(i => i.type === 'drink').reduce((sum, d) => sum + (d.quantity || 1), 0);
 
                   return (
-                    <Link key={order.id} to={createPageUrl('TrackOrder') + `?id=${order.id}`}>
+                  const handleReorder = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    // Salva os itens no carrinho
+                    safeLocalStorage.set('cart', JSON.stringify(order.items || []));
+                    
+                    // Tenta extrair o endereço do texto flat
+                    // Padrão esperado: "Rua, Numero, Complemento - Bairro" ou "Rua, Numero - Bairro"
+                    const addressText = order.address_text || '';
+                    if (order.delivery_type === 'delivery' && addressText) {
+                      const parts = addressText.split(' - ');
+                      const bairro = parts[1] || '';
+                      const mainParts = parts[0].split(', ');
+                      const rua = mainParts[0] || '';
+                      const numero = mainParts[1] || '';
+                      const complemento = mainParts.length > 2 ? mainParts.slice(2).join(', ') : '';
+                      
+                      safeLocalStorage.set('last_address', JSON.stringify({
+                        rua,
+                        numero,
+                        bairro,
+                        complemento,
+                        customer_name: order.customer_name
+                      }));
+                    }
+                    
+                    toast.success('Itens adicionados ao carrinho!');
+                    navigate(createPageUrl('Checkout'));
+                  };
+
+                  return (
+                    <div key={order.id} className="block">
                       <Card className="p-4 border-0 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
-                        <div className="flex items-start justify-between relative z-10">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Badge className={`${config.color} border-0 shadow-none text-[10px] px-2 py-0.5`}>
-                                {config.label.toUpperCase()}
-                              </Badge>
-                              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
-                                #{order.id.slice(0, 8)}
-                              </span>
+                        <Link to={createPageUrl('TrackOrder') + `?id=${order.id}`} className="block">
+                          <div className="flex items-start justify-between relative z-10">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Badge className={`${config.color} border-0 shadow-none text-[10px] px-2 py-0.5`}>
+                                  {config.label.toUpperCase()}
+                                </Badge>
+                                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                                  #{order.id.slice(0, 8)}
+                                </span>
+                              </div>
+                              <h3 className="font-bold text-slate-900 mb-1">
+                                {pizzaCount > 0 ? `${pizzaCount} Pizza${pizzaCount > 1 ? 's' : ''}` : ''}
+                                {pizzaCount > 0 && drinkCount > 0 ? ' & ' : ''}
+                                {drinkCount > 0 ? `${drinkCount} Bebida${drinkCount > 1 ? 's' : ''}` : ''}
+                              </h3>
+                              <p className="text-xs text-slate-400">
+                                {format(new Date(order.created_date), "eeee, d 'de' MMMM 'às' HH:mm", { locale: ptBR })}
+                              </p>
                             </div>
-                            <h3 className="font-bold text-slate-900 mb-1">
-                              {pizzaCount > 0 ? `${pizzaCount} Pizza${pizzaCount > 1 ? 's' : ''}` : ''}
-                              {pizzaCount > 0 && drinkCount > 0 ? ' & ' : ''}
-                              {drinkCount > 0 ? `${drinkCount} Bebida${drinkCount > 1 ? 's' : ''}` : ''}
-                            </h3>
-                            <p className="text-xs text-slate-400">
-                              {format(new Date(order.created_date), "eeee, d 'de' MMMM 'às' HH:mm", { locale: ptBR })}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-lg font-black text-slate-900">R$ {order.total_amount?.toFixed(2)}</p>
-                            <div className="flex items-center justify-end gap-1 text-blue-600 font-bold text-[10px] mt-2 group-hover:translate-x-1 transition-transform">
-                              DETALHES <ChevronRight className="w-3 h-3" />
+                            <div className="text-right">
+                              <p className="text-lg font-black text-slate-900">R$ {order.total_amount?.toFixed(2)}</p>
+                              <div className="flex items-center justify-end gap-1 text-slate-400 font-bold text-[10px] mt-2 group-hover:text-blue-600 transition-colors">
+                                RASTREAR <ChevronRight className="w-3 h-3" />
+                              </div>
                             </div>
                           </div>
+                        </Link>
+                        
+                        <div className="mt-4 pt-4 border-t border-slate-100 flex justify-end">
+                          <Button 
+                            onClick={handleReorder}
+                            className="bg-red-600 hover:bg-red-700 text-white font-bold h-9 px-4 rounded-xl text-xs"
+                          >
+                            <Plus className="w-3.5 h-3.5 mr-1.5" />
+                            REFAZER PEDIDO
+                          </Button>
                         </div>
                       </Card>
-                    </Link>
+                    </div>
                   );
                 })}
               </div>

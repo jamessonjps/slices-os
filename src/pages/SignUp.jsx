@@ -58,11 +58,25 @@ export default function SignUp() {
 
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-red-600 text-white shadow-lg shadow-red-600/20 mb-4">
-            <ChefHat className="w-8 h-8" />
+          <div className="bg-black rounded-3xl shadow-xl inline-block mx-auto mb-4 border border-slate-800 overflow-hidden w-48 h-24 relative">
+             <img 
+               src="/src/assets/logo.jpeg" 
+               alt="Milano Pizzaria" 
+               className="absolute inset-0 w-full h-full object-cover scale-150 transform"
+               onError={(e) => {
+                 e.target.parentElement.style.padding = '1rem';
+                 e.target.style.display = 'none';
+                 e.target.nextSibling.style.display = 'block';
+               }}
+             />
+             <div style={{ display: 'none' }}>
+               <UserPlus className="w-10 h-10 text-white" />
+             </div>
           </div>
-          <h1 className="text-3xl font-black text-white tracking-tight">SliceOS</h1>
-          <p className="text-slate-400 mt-2">Crie sua conta para acessar o sistema</p>
+          <h2 className="text-3xl font-extrabold text-white">Milano Pizzaria</h2>
+          <p className="mt-2 text-sm text-slate-400">
+            Crie sua conta para começar a gerenciar sua pizzaria.
+          </p>
         </div>
 
         <Card className="p-8 bg-slate-800 border-slate-700 shadow-2xl rounded-3xl">

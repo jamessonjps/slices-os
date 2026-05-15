@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { safeJsonParse } from '@/utils/storage';
-import { ArrowLeft, Save, MessageCircle, Clock, Store, DollarSign } from 'lucide-react';
+import { ArrowLeft, Save, MessageCircle, Clock, Store, DollarSign, Trash2, AlertTriangle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -166,6 +166,59 @@ function HoursSection({ settings, onSave, loading }) {
   );
 }
 
+function DangerZone({ onReset, loading }) {
+  const [confirm, setConfirm] = useState('');
+
+  return (
+    <Card className="p-5 border-red-200 bg-red-50/30">
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+          <AlertTriangle className="w-5 h-5 text-red-600" />
+        </div>
+        <div>
+          <h2 className="font-semibold text-red-900">Zona de Perigo</h2>
+          <p className="text-sm text-red-600">Ações irreversíveis no sistema</p>
+        </div>
+      </div>
+      
+      <div className="space-y-4">
+        <div className="p-4 bg-white border border-red-100 rounded-xl">
+          <p className="text-sm font-bold text-red-900 mb-1">Reset Total do Sistema</p>
+          <p className="text-xs text-red-600 mb-4">
+            Isso apagará todos os pedidos, clientes e usuários (exceto você). 
+            A numeração dos pedidos continuará de onde parou a menos que use o SQL Editor.
+          </p>
+          
+          <div className="space-y-2">
+            <Label className="text-[10px] uppercase font-bold text-red-400">Digite RESET para confirmar</Label>
+            <div className="flex gap-2">
+              <Input 
+                value={confirm} 
+                onChange={(e) => setConfirm(e.target.value)} 
+                placeholder="RESET"
+                className="border-red-200 focus:border-red-500"
+              />
+              <Button 
+                variant="destructive"
+                disabled={confirm !== 'RESET' || loading}
+                onClick={() => {
+                  if (window.confirm('TEM CERTEZA? Todos os dados serão apagados permanentemente.')) {
+                    onReset();
+                    setConfirm('');
+                  }
+                }}
+              >
+                {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4 mr-2" />}
+                Resetar Tudo
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
 export default function Settings() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -186,6 +239,17 @@ export default function Settings() {
     onError: (err) => {
       console.error("Erro ao salvar:", err);
       toast.error('Erro ao salvar: ' + (err.message || 'Verifique sua conexão'));
+    }
+  });
+
+  const resetMutation = useMutation({
+    mutationFn: () => settingsService.resetSystem(),
+    onSuccess: () => {
+      toast.success('Sistema resetado com sucesso!');
+      window.location.reload();
+    },
+    onError: (err) => {
+      toast.error('Erro ao resetar: ' + err.message);
     }
   });
 
@@ -213,15 +277,22 @@ export default function Settings() {
         <HoursSection settings={settings} onSave={(updates) => saveMutation.mutate(updates)} loading={saveMutation.isPending} />
         
         {isAdmin && (
-          <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 flex items-center justify-between">
-            <div>
-              <p className="font-semibold text-purple-900 text-sm">Gestão de Usuários</p>
-              <p className="text-xs text-purple-600">Cadastre, edite e gerencie funcionários e admins</p>
+          <>
+            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 flex items-center justify-between">
+              <div>
+                <p className="font-semibold text-purple-900 text-sm">Gestão de Usuários</p>
+                <p className="text-xs text-purple-600">Cadastre, edite e gerencie funcionários e admins</p>
+              </div>
+              <Link to={createPageUrl('UserManagement')}>
+                <Button className="bg-purple-700 hover:bg-purple-800 text-white shrink-0">Gerenciar</Button>
+              </Link>
             </div>
-            <Link to={createPageUrl('UserManagement')}>
-              <Button className="bg-purple-700 hover:bg-purple-800 text-white shrink-0">Gerenciar</Button>
-            </Link>
-          </div>
+
+            <DangerZone 
+              onReset={() => resetMutation.mutate()} 
+              loading={resetMutation.isPending} 
+            />
+          </>
         )}
       </div>
     </div>

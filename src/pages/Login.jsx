@@ -74,10 +74,22 @@ export default function Login() {
 
       <div className="max-w-md w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 shadow-sm">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
-            <LogIn className="w-8 h-8 text-slate-600 dark:text-slate-400" />
+          <div className="bg-black rounded-3xl shadow-xl inline-block mx-auto mb-4 border border-slate-800 overflow-hidden w-48 h-24 relative">
+             <img 
+               src="/src/assets/logo.jpeg" 
+               alt="Milano Pizzaria" 
+               className="absolute inset-0 w-full h-full object-cover scale-150 transform"
+               onError={(e) => {
+                 e.target.parentElement.style.padding = '1rem';
+                 e.target.style.display = 'none';
+                 e.target.nextSibling.style.display = 'block';
+               }}
+             />
+             <div style={{ display: 'none' }}>
+               <LogIn className="w-8 h-8 text-slate-600 dark:text-slate-400" />
+             </div>
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">SliceOS</h1>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Milano Pizzaria</h1>
           <p className="text-slate-500 dark:text-slate-400 mt-2 text-sm">Faça login para acessar o painel administrativo.</p>
         </div>
         

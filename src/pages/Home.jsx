@@ -53,8 +53,20 @@ export default function Home() {
           transition={{ duration: 0.5 }}
           className="mb-8"
         >
-          <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-xl mb-4 inline-block border border-slate-100 dark:border-slate-800">
-             <Pizza className="w-16 h-16 text-red-600 mx-auto" />
+          <div className="bg-black p-0 rounded-3xl shadow-2xl mb-6 inline-block border border-slate-800 overflow-hidden w-64 h-32 relative">
+             <img 
+               src="/src/assets/logo.jpeg" 
+               alt={storeName} 
+               className="absolute inset-0 w-full h-full object-cover scale-150 transform"
+               onError={(e) => {
+                 e.target.parentElement.style.padding = '1.5rem';
+                 e.target.style.display = 'none';
+                 e.target.nextSibling.style.display = 'block';
+               }}
+             />
+             <div style={{ display: 'none' }}>
+               <Pizza className="w-16 h-16 text-red-600 mx-auto" />
+             </div>
           </div>
           <h1 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tighter">
             {storeName}
