@@ -14,7 +14,7 @@ import { useAuth } from '@/lib/AuthContext';
 
 const DAYS = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
 
-function GeneralSection({ settings, onSave }) {
+function GeneralSection({ settings, onSave, loading }) {
   const [formData, setFormData] = useState({ store_name: '', delivery_fee: 0 });
 
   useEffect(() => {
@@ -54,14 +54,14 @@ function GeneralSection({ settings, onSave }) {
           />
         </div>
       </div>
-      <Button className="mt-4" onClick={() => onSave(formData)}>
-        <Save className="w-4 h-4 mr-2" />Salvar Alterações
+      <Button className="mt-4" onClick={() => onSave(formData)} disabled={loading}>
+        {loading ? "Salvando..." : <><Save className="w-4 h-4 mr-2" />Salvar Alterações</>}
       </Button>
     </Card>
   );
 }
 
-function WhatsAppSection({ settings, onSave }) {
+function WhatsAppSection({ settings, onSave, loading }) {
   const [whatsapp, setWhatsapp] = useState('');
 
   useEffect(() => {
@@ -84,14 +84,14 @@ function WhatsAppSection({ settings, onSave }) {
         <Input value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder="Ex: 5511999999999" />
         <p className="text-xs text-slate-400">Formato: 55 + DDD + número. Ex: <strong>5511987654321</strong></p>
       </div>
-      <Button className="mt-4 bg-green-600 hover:bg-green-700 text-white" onClick={() => onSave({ whatsapp_number: whatsapp })} disabled={!whatsapp}>
-        <Save className="w-4 h-4 mr-2" />Salvar WhatsApp
+      <Button className="mt-4 bg-green-600 hover:bg-green-700 text-white" onClick={() => onSave({ whatsapp_number: whatsapp })} disabled={!whatsapp || loading}>
+        {loading ? "Salvando..." : <><Save className="w-4 h-4 mr-2" />Salvar WhatsApp</>}
       </Button>
     </Card>
   );
 }
 
-function HoursSection({ settings, onSave }) {
+function HoursSection({ settings, onSave, loading }) {
   const defaultHours = DAYS.reduce((acc, d) => ({ ...acc, [d]: { open: '18:00', close: '23:00', closed: false } }), {});
   const [hours, setHours] = useState(defaultHours);
 
@@ -140,8 +140,8 @@ function HoursSection({ settings, onSave }) {
           </div>
         ))}
       </div>
-      <Button className="mt-4" onClick={() => onSave({ business_hours: hours })}>
-        <Save className="w-4 h-4 mr-2" />Salvar Horários
+      <Button className="mt-4" onClick={() => onSave({ business_hours: hours })} disabled={loading}>
+        {loading ? "Salvando..." : <><Save className="w-4 h-4 mr-2" />Salvar Horários</>}
       </Button>
     </Card>
   );
@@ -159,8 +159,14 @@ export default function Settings() {
   const saveMutation = useMutation({
     mutationFn: (updates) => settingsService.updateSettings(updates),
     onSuccess: () => {
-      queryClient.invalidateQueries(['settings']);
-      toast.success('Configurações salvas!');
+      // Invalida e força o refetch imediato
+      queryClient.invalidateQueries({ queryKey: ['settings'] });
+      queryClient.refetchQueries({ queryKey: ['settings'] });
+      toast.success('Configurações salvas com sucesso!');
+    },
+    onError: (err) => {
+      console.error("Erro ao salvar:", err);
+      toast.error('Erro ao salvar: ' + (err.message || 'Verifique sua conexão'));
     }
   });
 
@@ -172,7 +178,10 @@ export default function Settings() {
         <div className="max-w-2xl mx-auto px-4 py-4">
           <div className="flex items-center gap-3">
             <Link to={createPageUrl('AdminHome')}>
-              <Button variant="ghost" size="icon"><ArrowLeft className="w-5 h-5" /></Button>
+              <Button variant="ghost" className="text-slate-600 bg-slate-100 hover:bg-slate-200 px-4">
+                <ArrowLeft className="w-5 h-5 mr-2" />
+                Voltar
+              </Button>
             </Link>
             <h1 className="text-xl font-bold text-slate-900">Configurações</h1>
           </div>
@@ -180,9 +189,9 @@ export default function Settings() {
       </div>
 
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-4 pb-20">
-        <GeneralSection settings={settings} onSave={(updates) => saveMutation.mutate(updates)} />
-        <WhatsAppSection settings={settings} onSave={(updates) => saveMutation.mutate(updates)} />
-        <HoursSection settings={settings} onSave={(updates) => saveMutation.mutate(updates)} />
+        <GeneralSection settings={settings} onSave={(updates) => saveMutation.mutate(updates)} loading={saveMutation.isPending} />
+        <WhatsAppSection settings={settings} onSave={(updates) => saveMutation.mutate(updates)} loading={saveMutation.isPending} />
+        <HoursSection settings={settings} onSave={(updates) => saveMutation.mutate(updates)} loading={saveMutation.isPending} />
         
         {isAdmin && (
           <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 flex items-center justify-between">

@@ -74,22 +74,41 @@ export const customerService = {
   },
 
   upsertCustomerByPhone: async (phone, customerData) => {
-    // Usado no checkout para evitar duplicatas
     const storeId = getDefaultStoreId();
     
-    // Verifica se já existe
-    const { data: existing } = await supabase
+    // Simplificando usando o recurso nativo de UPSERT do Supabase
+    // O onConflict 'store_id,phone' garante que ele atualize se já existir esse par
+    const { data, error } = await supabase
       .from('customers')
-      .select('id')
-      .eq('store_id', storeId)
-      .eq('phone', phone)
+      .upsert({ 
+        ...customerData, 
+        phone, 
+        store_id: storeId,
+        updated_at: new Date().toISOString()
+      }, { 
+        onConflict: 'store_id,phone' 
+      })
+      .select()
       .single();
       
-    if (existing) {
-      return await customerService.updateCustomer(existing.id, customerData);
-    } else {
-      return await customerService.createCustomer({ ...customerData, phone, store_id: storeId });
+    if (error) {
+      console.error("Erro ao cadastrar cliente automaticamente:", error);
+      throw error;
     }
+    return data;
+  },
+
+  deleteCustomerByPhone: async (phone) => {
+    const storeId = getDefaultStoreId();
+    const { data, error } = await supabase
+      .from('customers')
+      .delete()
+      .eq('store_id', storeId)
+      .eq('phone', phone)
+      .select();
+
+    if (error) throw error;
+    return data;
   },
 
   deleteCustomer: async (id) => {

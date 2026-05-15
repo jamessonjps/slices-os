@@ -1,145 +1,112 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { motion } from 'framer-motion';
-import { ArrowLeft, Trash2, AlertTriangle, CheckCircle } from 'lucide-react';
+import { ShieldAlert, Trash2, ArrowLeft, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { authService } from '@/services/authService';
+import { customerService } from '@/services/customerService';
 
 export default function DeleteAccount() {
-  const [step, setStep] = useState('confirm'); // 'confirm' | 'verify' | 'done'
-  const [reason, setReason] = useState('');
-  const [confirmText, setConfirmText] = useState('');
+  const [phone, setPhone] = useState('');
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
 
-  const handleRequestDelete = async () => {
-    if (confirmText !== 'EXCLUIR') {
-      toast.error('Digite EXCLUIR para confirmar');
+  const handleDelete = async (e) => {
+    e.preventDefault();
+    const cleanPhone = phone.replace(/\D/g, '');
+    
+    if (!cleanPhone || cleanPhone.length < 10) {
+      toast.error('Por favor, informe um telefone válido com DDD');
       return;
     }
+
     setLoading(true);
     try {
-      // Simulação de solicitação de exclusão
-      const user = await authService.getCurrentUser();
-      const email = user?.email || 'Usuário não identificado';
-
-      console.log(`Solicitação de exclusão para: ${email}. Motivo: ${reason}`);
+      const result = await customerService.deleteCustomerByPhone(cleanPhone);
       
-      // Aqui poderíamos chamar um webhook ou serviço de suporte
-      await new Promise(resolve => setTimeout(resolve, 1500));
-
-      setStep('done');
-    } catch (e) {
-      toast.error('Erro ao processar solicitação. Tente novamente.');
+      if (result && result.length > 0) {
+        setSuccess(true);
+        toast.success('Seus dados foram excluídos com sucesso.');
+      } else {
+        toast.error('Telefone não encontrado em nossa base de dados.');
+      }
+    } catch (err) {
+      console.error("Erro ao excluir dados:", err);
+      toast.error('Erro ao processar solicitação. Tente novamente mais tarde.');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <motion.div
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35, ease: 'easeOut' }}
-        className="w-full max-w-md"
-      >
-        {/* Header */}
-        <div className="flex items-center gap-3 mb-8">
-          <Link to={createPageUrl('Home')}>
-            <Button variant="ghost" size="icon">
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-          </Link>
-          <h1 className="text-xl font-bold text-foreground">Excluir Conta</h1>
-        </div>
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-6">
+      <div className="max-w-md w-full text-center">
+        <Link to={createPageUrl('Home')}>
+          <Button variant="ghost" className="mb-6 text-slate-500 hover:text-slate-900 dark:hover:text-white">
+            <ArrowLeft className="w-4 h-4 mr-2" /> Voltar ao início
+          </Button>
+        </Link>
 
-        {step === 'confirm' && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="space-y-6"
-          >
-            {/* Warning */}
-            <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-2xl p-5">
-              <div className="flex items-start gap-3">
-                <AlertTriangle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-semibold text-red-800 dark:text-red-300 mb-2">Esta ação é irreversível</p>
-                  <ul className="text-sm text-red-700 dark:text-red-400 space-y-1 list-disc list-inside">
-                    <li>Seu histórico de pedidos será apagado</li>
-                    <li>Seus endereços salvos serão removidos</li>
-                    <li>Você perderá acesso à conta</li>
-                    <li>Dados pessoais serão deletados em até 30 dias</li>
-                  </ul>
-                </div>
+        <Card className="p-8 border-slate-200 dark:border-slate-800 shadow-xl rounded-3xl text-left">
+          {!success ? (
+            <>
+              <div className="bg-red-50 dark:bg-red-900/20 p-6 rounded-2xl mb-6">
+                <ShieldAlert className="w-12 h-12 text-red-600 mb-4" />
+                <h1 className="text-xl font-bold text-slate-900 dark:text-white">Privacidade e Dados</h1>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">
+                  Deseja remover seu nome e telefone de nossa lista de clientes? Esta ação apagará seus dados de cadastro imediatamente.
+                </p>
               </div>
+
+              <form onSubmit={handleDelete} className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-slate-700 dark:text-slate-300 ml-1">
+                    Seu Telefone (com DDD)
+                  </label>
+                  <Input 
+                    type="tel" 
+                    placeholder="Ex: 11999999999"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="h-14 rounded-2xl text-lg border-slate-200"
+                    required
+                  />
+                </div>
+
+                <Button 
+                  type="submit" 
+                  disabled={loading}
+                  className="w-full h-14 bg-slate-900 hover:bg-red-600 text-white font-bold rounded-2xl transition-all"
+                >
+                  {loading ? 'Processando...' : 'EXCLUIR MEUS DADOS'}
+                  {!loading && <Trash2 className="w-4 h-4 ml-2" />}
+                </Button>
+              </form>
+
+              <p className="text-[10px] text-slate-400 text-center mt-8 uppercase tracking-widest font-bold">
+                Ação em conformidade com a LGPD
+              </p>
+            </>
+          ) : (
+            <div className="text-center py-6">
+              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <CheckCircle className="w-10 h-10 text-green-600" />
+              </div>
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Dados Excluídos</h2>
+              <p className="text-slate-600 dark:text-slate-400 mt-2 mb-8 leading-relaxed">
+                Pronto! Seus dados de cadastro foram removidos de nossa base com sucesso.
+              </p>
+              <Link to={createPageUrl('Home')}>
+                <Button className="bg-slate-900 text-white w-full h-14 rounded-2xl font-bold shadow-lg shadow-slate-200">
+                  Voltar ao Início
+                </Button>
+              </Link>
             </div>
-
-            {/* Reason */}
-            <div className="space-y-2">
-              <Label>Motivo da exclusão (opcional)</Label>
-              <textarea
-                className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
-                rows={3}
-                placeholder="Nos conte o motivo para melhorarmos..."
-                value={reason}
-                onChange={e => setReason(e.target.value)}
-              />
-            </div>
-
-            {/* Confirm text */}
-            <div className="space-y-2">
-              <Label>Para confirmar, digite <strong>EXCLUIR</strong> abaixo:</Label>
-              <Input
-                value={confirmText}
-                onChange={e => setConfirmText(e.target.value.toUpperCase())}
-                placeholder="EXCLUIR"
-                className="font-mono"
-              />
-            </div>
-
-            <Button
-              className="w-full h-12 bg-red-600 hover:bg-red-700 text-white font-semibold"
-              onClick={handleRequestDelete}
-              disabled={loading || confirmText !== 'EXCLUIR'}
-            >
-              <Trash2 className="w-4 h-4 mr-2" />
-              {loading ? 'Processando...' : 'Solicitar Exclusão da Conta'}
-            </Button>
-
-            <p className="text-xs text-muted-foreground text-center">
-              A solicitação será processada em até 30 dias conforme a LGPD.
-            </p>
-          </motion.div>
-        )}
-
-        {step === 'done' && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="text-center space-y-4"
-          >
-            <div className="w-16 h-16 bg-green-100 dark:bg-green-950 rounded-full flex items-center justify-center mx-auto">
-              <CheckCircle className="w-8 h-8 text-green-600" />
-            </div>
-            <h2 className="text-xl font-bold text-foreground">Solicitação enviada</h2>
-            <p className="text-muted-foreground text-sm">
-              Recebemos seu pedido de exclusão de conta. Seus dados serão removidos em até <strong>30 dias</strong> conforme a LGPD.
-            </p>
-            <p className="text-muted-foreground text-sm">
-              Se mudar de ideia, entre em contato conosco antes desse prazo.
-            </p>
-            <Link to={createPageUrl('Home')}>
-              <Button variant="outline" className="w-full mt-4">
-                Voltar ao início
-              </Button>
-            </Link>
-          </motion.div>
-        )}
-      </motion.div>
+          )}
+        </Card>
+      </div>
     </div>
   );
 }

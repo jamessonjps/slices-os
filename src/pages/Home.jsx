@@ -8,7 +8,7 @@ import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { settingsService } from '@/services/settingsService';
 
-const DAY_NAMES = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+import { isOpen, getHoursDisplay } from '@/utils/businessHours';
 
 const DEFAULT_HOURS = {
   Segunda:  { closed: true },
@@ -19,54 +19,6 @@ const DEFAULT_HOURS = {
   Sábado:   { open: '18:00', close: '22:30', closed: false },
   Domingo:  { open: '18:00', close: '22:30', closed: false },
 };
-
-function isOpen(hours) {
-  if (!hours) return false;
-  const now = new Date();
-  const dayName = DAY_NAMES[now.getDay()];
-  const todayConfig = hours[dayName];
-  if (!todayConfig || todayConfig.closed || !todayConfig.open || !todayConfig.close) return false;
-
-  try {
-    const [openH, openM] = todayConfig.open.split(':').map(Number);
-    const [closeH, closeM] = todayConfig.close.split(':').map(Number);
-    const nowMinutes = now.getHours() * 60 + now.getMinutes();
-    const openMinutes = openH * 60 + openM;
-    const closeMinutes = closeH * 60 + closeM;
-
-    return nowMinutes >= openMinutes && nowMinutes < closeMinutes;
-  } catch (e) {
-    console.error("Error parsing hours:", e);
-    return false;
-  }
-}
-
-function getHoursDisplay(hours) {
-  if (!hours) return [];
-  const days = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
-  const groups = [];
-  let i = 0;
-  while (i < days.length) {
-    const day = days[i];
-    const config = hours[day] || { closed: true };
-    let j = i + 1;
-    while (j < days.length) {
-      const next = hours[days[j]] || { closed: true };
-      const sameSchedule = config?.closed === next?.closed &&
-        config?.open === next?.open &&
-        config?.close === next?.close;
-      if (!sameSchedule) break;
-      j++;
-    }
-    if (j - i > 1) {
-      groups.push({ label: `${day} a ${days[j - 1]}`, config });
-    } else {
-      groups.push({ label: day, config });
-    }
-    i = j;
-  }
-  return groups;
-}
 
 export default function Home() {
   const { data: settings } = useQuery({

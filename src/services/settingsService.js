@@ -45,19 +45,22 @@ export const settingsService = {
   // Atualiza as configurações
   updateSettings: async (updates) => {
     const user = await authService.getCurrentUser();
-    if (!user?.store_id) throw new Error("Usuário sem loja vinculada.");
+    const storeId = user?.store_id || getDefaultStoreId();
 
     // Faz um upsert baseado no store_id
     const { data, error } = await supabase
       .from('settings')
       .upsert({ 
-        store_id: user.store_id, 
+        store_id: storeId, 
         ...updates 
       }, { onConflict: 'store_id' })
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error("Erro ao salvar configurações:", error);
+      throw error;
+    }
     return data;
   }
 };

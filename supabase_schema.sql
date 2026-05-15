@@ -41,7 +41,7 @@ CREATE TABLE settings (
 
 ALTER TABLE settings ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Configurações visíveis publicamente" ON settings FOR SELECT USING (true);
-CREATE POLICY "Admins podem editar configs" ON settings FOR UPDATE USING (store_id = (auth.jwt() ->> 'store_id')::uuid);
+CREATE POLICY "Admins podem editar configs" ON settings FOR UPDATE USING (store_id = (SELECT store_id FROM users WHERE id = auth.uid()));
 
 -- 3. Tabela de Produtos (Menu Items)
 CREATE TABLE menu_items (
@@ -64,7 +64,7 @@ CREATE TABLE menu_items (
 
 ALTER TABLE menu_items ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Produtos visíveis publicamente" ON menu_items FOR SELECT USING (true);
-CREATE POLICY "Admins gerenciam produtos" ON menu_items FOR ALL USING (store_id = (auth.jwt() ->> 'store_id')::uuid);
+CREATE POLICY "Admins gerenciam produtos" ON menu_items FOR ALL USING (store_id = (SELECT store_id FROM users WHERE id = auth.uid()));
 
 -- Tabela de Produtos (Estoque)
 CREATE TABLE products (
@@ -129,8 +129,8 @@ CREATE TABLE orders (
 
 ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
 -- Admin ve tudo
-CREATE POLICY "Admins veem pedidos" ON orders FOR SELECT USING (store_id = (auth.jwt() ->> 'store_id')::uuid);
-CREATE POLICY "Admins atualizam pedidos" ON orders FOR UPDATE USING (store_id = (auth.jwt() ->> 'store_id')::uuid);
+CREATE POLICY "Admins veem pedidos" ON orders FOR SELECT USING (store_id = (SELECT store_id FROM users WHERE id = auth.uid()));
+CREATE POLICY "Admins atualizam pedidos" ON orders FOR UPDATE USING (store_id = (SELECT store_id FROM users WHERE id = auth.uid()));
 -- Público pode inserir
 CREATE POLICY "Público pode inserir pedidos" ON orders FOR INSERT WITH CHECK (true);
 

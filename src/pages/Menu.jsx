@@ -11,6 +11,8 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { menuService } from '@/services/menuService';
+import { settingsService } from '@/services/settingsService';
+import { isOpen } from '@/utils/businessHours';
 
 export default function Menu() {
   const [cart, setCart] = useState([]);
@@ -25,6 +27,13 @@ export default function Menu() {
       return items.filter(item => item.available);
     }
   });
+
+  const { data: settings } = useQuery({
+    queryKey: ['settings'],
+    queryFn: () => settingsService.getStoreSettings()
+  });
+
+  const open = isOpen(settings?.business_hours);
 
   const pizzas = menuItems.filter(item => item.type === 'pizza');
   const drinks = menuItems.filter(item => item.type === 'drink');
@@ -151,8 +160,10 @@ export default function Menu() {
               <div>
                 <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tighter">Millano Pizzaria</h1>
                 <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Aberto agora • Peça Online</p>
+                  <span className={`w-2 h-2 rounded-full ${open ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                    {open ? 'Aberto agora • Peça Online' : 'Fechado no momento'}
+                  </p>
                 </div>
               </div>
             </div>

@@ -4,7 +4,7 @@ import { settingsService } from '@/services/settingsService';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { ChefHat, Clock, CheckCircle, Truck, ArrowRight, Home, Circle, Pencil, Send, Plus, Trash2 } from 'lucide-react';
+import { ChefHat, Clock, CheckCircle, Truck, ArrowRight, Home, Circle, Pencil, Send, Plus, Trash2, Bell, BellOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
@@ -168,6 +168,7 @@ function KitchenContent() {
   const queryClient = useQueryClient();
   const [lastOrderCount, setLastOrderCount] = useState(0);
   const [editingOrder, setEditingOrder] = useState(/** @type {KitchenOrderItem | null} */ (null));
+  const [autoNotify, setAutoNotify] = useState(true);
 
   const settingsQuery = useQuery({
     queryKey: ['settings'],
@@ -224,7 +225,8 @@ function KitchenContent() {
     },
     onError: (err, variables, context) => {
       queryClient.setQueryData(['kitchen-orders'], context.previousOrders);
-      toast.error('Erro ao atualizar. Tentando novamente...');
+      console.error("Erro na mutação da cozinha:", err);
+      toast.error(`Erro ao atualizar: ${err.message || 'Erro desconhecido'}`);
     },
     onSettled: () => {
       queryClient.invalidateQueries(['kitchen-orders']);
@@ -270,11 +272,24 @@ function KitchenContent() {
   /** @param {KitchenOrderItem} order */
   /** @param {KitchenOrderItem} order */
   const handleAdvanceStatus = (order) => {
-    const nextStatus = /** @type {'preparing'|'ready'|'delivering'|'completed'} */ (statusFlow[order.status ?? 'pending']);
+    let nextStatus = /** @type {'preparing'|'ready'|'delivering'|'completed'} */ (statusFlow[order.status ?? 'pending']);
+    
+    // Se for retirada e o status atual for 'ready', pula direto para 'completed'
+    if (order.delivery_type === 'pickup' && order.status === 'ready') {
+      nextStatus = 'completed';
+    }
+
     if (nextStatus) {
       updateMutation.mutate({ id: order.id, data: { status: nextStatus } }, {
         onSuccess: () => {
-          sendStatusWhatsApp(order, nextStatus);
+          if (autoNotify) {
+            sendStatusWhatsApp(order, nextStatus);
+          } else {
+            const label = nextStatus === 'completed' && order.delivery_type === 'pickup' 
+              ? 'Pedido Entregue (Retirada)' 
+              : `Pedido movido para: ${statusConfig[nextStatus].label}`;
+            toast.success(label);
+          }
         }
       });
     }
@@ -328,15 +343,28 @@ function KitchenContent() {
                 <p className="text-sm text-slate-400">{orders.length} pedidos ativos</p>
               </div>
             </div>
-            <Link to={createPageUrl('AdminHome')}>
-              <Button variant="outline" className="text-white border-slate-600 hover:bg-slate-700">
-                <Home className="w-4 h-4 mr-2" />
-                Voltar
+            
+            <div className="flex items-center gap-4">
+              <Button 
+                variant={autoNotify ? "default" : "outline"}
+                size="sm"
+                onClick={() => setAutoNotify(!autoNotify)}
+                className={autoNotify ? "bg-green-600 hover:bg-green-700" : "text-slate-400 border-slate-700"}
+              >
+                {autoNotify ? <Bell className="w-4 h-4 mr-2" /> : <BellOff className="w-4 h-4 mr-2" />}
+                {autoNotify ? "Notificação: ON" : "Notificação: OFF"}
               </Button>
-            </Link>
+
+              <Link to={createPageUrl('AdminHome')}>
+                <Button variant="ghost" className="text-white bg-slate-700 hover:bg-slate-600 border border-slate-500">
+                  <Home className="w-4 h-4 mr-2" />
+                  Voltar
+                </Button>
+              </Link>
           </div>
         </div>
       </div>
+    </div>
 
       <div className="max-w-7xl mx-auto px-4 py-6">
         {isLoading ? (
@@ -536,7 +564,9 @@ function OrderCard({ order, onAdvance, onToggleItem, onEdit, updating }) {
           order.status === 'preparing' && !allItemsReady && "opacity-50 cursor-not-allowed"
         )}
       >
-        {config.nextLabel}
+        {order.status === 'ready' && order.delivery_type === 'pickup' 
+          ? 'Concluir Retirada' 
+          : config.nextLabel}
         <ArrowRight className="w-4 h-4 ml-2" />
       </Button>
 

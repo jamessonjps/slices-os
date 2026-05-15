@@ -111,7 +111,10 @@ export default function MenuManagement() {
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link to={createPageUrl('AdminHome')}>
-              <Button variant="ghost" size="icon"><ArrowLeft className="w-5 h-5" /></Button>
+              <Button variant="ghost" className="text-slate-600 bg-slate-100 hover:bg-slate-200 px-4">
+                <ArrowLeft className="w-5 h-5 mr-2" />
+                Voltar
+              </Button>
             </Link>
             <div>
               <h1 className="text-xl font-bold text-slate-900">Gerenciar Cardápio</h1>

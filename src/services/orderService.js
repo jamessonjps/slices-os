@@ -86,14 +86,21 @@ export const orderService = {
   },
 
   updateOrder: async (id, orderData) => {
+    const user = await authService.getCurrentUser();
+    const storeId = user?.store_id || getDefaultStoreId();
+
     const { data, error } = await supabase
       .from('orders')
-      .update(orderData)
+      .update({ ...orderData, store_id: storeId })
       .eq('id', id)
+      .eq('store_id', storeId) // Garantia dupla para RLS
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error("Erro ao atualizar pedido:", error);
+      throw error;
+    }
     return data;
   },
 

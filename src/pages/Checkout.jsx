@@ -17,6 +17,7 @@ import { safeLocalStorage, safeJsonParse } from '@/utils/storage';
 import { formatCurrency } from '@/utils/format';
 import { orderService } from '@/services/orderService';
 import { settingsService } from '@/services/settingsService';
+import { isOpen } from '@/utils/businessHours';
 import { toast } from 'sonner';
 
 const checkoutSchema = z.object({
@@ -43,14 +44,28 @@ export default function Checkout() {
   const navigate = useNavigate();
   const [cart, setCart] = React.useState([]);
 
-  const { data: settings } = useQuery({
+  const { data: settings, isLoading: isLoadingSettings } = useQuery({
     queryKey: ['settings'],
-    queryFn: () => settingsService.getStoreSettings()
+    queryFn: () => settingsService.getStoreSettings(),
+    staleTime: 0, // Garante que sempre pegue o mais novo
   });
 
-  const deliveryFeeConfig = parseFloat(settings?.delivery_fee) || 0;
+  const hours = settings?.business_hours || {};
+  const isStoreOpen = isOpen(hours);
   const storeName = settings?.store_name || 'SliceOS';
   const waPhone = settings?.whatsapp_number || '';
+  const deliveryFeeConfig = parseFloat(settings?.delivery_fee) || 0;
+
+  if (isLoadingSettings) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-500 font-medium">Sincronizando com a loja...</p>
+        </div>
+      </div>
+    );
+  }
 
   const {
     register,
@@ -316,15 +331,22 @@ export default function Checkout() {
 
                 <Button
                   type="submit"
-                  disabled={isSubmitting || createOrderMutation.isPending}
-                  className="w-full h-16 bg-red-600 hover:bg-red-700 text-white font-black text-lg rounded-2xl shadow-2xl shadow-red-900/20"
+                  disabled={isSubmitting || createOrderMutation.isPending || !open}
+                  className="w-full h-16 bg-red-600 hover:bg-red-700 text-white font-black text-lg rounded-2xl shadow-2xl shadow-red-900/20 disabled:opacity-50 disabled:grayscale"
                 >
                   {isSubmitting || createOrderMutation.isPending ? (
                     <Loader2 className="w-6 h-6 animate-spin" />
+                  ) : !open ? (
+                    'LOJA FECHADA'
                   ) : (
                     'CONFIRMAR PEDIDO'
                   )}
                 </Button>
+                {!open && (
+                  <p className="text-[10px] text-red-400 text-center font-bold uppercase tracking-widest mt-2">
+                    Não estamos aceitando pedidos no momento
+                  </p>
+                )}
               </div>
             </Card>
             <SliceOSFooter />
