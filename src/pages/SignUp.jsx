@@ -5,13 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
-import { ChefHat, UserPlus, ArrowLeft, Loader2 } from 'lucide-react';
+import { ChefHat, UserPlus, ArrowLeft, Loader2, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { createPageUrl } from '@/utils';
 
 export default function SignUp() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({
     fullName: '',
     email: '',
@@ -89,25 +90,36 @@ export default function SignUp() {
             </div>
             <div className="space-y-2">
               <Label className="text-slate-300">Senha *</Label>
-              <Input
-                required
-                type="password"
-                className="bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white h-12 rounded-xl focus:ring-red-500"
-                placeholder="••••••"
-                value={form.password}
-                onChange={f('password')}
-              />
+              <div className="relative">
+                <Input
+                  required
+                  type={showPassword ? "text" : "password"}
+                  className="bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white h-12 pr-12 rounded-xl focus:ring-red-500"
+                  placeholder="••••••"
+                  value={form.password}
+                  onChange={f('password')}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
             </div>
             <div className="space-y-2">
               <Label className="text-slate-300">Confirmar Senha *</Label>
-              <Input
-                required
-                type="password"
-                className="bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white h-12 rounded-xl focus:ring-red-500"
-                placeholder="••••••"
-                value={form.confirmPassword}
-                onChange={f('confirmPassword')}
-              />
+              <div className="relative">
+                <Input
+                  required
+                  type={showPassword ? "text" : "password"}
+                  className="bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white h-12 pr-12 rounded-xl focus:ring-red-500"
+                  placeholder="••••••"
+                  value={form.confirmPassword}
+                  onChange={f('confirmPassword')}
+                />
+              </div>
             </div>
 
             <Button

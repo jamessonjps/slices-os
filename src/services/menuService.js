@@ -66,9 +66,60 @@ export const menuService = {
     }));
   },
 
+  listProducts: async (categoryId = null) => {
+    const storeId = getDefaultStoreId();
+    let query = supabase
+      .from('products')
+      .select('*')
+      .eq('store_id', storeId)
+      .eq('is_active', true);
+
+    if (categoryId) {
+      query = query.eq('category_id', categoryId);
+    }
+
+    const { data, error } = await query.order('name');
+    if (error) throw error;
+    
+    return (data || []).map(p => ({
+      ...p,
+      price: Number(p.price || 0),
+      half_price: p.half_price ? Number(p.half_price) : null
+    }));
+  },
+
+  listCategories: async () => {
+    const storeId = getDefaultStoreId();
+    const { data, error } = await supabase
+      .from('categories')
+      .select('*')
+      .eq('store_id', storeId)
+      .order('order_index');
+
+    if (error) throw error;
+    return data || [];
+  },
+
+  getProductById: async (id) => {
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) throw error;
+    if (!data) return null;
+
+    return {
+      ...data,
+      price: Number(data.price || 0),
+      half_price: data.half_price ? Number(data.half_price) : null
+    };
+  },
+
   createMenuItem: async (productData) => {
     const user = await authService.getCurrentUser();
-    if (!user?.store_id) throw new Error("Usu\u00E1rio n\u00E3o tem loja associada.");
+    if (!user?.store_id) throw new Error("Usuário não tem loja associada.");
 
     const { data, error } = await supabase
       .from('menu_items')

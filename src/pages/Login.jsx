@@ -5,7 +5,7 @@ import * as z from 'zod';
 import { authService } from '@/services/authService';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { LogIn, Loader2, KeyRound, ArrowLeft } from 'lucide-react';
+import { LogIn, Loader2, KeyRound, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import { toast } from 'sonner';
 import { createPageUrl } from '@/utils';
@@ -24,6 +24,7 @@ export default function Login() {
   const [resetEmail, setResetEmail] = useState('');
   const [isResetting, setIsResetting] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   
   const {
     register,
@@ -125,14 +126,23 @@ export default function Login() {
                 </DialogContent>
               </Dialog>
             </div>
-            <input 
-              type="password" 
-              {...register('password')}
-              className={`w-full p-3 border rounded-xl focus:ring-2 focus:ring-red-500 focus:outline-none transition-all bg-white dark:bg-slate-950 text-slate-900 dark:text-white ${
-                errors.password ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'
-              }`}
-              placeholder="••••••••" 
-            />
+            <div className="relative">
+              <input 
+                type={showPassword ? "text" : "password"} 
+                {...register('password')}
+                className={`w-full p-3 pr-12 border rounded-xl focus:ring-2 focus:ring-red-500 focus:outline-none transition-all bg-white dark:bg-slate-950 text-slate-900 dark:text-white ${
+                  errors.password ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'
+                }`}
+                placeholder="••••••••" 
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+              >
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
             {errors.password && <p className="text-xs text-red-500 font-medium pl-1">{errors.password.message}</p>}
           </div>
 

@@ -20,7 +20,11 @@ export const orderService = {
       .limit(limitCount);
 
     if (error) throw error;
-    return data;
+    return (data || []).map(o => ({
+      ...o,
+      total_amount: Number(o.total_amount || 0),
+      delivery_fee: Number(o.delivery_fee || 0)
+    }));
   },
 
   getOrderById: async (id) => {
@@ -31,7 +35,12 @@ export const orderService = {
       .single();
 
     if (error && error.code !== 'PGRST116') throw error;
-    return data || null;
+    if (!data) return null;
+    return {
+      ...data,
+      total_amount: Number(data.total_amount || 0),
+      delivery_fee: Number(data.delivery_fee || 0)
+    };
   },
 
   createOrder: async (orderData) => {
@@ -89,18 +98,28 @@ export const orderService = {
     const user = await authService.getCurrentUser();
     const storeId = user?.store_id || getDefaultStoreId();
 
+    // Removemos o store_id do corpo do update para evitar conflitos de RLS,
+    // já que o store_id de um pedido nunca deve mudar.
+    const { store_id, ...dataToUpdate } = orderData;
+
     const { data, error } = await supabase
       .from('orders')
-      .update({ ...orderData, store_id: storeId })
+      .update(dataToUpdate)
       .eq('id', id)
-      .eq('store_id', storeId) // Garantia dupla para RLS
+      // Removemos a trava de store_id aqui para deixar o RLS do Supabase decidir.
+      // Se o usuário não pertencer à loja do pedido, o banco bloqueará de qualquer forma.
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) {
       console.error("Erro ao atualizar pedido:", error);
       throw error;
     }
+
+    if (!data) {
+      throw new Error("Pedido não encontrado ou você não tem permissão para editá-lo.");
+    }
+
     return data;
   },
 
@@ -129,7 +148,11 @@ export const orderService = {
       .order('created_date', { ascending: true });
 
     if (error) throw error;
-    return data;
+    return (data || []).map(o => ({
+      ...o,
+      total_amount: Number(o.total_amount || 0),
+      delivery_fee: Number(o.delivery_fee || 0)
+    }));
   },
 
   getDriverHistory: async (driverId, dateStr) => {
@@ -162,11 +185,11 @@ export const orderService = {
       .from('orders')
       .update({ status: 'out_for_delivery', driver_id: driverId })
       .eq('id', orderId)
-      .eq('store_id', storeId)
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
+    if (!data) throw new Error("Não foi possível aceitar a entrega. Verifique suas permissões.");
     return data;
   },
 
@@ -178,11 +201,11 @@ export const orderService = {
       .from('orders')
       .update({ status: 'completed' })
       .eq('id', orderId)
-      .eq('store_id', storeId)
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
+    if (!data) throw new Error("Não foi possível confirmar a entrega. Verifique suas permissões.");
     return data;
   },
 
@@ -198,7 +221,11 @@ export const orderService = {
       .order('created_date', { ascending: false });
 
     if (error) throw error;
-    return data;
+    return (data || []).map(o => ({
+      ...o,
+      total_amount: Number(o.total_amount || 0),
+      delivery_fee: Number(o.delivery_fee || 0)
+    }));
   },
 
   listActiveOrders: async () => {
@@ -213,7 +240,11 @@ export const orderService = {
       .order('created_date', { ascending: false });
 
     if (error) throw error;
-    return data;
+    return (data || []).map(o => ({
+      ...o,
+      total_amount: Number(o.total_amount || 0),
+      delivery_fee: Number(o.delivery_fee || 0)
+    }));
   },
 
   filterOrders: async (filter = {}) => {

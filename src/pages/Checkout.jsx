@@ -94,8 +94,18 @@ export default function Checkout() {
     }
   }, []);
 
-  const subtotal = useMemo(() => cart.reduce((sum, item) => sum + item.price * item.quantity, 0), [cart]);
-  const deliveryFee = deliveryType === 'delivery' ? deliveryFeeConfig : 0;
+  const calculateSubtotal = () => {
+    return (cart || []).reduce((sum, item) => sum + (Number(item.price || 0) * (item.quantity || 1)), 0);
+  };
+
+  const calculateTotal = () => {
+    const subtotal = calculateSubtotal();
+    const deliveryFee = deliveryType === 'delivery' ? Number(settings?.delivery_fee || 0) : 0;
+    return subtotal + deliveryFee;
+  };
+
+  const subtotal = calculateSubtotal();
+  const deliveryFee = deliveryType === 'delivery' ? Number(settings?.delivery_fee || 0) : 0;
   const total = subtotal + deliveryFee;
 
   const createOrderMutation = useMutation({

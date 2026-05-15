@@ -69,5 +69,29 @@ export const userService = {
       throw error;
     }
     return true;
+  },
+
+  subscribe: (callback, storeId) => {
+    const channel = supabase
+      .channel('public:users')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'users',
+          filter: storeId ? `store_id=eq.${storeId}` : undefined
+        },
+        (payload) => {
+          callback(payload.new || payload.old, payload.eventType);
+        }
+      )
+      .subscribe();
+
+    return {
+      unsubscribe: () => {
+        supabase.removeChannel(channel);
+      }
+    };
   }
 };

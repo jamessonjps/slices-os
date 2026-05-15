@@ -32,6 +32,30 @@ export default function UserManagement() {
     queryFn: () => userService.listUsers(),
   });
 
+  // Integração em Tempo Real (Realtime)
+  useEffect(() => {
+    if (!authUser?.store_id) return;
+
+    const subscription = userService.subscribe((payload, eventType) => {
+      queryClient.setQueryData(['users'], (oldUsers = []) => {
+        if (eventType === 'INSERT') {
+          if (oldUsers.find(u => u.id === payload.id)) return oldUsers;
+          toast.info(`Novo cadastro: ${payload.full_name}`);
+          return [payload, ...oldUsers];
+        }
+        if (eventType === 'UPDATE') {
+          return oldUsers.map(u => u.id === payload.id ? { ...u, ...payload } : u);
+        }
+        if (eventType === 'DELETE') {
+          return oldUsers.filter(u => u.id !== payload.id);
+        }
+        return oldUsers;
+      });
+    }, authUser.store_id);
+
+    return () => subscription.unsubscribe();
+  }, [authUser?.store_id, queryClient]);
+
   const createMutation = useMutation({
     mutationFn: (data) => userService.createUser(data),
     onSuccess: () => { 

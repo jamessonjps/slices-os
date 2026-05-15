@@ -4,7 +4,28 @@ import { settingsService } from '@/services/settingsService';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { ChefHat, Clock, CheckCircle, Truck, ArrowRight, Home, Circle, Pencil, Send, Plus, Trash2, Bell, BellOff, Printer, LogOut } from 'lucide-react';
+import { 
+  CheckCircle, 
+  Clock, 
+  Printer, 
+  Bell, 
+  BellOff, 
+  MoreVertical, 
+  Home, 
+  LogOut, 
+  Volume2,
+  Trash2,
+  Pencil,
+  ChevronRight,
+  MessageSquare,
+  Send,
+  Plus,
+  ChefHat,
+  Truck,
+  ArrowRight,
+  Circle,
+  Loader2
+} from 'lucide-react';
 import { authService } from '@/services/authService';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -16,6 +37,7 @@ import { format, differenceInMinutes } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
 import AuthGate from '@/components/AuthGate';
+import { useAuth } from '@/lib/AuthContext';
 import { cn } from '@/lib/utils';
 import PrintableTicket from '@/components/PrintableTicket';
 
@@ -79,7 +101,6 @@ function EditOrderDialog({ order, open, onClose, onSave, waPhone, settings }) {
   };
 
   const handleSendWhatsApp = () => {
-    console.log('Enviando WhatsApp para o pedido:', order.id);
     const sub = items.reduce((s, i) => s + (i.price * (i.quantity || 1)), 0);
     const deliveryFee = order.delivery_type === 'delivery' ? (order.delivery_fee || 0) : 0;
     const total = sub + deliveryFee;
@@ -191,17 +212,18 @@ function EditOrderDialog({ order, open, onClose, onSave, waPhone, settings }) {
             <span className="text-lg font-black text-slate-900 dark:text-white">R$ {calcTotal().toFixed(2)}</span>
           </div>
 
-          <div className="pt-2">
-            <Button
-              className="w-full h-12 bg-green-600 hover:bg-green-700 text-white font-bold"
+          {/* Botões de Ação Principais */}
+          <div className="flex gap-2 pt-2">
+            <Button 
+              size="sm" 
+              className={`flex-1 h-12 rounded-xl font-bold transition-all active:scale-95 ${statusConfig[order.status].color} hover:opacity-90`}
               onClick={handleSendWhatsApp}
             >
-              <Send className="w-5 h-5 mr-2" />
-              Salvar e Notificar Cliente
+              <div className="flex items-center justify-center gap-2">
+                <span>Salvar e Notificar</span>
+                <Send className="w-5 h-5" />
+              </div>
             </Button>
-            <p className="text-[11px] text-center text-slate-500 dark:text-slate-400 mt-2">
-              Ao clicar, o pedido será atualizado e o WhatsApp web abrirá com a nova mensagem.
-            </p>
           </div>
         </div>
       </DialogContent>
@@ -211,6 +233,7 @@ function EditOrderDialog({ order, open, onClose, onSave, waPhone, settings }) {
 
 function KitchenContent() {
   const queryClient = useQueryClient();
+  const { user: authUser } = useAuth();
   const [autoPrint, setAutoPrint] = useState(false); // Controle de impressão automática
   
   // Função para gerar som de alerta via Web Audio API (mais robusto que arquivos)
@@ -259,7 +282,6 @@ function KitchenContent() {
       const context = new (window.AudioContext || window.webkitAudioContext)();
       if (context.state === 'suspended') {
         context.resume().then(() => {
-          console.log('Áudio destravado com sucesso!');
           window.removeEventListener('click', unlockAudio);
         });
       } else {
@@ -308,16 +330,12 @@ function KitchenContent() {
   // Realtime Integration
   useEffect(() => {
     if (!settingsQuery.data?.store_id) {
-      console.log('Aguardando carregar store_id das configurações...');
       return;
     }
 
     const currentStoreId = settingsQuery.data.store_id;
-    console.log('Iniciando Realtime para a loja:', currentStoreId);
 
     const subscription = orderService.subscribe((payload, eventType) => {
-      console.log('Evento Realtime Recebido:', eventType, payload);
-
       // ATUALIZAÇÃO INSTANTÂNEA DO CACHE
       queryClient.setQueryData(['kitchen-orders'], (oldOrders = []) => {
         if (eventType === 'INSERT') {
@@ -376,7 +394,12 @@ function KitchenContent() {
     onError: (err, variables, context) => {
       queryClient.setQueryData(['kitchen-orders'], context.previousOrders);
       console.error("Erro na mutação da cozinha:", err);
-      toast.error(`Erro ao atualizar: ${err.message || 'Erro desconhecido'}`);
+      
+      let errorMsg = "Não foi possível atualizar o pedido.";
+      if (err.code === '42501') errorMsg = "Sua conta não tem permissão para editar pedidos. Verifique com o administrador.";
+      if (err.message) errorMsg = `Erro: ${err.message}`;
+      
+      toast.error(errorMsg, { duration: 5000 });
     },
     onSettled: () => {
       queryClient.invalidateQueries(['kitchen-orders']);
@@ -499,34 +522,34 @@ function KitchenContent() {
       {/* Header */}
       <div className="bg-slate-800 border-b border-slate-700 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <ChefHat className="w-8 h-8 text-white" />
               <div>
-                <h1 className="text-2xl font-bold text-white">Cozinha</h1>
+                <h1 className="text-2xl font-bold text-white leading-tight">Cozinha</h1>
                 <p className="text-sm text-slate-400">{orders.length} pedidos ativos</p>
               </div>
             </div>
             
-            <div className="flex items-center gap-4">
+            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
               <Button 
-                variant={autoNotify ? "default" : "outline"}
+                variant="outline"
                 size="sm"
                 onClick={toggleAutoNotify}
-                className={autoNotify ? "bg-green-600 hover:bg-green-700" : "text-slate-400 border-slate-700"}
+                className={`flex-1 sm:flex-none h-10 ${autoNotify ? "bg-green-600/20 border-green-500 text-green-400" : "text-slate-400 border-slate-700"}`}
               >
-                {autoNotify ? <Bell className="w-4 h-4 mr-2" /> : <BellOff className="w-4 h-4 mr-2" />}
-                {autoNotify ? "Notificação: ON" : "Notificação: OFF"}
+                {autoNotify ? <Bell className="w-4 h-4" /> : <BellOff className="w-4 h-4" />}
+                <span className="ml-2 text-[10px] uppercase font-bold hidden xs:inline">Notif.</span>
               </Button>
 
               <Button 
                 variant="outline"
                 size="sm"
                 onClick={toggleAutoPrint}
-                className={`transition-colors ${autoPrint ? 'bg-green-600 border-green-500 text-white hover:bg-green-700' : 'bg-slate-800 border-slate-700 text-slate-400'}`}
+                className={`flex-1 sm:flex-none h-10 ${autoPrint ? 'bg-blue-600/20 border-blue-500 text-blue-400' : 'bg-slate-800 border-slate-700 text-slate-400'}`}
               >
-                <Printer className="w-4 h-4 mr-2" />
-                Auto-Imprimir: {autoPrint ? "ON" : "OFF"}
+                <Printer className="w-4 h-4" />
+                <span className="ml-2 text-[10px] uppercase font-bold hidden xs:inline">Print</span>
               </Button>
 
               <Button 
@@ -536,35 +559,34 @@ function KitchenContent() {
                   playNotificationSound();
                   toast.success('Som de alerta ativado!');
                 }}
-                className="bg-amber-600 hover:bg-amber-700 text-white border-0 font-bold"
+                className="flex-1 sm:flex-none h-10 bg-amber-600/20 border-amber-500 text-amber-500 font-bold"
               >
-                <Bell className="w-4 h-4 mr-2" />
-                Ativar/Testar Som
+                <Volume2 className="w-4 h-4" />
+                <span className="ml-2 text-[10px] uppercase font-bold hidden xs:inline">Testar</span>
               </Button>
 
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="text-red-400 hover:text-red-300 border border-red-900/50"
-                onClick={async () => {
-                  await authService.logout();
-                  window.location.href = createPageUrl('Login');
-                }}
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                Sair
-              </Button>
-
-              <Link to={createPageUrl('AdminHome')}>
-                <Button variant="ghost" className="text-white bg-slate-700 hover:bg-slate-600 border border-slate-500">
-                  <Home className="w-4 h-4 mr-2" />
-                  Voltar
+              <div className="flex gap-2 w-full sm:w-auto">
+                <Link to={createPageUrl('AdminHome')} className="flex-1 sm:flex-none">
+                  <Button variant="ghost" className="w-full text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 h-10">
+                    <Home className="w-4 h-4" />
+                  </Button>
+                </Link>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="flex-1 sm:flex-none text-red-400 hover:text-red-300 border border-red-900/50 h-10"
+                  onClick={async () => {
+                    await authService.logout();
+                    window.location.href = createPageUrl('Login');
+                  }}
+                >
+                  <LogOut className="w-4 h-4" />
                 </Button>
-              </Link>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
       <div className="max-w-7xl mx-auto px-4 py-6">
         {isLoading ? (
@@ -695,6 +717,20 @@ function OrderCard({ order, onAdvance, onToggleItem, onEdit, onPrint, updating }
     }
   };
 
+  const handleSendWhatsApp = () => {
+    const phone = order.customer_phone?.replace(/\D/g, '');
+    if (!phone) return;
+    const statusMessages = {
+      pending: `🍕 Olá ${order.customer_name}! Recebemos seu pedido #${order.id.slice(0, 8)} e ele já está na nossa fila de espera!`,
+      preparing: `👨‍🍳 Olá ${order.customer_name}! Seu pedido #${order.id.slice(0, 8)} já está sendo preparado com todo carinho!`,
+      ready: `✅ Olá ${order.customer_name}! Seu pedido está PRONTO! ${order.delivery_type === 'pickup' ? 'Já pode vir buscar! 🍕' : 'Em instantes sairá para entrega.'}`,
+      out_for_delivery: `🛵 Olá ${order.customer_name}! Seu pedido SAIU PARA ENTREGA! Em breve chegará até você.`,
+      completed: `🍕 Pedido entregue! Obrigado pela preferência, ${order.customer_name}!`
+    };
+    const msg = encodeURIComponent(statusMessages[order.status] || statusMessages.pending);
+    window.open(`https://wa.me/55${phone}?text=${msg}`, '_blank');
+  };
+
   return (
     <Card className={cn(
       "p-4 bg-slate-800 border-slate-700",
@@ -770,49 +806,64 @@ function OrderCard({ order, onAdvance, onToggleItem, onEdit, onPrint, updating }
         ))}
       </div>
 
-      {/* Advance Button */}
-      <Button
-        onClick={() => onAdvance(order)}
-        disabled={updating || (order.status === 'preparing' && !allItemsReady)}
-        className={cn(
-          `w-full ${config.color} hover:opacity-90 text-white font-semibold`,
-          order.status === 'preparing' && !allItemsReady && "opacity-50 cursor-not-allowed"
-        )}
-      >
-        {order.status === 'ready' && order.delivery_type === 'pickup' 
-          ? 'Concluir Retirada' 
-          : config.nextLabel}
-        <ArrowRight className="w-4 h-4 ml-2" />
-      </Button>
-
       {order.status === 'preparing' && !allItemsReady && (
-        <p className="text-xs text-amber-400 text-center mt-2">
+        <p className="text-xs text-amber-400 text-center mb-3 font-medium bg-amber-400/10 py-1 rounded-lg">
           Marque todos os itens como prontos
         </p>
       )}
 
       {order.notes && (
-        <p className="text-xs text-slate-400 mt-3 italic">"{order.notes}"</p>
+        <div className="bg-slate-900/50 p-3 rounded-xl mb-4 border-l-2 border-amber-500">
+          <p className="text-xs text-slate-300 italic leading-relaxed">"{order.notes}"</p>
+        </div>
       )}
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => onEdit(order)}
-        className="w-full mt-3 border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white text-xs"
-      >
-        <Pencil className="w-3 h-3 mr-1" />
-        Editar e Notificar Cliente
-      </Button>
 
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => onPrint(order)}
-        className="w-full mt-2 border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white text-xs"
-      >
-        <Printer className="w-3 h-3 mr-1" />
-        Imprimir Comanda
-      </Button>
+      {/* Ações do Pedido */}
+      <div className="space-y-2">
+        <Button
+          onClick={() => onAdvance(order)}
+          disabled={updating || (order.status === 'preparing' && !allItemsReady)}
+          className={cn(
+            "w-full h-12 rounded-xl text-white font-bold text-base shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2",
+            config.color,
+            order.status === 'preparing' && !allItemsReady && "opacity-50 cursor-not-allowed"
+          )}
+        >
+          {updating ? <Loader2 className="w-5 h-5 animate-spin" /> : (
+            <>
+              <span>{order.status === 'ready' && order.delivery_type === 'pickup' ? 'Concluir Retirada' : config.nextLabel}</span>
+              <ChevronRight className="w-5 h-5" />
+            </>
+          )}
+        </Button>
+
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            className="flex-1 h-11 border-slate-700 bg-slate-800 text-slate-300 rounded-xl hover:bg-slate-700 hover:text-white transition-all"
+            onClick={() => onEdit(order)}
+          >
+            <Pencil className="w-4 h-4 mr-2" />
+            <span className="text-xs font-bold uppercase tracking-wider">Editar</span>
+          </Button>
+
+          <Button
+            variant="outline"
+            className="w-14 h-11 border-slate-700 bg-slate-800 text-slate-300 rounded-xl hover:bg-slate-700 hover:text-white"
+            onClick={() => onPrint(order)}
+          >
+            <Printer className="w-4 h-4" />
+          </Button>
+
+          <Button
+            variant="outline"
+            className="w-14 h-11 border-green-900/50 bg-green-950/30 text-green-500 rounded-xl hover:bg-green-900/50 hover:text-green-400"
+            onClick={handleSendWhatsApp}
+          >
+            <MessageSquare className="w-4 h-4" />
+          </Button>
+        </div>
+      </div>
     </Card>
   );
 }
