@@ -799,7 +799,7 @@ function MenuItemDialog({ open, onClose, editingItem, onSubmit, isLoading, categ
           </div>
 
           {/* Max Flavors - Somente para Tamanhos */}
-          {selectedCategory === 'size' && (
+          {watchCategory === 'size' && (
             <div className="space-y-2">
               <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Máx. Sabores Permitidos</Label>
               <Input
