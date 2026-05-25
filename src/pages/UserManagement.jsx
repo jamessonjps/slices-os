@@ -88,7 +88,12 @@ export default function UserManagement() {
   });
 
   const openNew = () => { setEditing(null); setForm(emptyForm); setShowForm(true); };
-  const openEdit = (u) => { setEditing(u); setForm({ full_name: u.full_name, email: u.email, role: u.role, status: u.status || 'active' }); setShowForm(true); };
+  const openEdit = (u) => { 
+    if (u.role === 'master' && authUser?.role !== 'master') return toast.error('Apenas um Master pode editar este perfil.');
+    setEditing(u); 
+    setForm({ full_name: u.full_name, email: u.email, role: u.role, status: u.status || 'active' }); 
+    setShowForm(true); 
+  };
   const closeForm = () => { setShowForm(false); setEditing(null); };
 
   const handleSubmit = (e) => {
@@ -102,13 +107,14 @@ export default function UserManagement() {
     }
   };
 
-  const handleDelete = (id) => {
-    if (confirm('Remover este usuário?')) deleteMutation.mutate(id);
+  const handleDelete = (u) => {
+    if (u.role === 'master' && authUser?.role !== 'master') return toast.error('Perfil protegido pelo sistema.');
+    if (confirm('Remover este usuário?')) deleteMutation.mutate(u.id);
   };
 
   const f = (field) => (e) => setForm(prev => ({ ...prev, [field]: e.target.value }));
 
-  const isAdmin = authUser?.role === 'admin';
+  const isAdmin = ['admin', 'master'].includes(authUser?.role);
 
   if (!isAdmin) {
     return (
@@ -171,11 +177,12 @@ export default function UserManagement() {
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="font-bold text-slate-900 dark:text-white">{u.full_name}</p>
                       <Badge className={
+                        u.role === 'master' ? 'bg-indigo-100 text-indigo-700 border-indigo-200 shadow-indigo-200/50 shadow-md' :
                         u.role === 'admin' ? 'bg-purple-100 text-purple-700 border-purple-200' : 
                         u.role === 'delivery' ? 'bg-orange-100 text-orange-700 border-orange-200' : 
                         'bg-blue-100 text-blue-700 border-blue-200'
                       }>
-                        {u.role === 'admin' ? 'Administrador' : u.role === 'delivery' ? 'Entregador' : 'Equipe (Staff)'}
+                        {u.role === 'master' ? 'Master (TI)' : u.role === 'admin' ? 'Administrador' : u.role === 'delivery' ? 'Entregador' : 'Equipe (Staff)'}
                       </Badge>
                       {u.status === 'pending' && (
                         <Badge className="bg-amber-100 text-amber-700 border-amber-200">Aguardando Aprovação</Badge>
@@ -191,7 +198,7 @@ export default function UserManagement() {
                   <Button variant="outline" size="sm" className="h-8 text-xs font-semibold" onClick={() => openEdit(u)}>
                     <Pencil className="w-3 h-3 mr-1.5" /> Editar
                   </Button>
-                  <Button variant="ghost" size="sm" className="h-8 text-xs text-red-500 hover:text-red-600 hover:bg-red-50" onClick={() => handleDelete(u.id)}>
+                  <Button variant="ghost" size="sm" className="h-8 text-xs text-red-500 hover:text-red-600 hover:bg-red-50" onClick={() => handleDelete(u)}>
                     <Trash2 className="w-3 h-3 mr-1.5" /> Remover
                   </Button>
                 </div>

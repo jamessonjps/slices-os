@@ -10,7 +10,7 @@ import logoUrl from '@/assets/logo.jpeg';
 
 export default function AdminHome() {
   const { user, isAuthenticated } = useAuth();
-  const isAdmin = user?.role === 'admin';
+  const isAdmin = ['admin', 'master'].includes(user?.role);
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-6">
@@ -35,7 +35,7 @@ export default function AdminHome() {
             <div className="mt-4 inline-flex items-center gap-2 px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-full">
               <div className={`w-2 h-2 rounded-full ${isAdmin ? 'bg-purple-500' : 'bg-blue-500'}`} />
               <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
-                {user.full_name || user.email} • {isAdmin ? 'Admin' : 'Equipe'}
+                {user.full_name || user.email} • {user?.role === 'master' ? 'Master' : (isAdmin ? 'Admin' : 'Equipe')}
               </p>
             </div>
           )}

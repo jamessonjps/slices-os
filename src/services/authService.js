@@ -13,9 +13,9 @@ export const authService = {
         .or(`id.eq.${session.user.id},auth_id.eq.${session.user.id},email.eq.${session.user.email}`)
         .maybeSingle();
 
-      // Força role admin para o email mestre ou se definido no banco
+      // Força role master para o email mestre ou se definido no banco
       const isMasterEmail = session.user.email === 'jamesson.jps@gmail.com';
-      const role = isMasterEmail ? 'admin' : (userData?.role || 'staff');
+      const role = isMasterEmail ? 'master' : (userData?.role || 'staff');
 
       // Se achou por email mas não tinha auth_id, vincula agora
       if (userData && !userData.auth_id) {
@@ -33,7 +33,7 @@ export const authService = {
             auth_id: session.user.id,
             email: session.user.email,
             full_name: userData?.full_name || 'Admin Master',
-            role: 'admin',
+            role: 'master',
             store_id: envStoreId
           }, { onConflict: 'email' });
         }
@@ -67,7 +67,7 @@ export const authService = {
   },
   
   isAdmin: (user) => {
-    return user?.role === 'admin';
+    return ['admin', 'master'].includes(user?.role);
   },
   
   hasRole: (user, roles = []) => {
@@ -106,7 +106,7 @@ export const authService = {
       .maybeSingle();
 
     const isMasterEmail = data.user.email === 'jamesson.jps@gmail.com';
-    const role = isMasterEmail ? 'admin' : (userData?.role || 'staff');
+    const role = isMasterEmail ? 'master' : (userData?.role || 'staff');
 
     if (userData && !userData.auth_id) {
       await supabase.from('users').update({ auth_id: data.user.id }).eq('id', userData.id);
