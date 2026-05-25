@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/card';
 import { ChefHat, UserPlus, ArrowLeft, Loader2, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { createPageUrl } from '@/utils';
+import logoUrl from '@/assets/logo.jpeg';
 
 export default function SignUp() {
   const navigate = useNavigate();
@@ -56,20 +57,19 @@ export default function SignUp() {
         </Button>
       </Link>
 
-      <div className="w-full max-w-md space-y-8">
+      <div className="w-full max-w-md space-y-8 px-2 sm:px-0">
         <div className="text-center">
-          <div className="bg-black rounded-3xl shadow-xl inline-block mx-auto mb-4 border border-slate-800 overflow-hidden w-48 h-24 relative">
+          <div className="bg-black rounded-3xl shadow-xl flex items-center justify-center mx-auto mb-4 border border-slate-800 overflow-hidden w-32 h-32 sm:w-40 sm:h-40 relative">
              <img 
-               src="/src/assets/logo.jpeg" 
+               src={logoUrl} 
                alt="Milano Pizzaria" 
-               className="absolute inset-0 w-full h-full object-cover scale-150 transform"
+               className="absolute inset-0 w-full h-full object-contain p-2"
                onError={(e) => {
-                 e.target.parentElement.style.padding = '1rem';
                  e.target.style.display = 'none';
-                 e.target.nextSibling.style.display = 'block';
+                 e.target.nextSibling.style.display = 'flex';
                }}
              />
-             <div style={{ display: 'none' }}>
+             <div className="hidden w-full h-full items-center justify-center bg-slate-900">
                <UserPlus className="w-10 h-10 text-white" />
              </div>
           </div>
@@ -79,7 +79,7 @@ export default function SignUp() {
           </p>
         </div>
 
-        <Card className="p-8 bg-slate-800 border-slate-700 shadow-2xl rounded-3xl">
+        <Card className="p-5 sm:p-8 bg-slate-800 border-slate-700 shadow-2xl rounded-3xl">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label className="text-slate-300">Nome Completo *</Label>
