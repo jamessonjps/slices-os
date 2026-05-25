@@ -79,7 +79,7 @@ export default function Login() {
              <img 
                src={logoUrl} 
                alt="Milano Pizzaria" 
-               className="absolute inset-0 w-full h-full object-cover scale-150 transform"
+               className="absolute inset-0 w-full h-full object-cover object-center"
                onError={(e) => {
                  e.target.style.display = 'none';
                  e.target.nextSibling.style.display = 'flex';

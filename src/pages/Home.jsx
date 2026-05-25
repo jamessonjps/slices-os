@@ -58,7 +58,7 @@ export default function Home() {
              <img 
                src={logoUrl} 
                alt={storeName} 
-               className="absolute inset-0 w-full h-full object-cover scale-150 transform"
+               className="absolute inset-0 w-full h-full object-cover object-center"
                onError={(e) => {
                  e.target.style.display = 'none';
                  e.target.nextSibling.style.display = 'flex';
