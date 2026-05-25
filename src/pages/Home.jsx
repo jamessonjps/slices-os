@@ -8,6 +8,7 @@ import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { settingsService } from '@/services/settingsService';
 import { isOpen, getHoursDisplay } from '@/utils/businessHours';
+import logoUrl from '@/assets/logo.jpeg';
 
 const DEFAULT_HOURS = {
   Segunda:  { closed: true },
@@ -53,19 +54,18 @@ export default function Home() {
           transition={{ duration: 0.5 }}
           className="mb-8"
         >
-          <div className="bg-black p-0 rounded-3xl shadow-2xl mb-6 inline-block border border-slate-800 overflow-hidden w-64 h-32 relative">
+          <div className="bg-black rounded-3xl shadow-2xl flex items-center justify-center mx-auto mb-6 border border-slate-800 overflow-hidden w-64 h-32 relative">
              <img 
-               src="/src/assets/logo.jpeg" 
+               src={logoUrl} 
                alt={storeName} 
-               className="absolute inset-0 w-full h-full object-cover scale-150 transform"
+               className="absolute inset-0 w-full h-full object-contain"
                onError={(e) => {
-                 e.target.parentElement.style.padding = '1.5rem';
                  e.target.style.display = 'none';
-                 e.target.nextSibling.style.display = 'block';
+                 e.target.nextSibling.style.display = 'flex';
                }}
              />
-             <div style={{ display: 'none' }}>
-               <Pizza className="w-16 h-16 text-red-600 mx-auto" />
+             <div className="hidden w-full h-full items-center justify-center bg-black">
+               <Pizza className="w-16 h-16 text-red-600" />
              </div>
           </div>
           <h1 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tighter">

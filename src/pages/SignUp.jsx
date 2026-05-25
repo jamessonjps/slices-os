@@ -59,11 +59,11 @@ export default function SignUp() {
 
       <div className="w-full max-w-md space-y-8 px-2 sm:px-0">
         <div className="text-center">
-          <div className="bg-black rounded-3xl shadow-xl flex items-center justify-center mx-auto mb-4 border border-slate-800 overflow-hidden w-32 h-32 sm:w-40 sm:h-40 relative">
+          <div className="bg-black rounded-3xl shadow-xl flex items-center justify-center mx-auto mb-4 border border-slate-800 overflow-hidden w-56 h-28 sm:w-64 sm:h-32 relative">
              <img 
                src={logoUrl} 
                alt="Milano Pizzaria" 
-               className="absolute inset-0 w-full h-full object-contain p-2"
+               className="absolute inset-0 w-full h-full object-contain"
                onError={(e) => {
                  e.target.style.display = 'none';
                  e.target.nextSibling.style.display = 'flex';
