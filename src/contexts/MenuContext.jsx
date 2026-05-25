@@ -21,7 +21,7 @@ export function MenuProvider({ children }) {
       const activeItems = items.filter(i => i.available);
 
       // Flavors
-      const flavors = activeItems.filter(i => i.category === 'flavor').map(i => ({
+      let flavors = activeItems.filter(i => i.category === 'flavor').map(i => ({
         id: i.id,
         name: i.name,
         description: i.description,
@@ -34,11 +34,11 @@ export function MenuProvider({ children }) {
       }));
 
       // Sizes
-      const sizes = activeItems.filter(i => i.category === 'size').map(i => {
+      let sizes = activeItems.filter(i => i.category === 'size').map(i => {
         const nameLower = i.name.toLowerCase();
-        let idStr = 'large';
-        if (nameLower.includes('pequen') || nameLower.includes('broto')) idStr = 'small';
-        else if (nameLower.includes('méd') || nameLower.includes('med')) idStr = 'medium';
+        let idStr = 'grande';
+        if (nameLower.includes('pequen') || nameLower.includes('broto')) idStr = 'pequena';
+        else if (nameLower.includes('méd') || nameLower.includes('med')) idStr = 'media';
 
         return {
           id: idStr,
@@ -46,8 +46,8 @@ export function MenuProvider({ children }) {
           basePrice: i.price || 0,
           description: i.description,
           maxFlavors: i.max_flavors || 1,
-          slices: idStr === 'small' ? 4 : (idStr === 'medium' ? 6 : 8),
-          diameter: idStr === 'small' ? '25cm' : (idStr === 'medium' ? '30cm' : '35cm'),
+          slices: idStr === 'pequena' ? 4 : (idStr === 'media' ? 6 : 8),
+          diameter: idStr === 'pequena' ? '25cm' : (idStr === 'media' ? '30cm' : '35cm'),
           image: i.image_url
         };
       });
@@ -71,7 +71,7 @@ export function MenuProvider({ children }) {
       }));
 
       // Extras
-      const extras = activeItems.filter(i => i.category === 'extra').map(i => ({
+      let extras = activeItems.filter(i => i.category === 'extra').map(i => ({
         id: i.id,
         name: i.name,
         price: i.price || 0,
@@ -80,7 +80,7 @@ export function MenuProvider({ children }) {
       }));
 
       // Beverages
-      const beverages = activeItems.filter(i => i.category === 'beverage').map(i => ({
+      let beverages = activeItems.filter(i => i.category === 'beverage').map(i => ({
         id: i.id,
         name: i.name,
         price: i.price || 0,
@@ -88,6 +88,35 @@ export function MenuProvider({ children }) {
         image: i.image_url,
         category: i.type || 'refrigerante'
       }));
+
+      // --- FALLBACKS (Para quando o banco estiver vazio em lojas novas) ---
+      if (sizes.length === 0) {
+        sizes = [
+          { id: 'pequena', name: 'Pequena', basePrice: 35.90, slices: 4, maxFlavors: 1, diameter: '25cm' },
+          { id: 'media', name: 'Média', basePrice: 45.90, slices: 6, maxFlavors: 2, diameter: '30cm' },
+          { id: 'grande', name: 'Grande', basePrice: 55.90, slices: 8, maxFlavors: 3, diameter: '35cm' }
+        ];
+      }
+      if (crusts.length === 0) {
+        crusts = [
+          { id: 'tradicional', name: 'Tradicional', price: 0, description: 'Massa fininha e crocante' },
+          { id: 'pan', name: 'Massa Pan', price: 4.90, description: 'Mais alta e macia' }
+        ];
+      }
+      if (borders.length === 0) {
+        borders = [
+          { id: 'sem_borda', name: 'Sem Borda', price: 0 },
+          { id: 'catupiry', name: 'Catupiry Original', price: 8.90 },
+          { id: 'cheddar', name: 'Cheddar', price: 8.90 }
+        ];
+      }
+      if (flavors.length === 0) {
+        flavors = [
+          { id: 'mussarela', name: 'Mussarela', description: 'Queijo mussarela derretido, molho de tomate e orégano.', price_small: 0, price_medium: 0, price_large: 0, category: 'tradicional', allowHalfAndHalf: true, image: 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?auto=format&fit=crop&q=80&w=300' },
+          { id: 'calabresa', name: 'Calabresa', description: 'Calabresa fatiada, cebola e azeitonas.', price_small: 0, price_medium: 0, price_large: 0, category: 'tradicional', allowHalfAndHalf: true, image: 'https://images.unsplash.com/photo-1534308983496-4fabb1a015ee?auto=format&fit=crop&q=80&w=300' },
+          { id: 'frango_catupiry', name: 'Frango c/ Catupiry', description: 'Frango desfiado temperado coberto com Catupiry original.', price_small: 2, price_medium: 3, price_large: 5, category: 'especial', allowHalfAndHalf: true, image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&q=80&w=300' }
+        ];
+      }
 
       setMenuData({
         flavors,
