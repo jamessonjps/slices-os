@@ -7,8 +7,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import {
   ArrowLeft, Plus, Edit2, Trash2, Pizza, Coffee, IceCream,
-  Check, X, ChevronDown, ChevronRight, Search, Eye, EyeOff, Slice
+  Check, X, ChevronDown, ChevronRight, Search, Eye, EyeOff, Slice, Image as ImageIcon
 } from 'lucide-react';
+import ImageUploader from '@/components/ui/ImageUploader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -19,15 +20,16 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Textarea } from '@/components/ui/textarea';
 import { menuService } from '@/services/menuService';
+import { storageService } from '@/services/storageService';
 
 // ─── Categorias Padr\u00e3o ──────────────────────────────────────────
 const DEFAULT_CATEGORIES = [
-  { value: 'pizza_tradicional', label: 'Pizzas Tradicionais', icon: 'Pizza', type: 'pizza' },
-  { value: 'pizza_especial', label: 'Pizzas Especiais', icon: 'Pizza', type: 'pizza' },
-  { value: 'pizza_doce', label: 'Pizzas Doces', icon: 'Pizza', type: 'pizza' },
-  { value: 'pizza_6_fatias', label: 'Pizzas 6 Fatias', icon: 'Slice', type: 'pizza' },
-  { value: 'bebida', label: 'Bebidas', icon: 'Coffee', type: 'drink' },
-  { value: 'sobremesa', label: 'Sobremesas', icon: 'IceCream', type: 'dessert' },
+  { value: 'size', label: 'Tamanhos de Pizza', icon: 'Pizza', type: 'pizza_config' },
+  { value: 'crust', label: 'Massas', icon: 'Slice', type: 'pizza_config' },
+  { value: 'border', label: 'Bordas', icon: 'Slice', type: 'pizza_config' },
+  { value: 'flavor', label: 'Sabores', icon: 'Pizza', type: 'pizza' },
+  { value: 'extra', label: 'Adicionais', icon: 'Plus', type: 'extra' },
+  { value: 'beverage', label: 'Bebidas e Sobremesas', icon: 'Coffee', type: 'drink' },
 ];
 
 const ICON_MAP = { Pizza, Coffee, IceCream, Slice };
@@ -40,7 +42,7 @@ const loadCategories = () => {
   } catch { return DEFAULT_CATEGORIES; }
 };
 
-const PIZZA_CATEGORIES = ['pizza_tradicional', 'pizza_especial', 'pizza_doce', 'pizza_6_fatias'];
+const PIZZA_CATEGORIES = ['flavor'];
 
 // ─── Schema Zod ───────────────────────────────────────────────
 const menuItemSchema = z.object({
@@ -48,6 +50,7 @@ const menuItemSchema = z.object({
   description: z.string().optional().default(''),
   category: z.string().min(1, 'Selecione uma categoria'),
   type: z.string().min(1, 'Selecione um tipo'),
+  image_url: z.string().optional().nullable(),
   available: z.boolean().default(true),
   allow_half_half: z.boolean().default(false),
   prep_time: z.coerce.number().min(1).max(120).default(30),
@@ -55,6 +58,7 @@ const menuItemSchema = z.object({
   price_small: z.coerce.number().min(0).nullable().optional(),
   price_medium: z.coerce.number().min(0).nullable().optional(),
   price_large: z.coerce.number().min(0).nullable().optional(),
+  max_flavors: z.coerce.number().min(1).max(4).nullable().optional(),
 });
 
 // ─── Componente Principal ─────────────────────────────────────
@@ -334,9 +338,20 @@ export default function MenuManagement() {
                           <tbody className="divide-y divide-slate-100">
                             {catItems.map(item => (
                               <tr key={item.id} className={`hover:bg-slate-50 dark:bg-slate-950 transition-colors ${!item.available ? 'opacity-50' : ''}`}>
-                                {/* Nome */}
+                                {/* Nome e Imagem */}
                                 <td className="px-5 py-3">
-                                  <p className="font-semibold text-slate-900 dark:text-white text-sm">{item.name}</p>
+                                  <div className="flex items-center gap-3">
+                                    {item.image_url ? (
+                                      <div className="w-10 h-10 rounded overflow-hidden shrink-0">
+                                        <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
+                                      </div>
+                                    ) : (
+                                      <div className="w-10 h-10 rounded bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
+                                        <ImageIcon className="w-4 h-4 text-slate-400" />
+                                      </div>
+                                    )}
+                                    <p className="font-semibold text-slate-900 dark:text-white text-sm">{item.name}</p>
+                                  </div>
                                 </td>
 
                                 {/* Descrição */}
@@ -465,7 +480,7 @@ export default function MenuManagement() {
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label className="text-slate-700 dark:text-slate-200">{'\u00CDcone'}</Label>
+              <Label className="text-slate-700 dark:text-slate-200">Ícone</Label>
               <div className="flex gap-2">
                 {Object.entries(ICON_MAP).map(([name, IconComp]) => (
                   <button
@@ -531,6 +546,8 @@ function MenuItemDialog({ open, onClose, editingItem, onSubmit, isLoading, categ
     defaultValues: {
       name: '',
       description: '',
+      image_url: '',
+      max_flavors: 1,
       category: 'pizza_tradicional',
       type: 'pizza',
       available: true,
@@ -568,6 +585,8 @@ function MenuItemDialog({ open, onClose, editingItem, onSubmit, isLoading, categ
         reset({
           name: editingItem.name || '',
           description: editingItem.description || '',
+          image_url: editingItem.image_url || '',
+          max_flavors: editingItem.max_flavors || 1,
           category: editingItem.category || 'pizza_tradicional',
           type: editingItem.type || 'pizza',
           available: editingItem.available ?? true,
@@ -582,6 +601,8 @@ function MenuItemDialog({ open, onClose, editingItem, onSubmit, isLoading, categ
         reset({
           name: '',
           description: '',
+          image_url: '',
+          max_flavors: 1,
           category: 'pizza_tradicional',
           type: 'pizza',
           available: true,
@@ -597,7 +618,7 @@ function MenuItemDialog({ open, onClose, editingItem, onSubmit, isLoading, categ
   }, [open, editingItem, reset]);
 
   const onFormSubmit = (data) => {
-    // Limpar campos de pre\u00e7o irrelevantes
+    // Limpar campos de preço irrelevantes
     if (data.type === 'pizza') {
       data.price = null;
     } else {
@@ -605,20 +626,36 @@ function MenuItemDialog({ open, onClose, editingItem, onSubmit, isLoading, categ
       data.price_medium = null;
       data.price_large = null;
       data.allow_half_half = false;
+      data.max_flavors = 1;
     }
     onSubmit(data);
   };
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
         <DialogHeader>
-          <DialogTitle className="text-lg text-slate-900 dark:text-white">
-            {editingItem ? 'Editar Item' : 'Novo Item do Cardápio'}
+          <DialogTitle className="text-xl font-bold text-slate-900 dark:text-white">
+            {editingItem ? 'Editar Item' : 'Novo Item'}
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-5 pt-2">
+        <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6 mt-4">
+          {/* Imagem */}
+          <div className="space-y-2">
+            <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Foto do Produto (Opcional)</Label>
+            <Controller
+              name="image_url"
+              control={control}
+              render={({ field }) => (
+                <ImageUploader 
+                  value={field.value} 
+                  onChange={field.onChange} 
+                />
+              )}
+            />
+          </div>
+
           {/* Nome e Categoria */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
@@ -760,6 +797,19 @@ function MenuItemDialog({ open, onClose, editingItem, onSubmit, isLoading, categ
               </div>
             )}
           </div>
+
+          {/* Max Flavors - Somente para Tamanhos */}
+          {selectedCategory === 'size' && (
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Máx. Sabores Permitidos</Label>
+              <Input
+                type="number"
+                placeholder="Ex: 2"
+                {...register('max_flavors')}
+                className="h-11 dark:bg-slate-800 dark:border-slate-700"
+              />
+            </div>
+          )}
 
           {/* Botão Submit */}
           <Button

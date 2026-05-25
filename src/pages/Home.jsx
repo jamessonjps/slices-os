@@ -122,7 +122,7 @@ export default function Home() {
         </div>
 
         <div className="space-y-4">
-          <Link to={createPageUrl('Menu')} className="block">
+          <Link to={createPageUrl('Wizard')} className="block">
             <Button className="w-full h-16 bg-red-600 hover:bg-red-700 text-white text-lg font-black shadow-lg shadow-red-200 dark:shadow-none rounded-2xl transition-all active:scale-95">
               <Pizza className="w-6 h-6 mr-3" />
               VER CARDÁPIO & PEDIR
