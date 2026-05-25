@@ -75,11 +75,11 @@ export default function Login() {
 
       <div className="max-w-md w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-8 shadow-sm mx-2">
         <div className="text-center mb-6 sm:mb-8">
-          <div className="bg-white dark:bg-black rounded-3xl shadow-lg flex items-center justify-center mx-auto mb-4 border border-slate-100 dark:border-slate-800 overflow-hidden w-56 h-28 sm:w-64 sm:h-32 relative">
+          <div className="bg-black rounded-3xl shadow-lg flex items-center justify-center mx-auto mb-4 border border-slate-800 overflow-hidden w-64 h-32 sm:w-72 sm:h-36 relative">
              <img 
                src={logoUrl} 
                alt="Milano Pizzaria" 
-               className="absolute inset-0 w-full h-full object-contain"
+               className="absolute inset-0 w-full h-full object-cover scale-150 transform"
                onError={(e) => {
                  e.target.style.display = 'none';
                  e.target.nextSibling.style.display = 'flex';

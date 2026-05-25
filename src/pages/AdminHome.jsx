@@ -6,6 +6,7 @@ import SliceOSFooter from '@/components/SliceOSFooter';
 import { Button } from '@/components/ui/button';
 import { authService } from '@/services/authService';
 import { useAuth } from '@/lib/AuthContext';
+import logoUrl from '@/assets/logo.jpeg';
 
 export default function AdminHome() {
   const { user, isAuthenticated } = useAuth();
@@ -15,8 +16,19 @@ export default function AdminHome() {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-6">
       <div className="text-center max-w-sm w-full">
         <div className="mb-12">
-          <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-xl mb-6 inline-block">
-            <ChefHat className="w-12 h-12 text-slate-900 dark:text-white" />
+          <div className="bg-black rounded-3xl shadow-2xl flex items-center justify-center mx-auto mb-6 border border-slate-800 overflow-hidden w-64 h-32 sm:w-72 sm:h-36 relative">
+             <img 
+               src={logoUrl} 
+               alt="Painel" 
+               className="absolute inset-0 w-full h-full object-cover scale-150 transform"
+               onError={(e) => {
+                 e.target.style.display = 'none';
+                 e.target.nextSibling.style.display = 'flex';
+               }}
+             />
+             <div className="hidden w-full h-full items-center justify-center bg-white dark:bg-slate-900">
+               <ChefHat className="w-12 h-12 text-slate-900 dark:text-white" />
+             </div>
           </div>
           <h1 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tighter">Painel de Controle</h1>
           {user && (

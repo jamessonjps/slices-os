@@ -54,11 +54,11 @@ export default function Home() {
           transition={{ duration: 0.5 }}
           className="mb-8"
         >
-          <div className="bg-black rounded-3xl shadow-2xl flex items-center justify-center mx-auto mb-6 border border-slate-800 overflow-hidden w-64 h-32 relative">
+          <div className="bg-black rounded-3xl shadow-2xl flex items-center justify-center mx-auto mb-6 border border-slate-800 overflow-hidden w-64 h-32 sm:w-72 sm:h-36 relative">
              <img 
                src={logoUrl} 
                alt={storeName} 
-               className="absolute inset-0 w-full h-full object-contain"
+               className="absolute inset-0 w-full h-full object-cover scale-150 transform"
                onError={(e) => {
                  e.target.style.display = 'none';
                  e.target.nextSibling.style.display = 'flex';
