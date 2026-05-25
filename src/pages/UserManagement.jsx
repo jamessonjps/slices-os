@@ -207,7 +207,8 @@ export default function UserManagement() {
                 </div>
               </div>
             </Card>
-          ))
+            );
+          })
         )}
       </div>
 
