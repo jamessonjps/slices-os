@@ -60,10 +60,10 @@ export default function TrackOrder() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-slate-200 border-t-slate-900 rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-500 text-sm font-medium">Localizando seu pedido...</p>
+          <div className="w-12 h-12 border-4 border-slate-200 dark:border-slate-800 border-t-slate-900 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">Localizando seu pedido...</p>
         </div>
       </div>
     );
@@ -71,13 +71,13 @@ export default function TrackOrder() {
 
   if (!order) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-slate-50">
-        <div className="text-center bg-white p-8 rounded-2xl shadow-sm border border-slate-100 max-w-sm w-full">
+      <div className="min-h-screen flex items-center justify-center p-4 bg-slate-50 dark:bg-slate-950">
+        <div className="text-center bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 max-w-sm w-full">
           <Package className="w-16 h-16 text-slate-200 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-slate-900 mb-2">Ops!</h2>
-          <p className="text-slate-500 mb-6">Não conseguimos encontrar esse pedido em nosso sistema.</p>
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Ops!</h2>
+          <p className="text-slate-500 dark:text-slate-400 mb-6">Não conseguimos encontrar esse pedido em nosso sistema.</p>
           <Link to={createPageUrl('Home')} className="w-full">
-            <Button className="w-full bg-slate-900">Voltar ao Início</Button>
+            <Button className="w-full bg-slate-900 dark:bg-slate-100 dark:text-slate-900">Voltar ao Início</Button>
           </Link>
         </div>
       </div>
@@ -88,23 +88,23 @@ export default function TrackOrder() {
   const items = order.items || [];
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-24">
-      <div className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-24">
+      <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-50 shadow-sm">
         <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link to={createPageUrl('Home')}>
               <Button variant="ghost" size="icon"><ArrowLeft className="w-5 h-5" /></Button>
             </Link>
             <div>
-              <h1 className="text-lg font-bold text-slate-900">Pedido #{order.id.slice(0, 8)}</h1>
-              <p className="text-xs text-slate-500 uppercase tracking-wider">{order.customer_name}</p>
+              <h1 className="text-lg font-bold text-slate-900 dark:text-white">Pedido #{order.id.slice(0, 8)}</h1>
+              <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">{order.customer_name}</p>
             </div>
           </div>
         </div>
       </div>
 
       <div className="max-w-xl mx-auto px-4 py-8 space-y-6">
-        <Card className="p-6 bg-slate-900 text-white shadow-xl border-0 overflow-hidden relative">
+        <Card className="p-6 bg-slate-900 dark:bg-slate-100 dark:text-slate-900 text-white shadow-xl border-0 overflow-hidden relative">
           <div className="absolute top-0 right-0 p-8 opacity-10">
             <Clock className="w-24 h-24 rotate-12" />
           </div>
@@ -121,11 +121,11 @@ export default function TrackOrder() {
         </Card>
 
         <Card className="p-6 border-0 shadow-sm">
-          <h3 className="font-bold text-slate-900 mb-6 flex items-center gap-2">
+          <h3 className="font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
             Acompanhe o Status
           </h3>
           <div className="space-y-8 relative">
-            <div className="absolute left-5 top-2 bottom-2 w-0.5 bg-slate-100" />
+            <div className="absolute left-5 top-2 bottom-2 w-0.5 bg-slate-100 dark:bg-slate-800" />
             {statusFlow.map((status, index) => {
               const Icon = status.icon;
               const isActive = index <= currentIndex;
@@ -134,12 +134,12 @@ export default function TrackOrder() {
               return (
                 <div key={status.key} className="flex items-center gap-5 relative z-10">
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center border-4 ${
-                    isActive ? 'bg-white border-green-50' : 'bg-white border-slate-50'
+                    isActive ? 'bg-white dark:bg-slate-900 border-green-50' : 'bg-white dark:bg-slate-900 border-slate-50'
                   }`}>
                     <Icon className={`w-4 h-4 ${isActive ? status.color : 'text-slate-300'}`} />
                   </div>
                   <div className="flex-1">
-                    <p className={`font-bold ${isActive ? 'text-slate-900' : 'text-slate-300'}`}>
+                    <p className={`font-bold ${isActive ? 'text-slate-900 dark:text-white' : 'text-slate-300'}`}>
                       {status.label}
                     </p>
                     {isCurrent && (
@@ -158,32 +158,32 @@ export default function TrackOrder() {
         </Card>
 
         <Card className="p-6 border-0 shadow-sm">
-          <h3 className="font-bold text-slate-900 mb-4 text-sm uppercase tracking-wider">Resumo do Pedido</h3>
+          <h3 className="font-bold text-slate-900 dark:text-white mb-4 text-sm uppercase tracking-wider">Resumo do Pedido</h3>
           <div className="space-y-4">
             {items.map((item, i) => (
               <div key={i} className="flex justify-between items-start text-sm">
                 <div className="flex-1 pr-4">
-                  <p className="font-semibold text-slate-800">{item.quantity || 1}x {item.name}</p>
+                  <p className="font-semibold text-slate-800 dark:text-slate-200">{item.quantity || 1}x {item.name}</p>
                   {item.size && <p className="text-[10px] text-slate-400">Tamanho: {item.size}</p>}
                 </div>
-                <p className="font-bold text-slate-900">R$ {((item.price || 0) * (item.quantity || 1)).toFixed(2)}</p>
+                <p className="font-bold text-slate-900 dark:text-white">R$ {((item.price || 0) * (item.quantity || 1)).toFixed(2)}</p>
               </div>
             ))}
-            <div className="flex justify-between pt-4 border-t border-slate-100">
-              <span className="font-bold text-slate-900">Total Pago</span>
-              <span className="text-xl font-black text-slate-900">R$ {order.total_amount?.toFixed(2)}</span>
+            <div className="flex justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
+              <span className="font-bold text-slate-900 dark:text-white">Total Pago</span>
+              <span className="text-xl font-black text-slate-900 dark:text-white">R$ {order.total_amount?.toFixed(2)}</span>
             </div>
           </div>
         </Card>
 
         {order.delivery_type === 'delivery' && order.address_text && (
-          <Card className="p-4 bg-white border-0 shadow-sm flex items-start gap-4">
-            <div className="bg-slate-50 p-2 rounded-lg">
+          <Card className="p-4 bg-white dark:bg-slate-900 border-0 shadow-sm flex items-start gap-4">
+            <div className="bg-slate-50 dark:bg-slate-950 p-2 rounded-lg">
               <Truck className="w-5 h-5 text-slate-400" />
             </div>
             <div>
-              <h3 className="font-bold text-slate-900 text-sm">Endereço de Entrega</h3>
-              <p className="text-xs text-slate-500 leading-relaxed mt-1">{order.address_text}</p>
+              <h3 className="font-bold text-slate-900 dark:text-white text-sm">Endereço de Entrega</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mt-1">{order.address_text}</p>
             </div>
           </Card>
         )}
@@ -202,7 +202,7 @@ export default function TrackOrder() {
           </a>
 
           <Link to={createPageUrl('MyOrders')} className="block">
-            <Button variant="outline" className="w-full h-12 font-medium border-slate-200 text-slate-600">
+            <Button variant="outline" className="w-full h-12 font-medium border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300">
               Ver Histórico de Pedidos
             </Button>
           </Link>

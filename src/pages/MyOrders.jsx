@@ -19,7 +19,7 @@ const statusConfig = {
   preparing: { label: 'Preparando', color: 'bg-blue-100 text-blue-800' },
   ready: { label: 'Pronto', color: 'bg-green-100 text-green-800' },
   delivering: { label: 'Em Entrega', color: 'bg-purple-100 text-purple-800' },
-  completed: { label: 'Concluído', color: 'bg-slate-100 text-slate-600' },
+  completed: { label: 'Concluído', color: 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300' },
   cancelled: { label: 'Cancelado', color: 'bg-red-100 text-red-800' }
 };
 
@@ -50,15 +50,15 @@ export default function MyOrders() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="bg-white border-b border-slate-200 sticky top-0 z-50">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+      <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-50">
         <div className="max-w-3xl mx-auto px-4 py-4 flex items-center gap-3">
           <Link to={createPageUrl('Home')}>
             <Button variant="ghost" size="icon"><ArrowLeft className="w-5 h-5" /></Button>
           </Link>
           <div>
-            <h1 className="text-xl font-bold text-slate-900">Meus Pedidos</h1>
-            <p className="text-xs text-slate-500 uppercase tracking-widest">Histórico completo</p>
+            <h1 className="text-xl font-bold text-slate-900 dark:text-white">Meus Pedidos</h1>
+            <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-widest">Histórico completo</p>
           </div>
         </div>
       </div>
@@ -67,8 +67,8 @@ export default function MyOrders() {
         {!searchPhone && (
           <Card className="p-8 text-center border-0 shadow-sm">
             <Package className="w-16 h-16 text-slate-200 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-slate-900 mb-2">Acompanhe seus pedidos</h2>
-            <p className="text-slate-500 text-sm mb-6">Insira o número do seu celular para ver o histórico e status atual.</p>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Acompanhe seus pedidos</h2>
+            <p className="text-slate-500 dark:text-slate-400 text-sm mb-6">Insira o número do seu celular para ver o histórico e status atual.</p>
             <form onSubmit={handleSearch} className="space-y-4 max-w-xs mx-auto">
               <div className="text-left">
                 <Label className="text-xs uppercase text-slate-400 font-bold ml-1">Celular / WhatsApp</Label>
@@ -80,7 +80,7 @@ export default function MyOrders() {
                   required
                 />
               </div>
-              <Button type="submit" className="w-full h-12 bg-slate-900 text-white font-bold">
+              <Button type="submit" className="w-full h-12 bg-slate-900 dark:bg-slate-100 dark:text-slate-900 text-white font-bold">
                 Ver Meus Pedidos
               </Button>
             </form>
@@ -89,14 +89,14 @@ export default function MyOrders() {
 
         {searchPhone && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+            <div className="flex items-center justify-between bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-3">
                 <div className="bg-green-100 p-2 rounded-lg">
                   <CheckCircle className="w-4 h-4 text-green-600" />
                 </div>
                 <div>
                   <p className="text-xs text-slate-400 uppercase font-bold tracking-tighter">Pedidos de</p>
-                  <p className="font-bold text-slate-900">{searchPhone}</p>
+                  <p className="font-bold text-slate-900 dark:text-white">{searchPhone}</p>
                 </div>
               </div>
               <Button
@@ -115,16 +115,16 @@ export default function MyOrders() {
 
             {isLoading ? (
               <div className="text-center py-20">
-                <div className="w-10 h-10 border-4 border-slate-200 border-t-slate-900 rounded-full animate-spin mx-auto mb-4"></div>
+                <div className="w-10 h-10 border-4 border-slate-200 dark:border-slate-800 border-t-slate-900 rounded-full animate-spin mx-auto mb-4"></div>
                 <p className="text-slate-400 text-sm">Buscando seus pedidos...</p>
               </div>
             ) : orders.length === 0 ? (
-              <div className="text-center py-20 bg-white rounded-2xl shadow-sm border border-slate-100">
+              <div className="text-center py-20 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800">
                 <Package className="w-16 h-16 text-slate-200 mx-auto mb-4" />
-                <h3 className="text-lg font-bold text-slate-900 mb-1">Nenhum pedido ainda</h3>
-                <p className="text-slate-500 text-sm mb-6">Você ainda não realizou pedidos com este número.</p>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">Nenhum pedido ainda</h3>
+                <p className="text-slate-500 dark:text-slate-400 text-sm mb-6">Você ainda não realizou pedidos com este número.</p>
                 <Link to={createPageUrl('Home')}>
-                  <Button className="bg-slate-900 h-12 px-8">
+                  <Button className="bg-slate-900 dark:bg-slate-100 dark:text-slate-900 h-12 px-8">
                     Pedir uma Pizza Agora
                   </Button>
                 </Link>
@@ -182,7 +182,7 @@ export default function MyOrders() {
                                   #{order.id.slice(0, 8)}
                                 </span>
                               </div>
-                              <h3 className="font-bold text-slate-900 mb-1">
+                              <h3 className="font-bold text-slate-900 dark:text-white mb-1">
                                 {pizzaCount > 0 ? `${pizzaCount} Pizza${pizzaCount > 1 ? 's' : ''}` : ''}
                                 {pizzaCount > 0 && drinkCount > 0 ? ' & ' : ''}
                                 {drinkCount > 0 ? `${drinkCount} Bebida${drinkCount > 1 ? 's' : ''}` : ''}
@@ -192,7 +192,7 @@ export default function MyOrders() {
                               </p>
                             </div>
                             <div className="text-right">
-                              <p className="text-lg font-black text-slate-900">R$ {order.total_amount?.toFixed(2)}</p>
+                              <p className="text-lg font-black text-slate-900 dark:text-white">R$ {order.total_amount?.toFixed(2)}</p>
                               <div className="flex items-center justify-end gap-1 text-slate-400 font-bold text-[10px] mt-2 group-hover:text-blue-600 transition-colors">
                                 RASTREAR <ChevronRight className="w-3 h-3" />
                               </div>
@@ -200,7 +200,7 @@ export default function MyOrders() {
                           </div>
                         </Link>
                         
-                        <div className="mt-4 pt-4 border-t border-slate-100 flex justify-end">
+                        <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-end">
                           <Button 
                             onClick={handleReorder}
                             className="bg-red-600 hover:bg-red-700 text-white font-bold h-9 px-4 rounded-xl text-xs"

@@ -112,12 +112,12 @@ export default function UserManagement() {
 
   if (!isAdmin) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
-        <div className="max-w-md w-full bg-white border border-slate-200 rounded-3xl p-8 text-center shadow-sm">
-          <p className="text-2xl font-semibold text-slate-900 mb-3">Acesso restrito</p>
-          <p className="text-slate-600 mb-6">Você não tem permissão para acessar esta área administrativa.</p>
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 p-4">
+        <div className="max-w-md w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 text-center shadow-sm">
+          <p className="text-2xl font-semibold text-slate-900 dark:text-white mb-3">Acesso restrito</p>
+          <p className="text-slate-600 dark:text-slate-300 mb-6">Você não tem permissão para acessar esta área administrativa.</p>
           <Link to={createPageUrl('AdminHome')}>
-            <Button className="bg-slate-900 hover:bg-slate-800 text-white">Voltar para o painel</Button>
+            <Button className="bg-slate-900 dark:bg-slate-100 dark:text-slate-900 hover:bg-slate-800 text-white">Voltar para o painel</Button>
           </Link>
         </div>
       </div>
@@ -125,22 +125,22 @@ export default function UserManagement() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="bg-white border-b border-slate-200 sticky top-0 z-50">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+      <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-50">
         <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link to={createPageUrl('AdminHome')}>
-              <Button variant="ghost" className="text-slate-600 bg-slate-100 hover:bg-slate-200 px-4">
+              <Button variant="ghost" className="text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 px-4">
                 <ArrowLeft className="w-5 h-5 mr-2" />
                 Voltar
               </Button>
             </Link>
             <div>
-              <h1 className="text-xl font-bold text-slate-900">Gestão de Usuários</h1>
-              <p className="text-xs text-slate-500">Administração de perfis</p>
+              <h1 className="text-xl font-bold text-slate-900 dark:text-white">Gestão de Usuários</h1>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Administração de perfis</p>
             </div>
           </div>
-          <Button onClick={openNew} className="bg-slate-900 hover:bg-slate-800">
+          <Button onClick={openNew} className="bg-slate-900 dark:bg-slate-100 dark:text-slate-900 hover:bg-slate-800">
             <UserPlus className="w-4 h-4 mr-2" /> Novo Usuário
           </Button>
         </div>
@@ -160,7 +160,7 @@ export default function UserManagement() {
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-start gap-3 flex-1 min-w-0">
                   <div className="relative">
-                    <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center shrink-0 font-bold text-slate-600 text-lg border border-slate-200">
+                    <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0 font-bold text-slate-600 dark:text-slate-300 text-lg border border-slate-200 dark:border-slate-800">
                       {u.full_name?.charAt(0)?.toUpperCase() || '?'}
                     </div>
                     {new Date(u.created_at) > new Date(Date.now() - 24 * 60 * 60 * 1000) && (
@@ -169,7 +169,7 @@ export default function UserManagement() {
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-bold text-slate-900">{u.full_name}</p>
+                      <p className="font-bold text-slate-900 dark:text-white">{u.full_name}</p>
                       <Badge className={
                         u.role === 'admin' ? 'bg-purple-100 text-purple-700 border-purple-200' : 
                         u.role === 'delivery' ? 'bg-orange-100 text-orange-700 border-orange-200' : 
@@ -181,7 +181,7 @@ export default function UserManagement() {
                         <Badge className="bg-amber-100 text-amber-700 border-amber-200">Aguardando Aprovação</Badge>
                       )}
                     </div>
-                    <p className="text-sm text-slate-500 truncate">{u.email}</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 truncate">{u.email}</p>
                     <p className="text-[10px] text-slate-400 mt-1">
                       Desde {new Date(u.created_at).toLocaleDateString('pt-BR')}
                     </p>
@@ -242,7 +242,7 @@ export default function UserManagement() {
 
             <div className="flex gap-3 pt-2">
               <Button type="button" variant="outline" className="flex-1" onClick={closeForm}>Cancelar</Button>
-              <Button type="submit" className="flex-1 bg-slate-900" disabled={createMutation.isPending || updateMutation.isPending}>
+              <Button type="submit" className="flex-1 bg-slate-900 dark:bg-slate-100 dark:text-slate-900" disabled={createMutation.isPending || updateMutation.isPending}>
                 {editing ? 'Salvar Alterações' : 'Cadastrar'}
               </Button>
             </div>

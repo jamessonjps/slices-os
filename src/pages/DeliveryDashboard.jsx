@@ -126,13 +126,13 @@ export default function DeliveryDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col">
       {/* Header Fixo */}
       <div className="bg-red-600 text-white sticky top-0 z-50 shadow-md">
         <div className="px-4 py-4 max-w-lg mx-auto">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="bg-white/20 p-2 rounded-full">
+              <div className="bg-white dark:bg-slate-900/20 p-2 rounded-full">
                 <Bike className="w-6 h-6 text-white" />
               </div>
               <div>
@@ -182,15 +182,15 @@ export default function DeliveryDashboard() {
           {isLoadingActive ? (
             <div className="text-center py-12">
               <RefreshCcw className="w-8 h-8 animate-spin text-slate-300 mx-auto mb-2" />
-              <p className="text-slate-500 text-sm">Buscando corridas...</p>
+              <p className="text-slate-500 dark:text-slate-400 text-sm">Buscando corridas...</p>
             </div>
           ) : activeOrders.length === 0 ? (
             <div className="text-center py-16">
-              <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Package className="w-8 h-8 text-slate-400" />
               </div>
               <h2 className="text-lg font-bold text-slate-700">Nenhuma corrida no momento</h2>
-              <p className="text-slate-500 text-sm mt-1">Fique online, os pedidos aparecerão aqui automaticamente.</p>
+              <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Fique online, os pedidos aparecerão aqui automaticamente.</p>
             </div>
           ) : (
             activeOrders.map(order => {
@@ -202,23 +202,23 @@ export default function DeliveryDashboard() {
               if (isOutForDelivery && !isMine) return null;
 
               return (
-                <Card key={order.id} className={`p-0 overflow-hidden shadow-sm border-slate-200 ${isOutForDelivery ? 'border-l-4 border-l-blue-500' : ''}`}>
+                <Card key={order.id} className={`p-0 overflow-hidden shadow-sm border-slate-200 dark:border-slate-800 ${isOutForDelivery ? 'border-l-4 border-l-blue-500' : ''}`}>
                   <div className="p-4">
                     <div className="flex justify-between items-start mb-3">
                       <div>
                         <Badge variant="secondary" className="mb-2 font-mono text-[10px]">#{order.id.split('-')[0]}</Badge>
-                        <h3 className="font-bold text-slate-900">{order.customer_name}</h3>
+                        <h3 className="font-bold text-slate-900 dark:text-white">{order.customer_name}</h3>
                       </div>
                       <div className="text-right">
-                        <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">A Receber</p>
+                        <p className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-bold tracking-wider">A Receber</p>
                         <p className="font-black text-lg text-emerald-600">R$ {formatMoney(order.total_amount)}</p>
-                        <p className="text-xs font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded inline-block mt-1">
+                        <p className="text-xs font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded inline-block mt-1">
                           {order.payment_method === 'pix' ? 'PIX' : order.payment_method === 'card' ? 'Cartão' : 'Dinheiro'}
                         </p>
                       </div>
                     </div>
 
-                    <div className="bg-slate-50 p-3 rounded-lg mb-4 flex items-start gap-3">
+                    <div className="bg-slate-50 dark:bg-slate-950 p-3 rounded-lg mb-4 flex items-start gap-3">
                       <MapPin className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
                       <p className="text-sm font-medium text-slate-700 leading-snug">
                         {order.address_text || 'Endereço não informado'}
@@ -236,7 +236,7 @@ export default function DeliveryDashboard() {
                       <a 
                         href={getWaLink(storePhone, `Olá, sou o entregador e tenho uma dúvida sobre o pedido #${order.id.split('-')[0]}`)}
                         target="_blank" rel="noreferrer"
-                        className="flex items-center justify-center gap-2 bg-slate-100 text-slate-700 hover:bg-slate-200 py-2 rounded-lg text-sm font-bold transition-colors"
+                        className="flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 text-slate-700 hover:bg-slate-200 py-2 rounded-lg text-sm font-bold transition-colors"
                       >
                         <MessageCircle className="w-4 h-4" /> Loja
                       </a>
@@ -244,7 +244,7 @@ export default function DeliveryDashboard() {
 
                     {!isOutForDelivery ? (
                       <Button 
-                        className="w-full h-12 text-base font-bold bg-slate-900 hover:bg-slate-800 text-white"
+                        className="w-full h-12 text-base font-bold bg-slate-900 dark:bg-slate-100 dark:text-slate-900 hover:bg-slate-800 text-white"
                         onClick={() => acceptMutation.mutate(order.id)}
                         disabled={acceptMutation.isPending}
                       >
@@ -277,11 +277,11 @@ export default function DeliveryDashboard() {
             <DialogTitle className="text-center text-xl">Confirmar Entrega?</DialogTitle>
           </DialogHeader>
           <div className="text-center space-y-2 mb-6">
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-slate-600 dark:text-slate-300">
               Tem certeza que entregou o pedido para <strong>{confirmDialog?.customer_name}</strong>?
             </p>
-            <p className="text-xs text-slate-500 bg-slate-50 p-2 rounded border border-slate-100">
-              Valor a cobrar: <strong className="text-slate-900">R$ {formatMoney(confirmDialog?.total_amount)}</strong>
+            <p className="text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-950 p-2 rounded border border-slate-100 dark:border-slate-800">
+              Valor a cobrar: <strong className="text-slate-900 dark:text-white">R$ {formatMoney(confirmDialog?.total_amount)}</strong>
             </p>
           </div>
           <DialogFooter className="flex-col gap-2 sm:flex-col">
@@ -294,7 +294,7 @@ export default function DeliveryDashboard() {
             </Button>
             <Button 
               variant="ghost" 
-              className="w-full h-12 text-slate-500"
+              className="w-full h-12 text-slate-500 dark:text-slate-400"
               onClick={() => setConfirmDialog(null)}
               disabled={confirmMutation.isPending}
             >

@@ -17,7 +17,7 @@ const statusConfig = {
   preparing: { label: 'Preparando', color: 'bg-blue-100 text-blue-800', icon: ChefHat },
   ready: { label: 'Pronto', color: 'bg-green-100 text-green-800', icon: CheckCircle },
   delivering: { label: 'Saiu p/ entrega', color: 'bg-purple-100 text-purple-800', icon: Truck },
-  completed: { label: 'Concluído', color: 'bg-slate-100 text-slate-600', icon: CheckCircle },
+  completed: { label: 'Concluído', color: 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300', icon: CheckCircle },
   cancelled: { label: 'Cancelado', color: 'bg-red-100 text-red-800', icon: Package }
 };
 
@@ -79,16 +79,16 @@ export default function OrderDetail() {
   const items = order.items || [];
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="bg-white border-b border-slate-200 sticky top-0 z-50">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+      <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-50">
         <div className="max-w-3xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Button variant="ghost" className="text-slate-600 bg-slate-100 hover:bg-slate-200 px-4" onClick={() => navigate(-1)}>
+              <Button variant="ghost" className="text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 px-4" onClick={() => navigate(-1)}>
                 <ArrowLeft className="w-5 h-5 mr-2" />
                 Voltar
               </Button>
-              <h1 className="text-xl font-bold text-slate-900">Pedido #{order.id.slice(0, 8)}</h1>
+              <h1 className="text-xl font-bold text-slate-900 dark:text-white">Pedido #{order.id.slice(0, 8)}</h1>
             </div>
             <Button 
               variant="outline" 
@@ -104,14 +104,14 @@ export default function OrderDetail() {
       </div>
 
       <div className="max-w-3xl mx-auto px-4 py-6 space-y-4">
-        <Card className="p-4 bg-white border-slate-200">
+        <Card className="p-4 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
           <div className="flex items-center gap-3 mb-3">
             <div className={`w-10 h-10 rounded-lg ${config.color} flex items-center justify-center`}>
               <Icon className="w-5 h-5" />
             </div>
             <div className="flex-1">
-              <p className="text-xs text-slate-500">Status Atual</p>
-              <p className="font-semibold text-slate-900">{config.label}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Status Atual</p>
+              <p className="font-semibold text-slate-900 dark:text-white">{config.label}</p>
             </div>
           </div>
           <Select value={order.status} onValueChange={handleStatusChange}>
@@ -127,15 +127,15 @@ export default function OrderDetail() {
           </Select>
         </Card>
 
-        <Card className="p-4 bg-white border-slate-200">
-          <h3 className="font-semibold text-slate-900 mb-3 text-sm uppercase tracking-wider">Cliente</h3>
+        <Card className="p-4 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+          <h3 className="font-semibold text-slate-900 dark:text-white mb-3 text-sm uppercase tracking-wider">Cliente</h3>
           <div className="space-y-2 text-sm">
-            <p><span className="text-slate-500">Nome:</span> {order.customer_name}</p>
-            <p><span className="text-slate-500">Telefone:</span> {order.customer_phone}</p>
-            <p><span className="text-slate-500">Entrega:</span> {order.delivery_type === 'delivery' ? 'Entrega em domicílio' : 'Retirada no balcão'}</p>
+            <p><span className="text-slate-500 dark:text-slate-400">Nome:</span> {order.customer_name}</p>
+            <p><span className="text-slate-500 dark:text-slate-400">Telefone:</span> {order.customer_phone}</p>
+            <p><span className="text-slate-500 dark:text-slate-400">Entrega:</span> {order.delivery_type === 'delivery' ? 'Entrega em domicílio' : 'Retirada no balcão'}</p>
             {order.address_text && (
               <div className="pt-2">
-                <p className="text-slate-500 mb-1">Endereço:</p>
+                <p className="text-slate-500 dark:text-slate-400 mb-1">Endereço:</p>
                 <p className="font-medium">{order.address_text}</p>
                 <Button variant="outline" size="sm" onClick={openGoogleMaps} className="mt-2 w-full text-blue-600 border-blue-600">
                   <Truck className="w-4 h-4 mr-2" /> Abrir no Google Maps
@@ -145,22 +145,22 @@ export default function OrderDetail() {
           </div>
         </Card>
 
-        <Card className="p-4 bg-white border-slate-200">
-          <h3 className="font-semibold text-slate-900 mb-3 text-sm uppercase tracking-wider">Itens do Pedido</h3>
+        <Card className="p-4 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+          <h3 className="font-semibold text-slate-900 dark:text-white mb-3 text-sm uppercase tracking-wider">Itens do Pedido</h3>
           <div className="space-y-4">
             {items.map((item, i) => (
-              <div key={i} className="flex justify-between items-start border-b border-slate-100 pb-3 last:border-0 last:pb-0">
+              <div key={i} className="flex justify-between items-start border-b border-slate-100 dark:border-slate-800 pb-3 last:border-0 last:pb-0">
                 <div className="min-w-0">
-                  <p className="font-semibold text-slate-900 leading-tight">
+                  <p className="font-semibold text-slate-900 dark:text-white leading-tight">
                     {item.quantity > 1 && <span className="text-blue-600 mr-1">{item.quantity}x</span>}
                     {item.name}
                   </p>
-                  {item.size && <p className="text-[10px] text-slate-500">Tamanho: {item.size} fatias</p>}
-                  {item.is_half && <p className="text-[10px] text-slate-500">Meio a meio: {item.flavor1} / {item.flavor2}</p>}
+                  {item.size && <p className="text-[10px] text-slate-500 dark:text-slate-400">Tamanho: {item.size} fatias</p>}
+                  {item.is_half && <p className="text-[10px] text-slate-500 dark:text-slate-400">Meio a meio: {item.flavor1} / {item.flavor2}</p>}
                   {item.notes && <p className="text-[10px] text-amber-600 mt-1 italic">Obs: {item.notes}</p>}
                 </div>
                 <div className="text-right ml-4">
-                  <p className="text-sm font-bold text-slate-900">R$ {((item.price || 0) * (item.quantity || 1)).toFixed(2)}</p>
+                  <p className="text-sm font-bold text-slate-900 dark:text-white">R$ {((item.price || 0) * (item.quantity || 1)).toFixed(2)}</p>
                 </div>
               </div>
             ))}
@@ -174,11 +174,11 @@ export default function OrderDetail() {
           </Card>
         )}
 
-        <Card className="p-4 bg-white border-slate-200">
-          <h3 className="font-semibold text-slate-900 mb-3 text-sm uppercase tracking-wider">Pagamento</h3>
+        <Card className="p-4 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+          <h3 className="font-semibold text-slate-900 dark:text-white mb-3 text-sm uppercase tracking-wider">Pagamento</h3>
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <span className="text-sm text-slate-500">Situação:</span>
+              <span className="text-sm text-slate-500 dark:text-slate-400">Situação:</span>
               <Badge className={order.payment_status === 'paid' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}>
                 {order.payment_status === 'paid' ? 'Pago' : 'Pendente'}
               </Badge>
@@ -193,7 +193,7 @@ export default function OrderDetail() {
           </div>
         </Card>
 
-        <Card className="p-6 bg-slate-900 text-white shadow-xl">
+        <Card className="p-6 bg-slate-900 dark:bg-slate-100 dark:text-slate-900 text-white shadow-xl">
           <div className="flex justify-between items-center">
             <span className="text-lg font-medium opacity-80">Valor Total</span>
             <span className="text-3xl font-bold tracking-tight text-white">R$ {order.total_amount?.toFixed(2)}</span>

@@ -17,7 +17,7 @@ const statusConfig = {
   preparing: { label: 'Preparando', color: 'bg-blue-100 text-blue-800 border-blue-200', icon: ChefHat },
   ready: { label: 'Pronto', color: 'bg-green-100 text-green-800 border-green-200', icon: CheckCircle },
   delivering: { label: 'Saiu p/ entrega', color: 'bg-purple-100 text-purple-800 border-purple-200', icon: Truck },
-  completed: { label: 'Concluído', color: 'bg-slate-100 text-slate-600 border-slate-200', icon: CheckCircle },
+  completed: { label: 'Concluído', color: 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-800', icon: CheckCircle },
   cancelled: { label: 'Cancelado', color: 'bg-red-100 text-red-800 border-red-200', icon: Package }
 };
 
@@ -57,23 +57,23 @@ export default function Orders() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-50">
       {/* Header */}
-      <div className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+      <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Link to={createPageUrl('AdminHome')}>
-                <Button variant="ghost" className="text-slate-600 bg-slate-100 hover:bg-slate-200 px-4">
+                <Button variant="ghost" className="text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 px-4">
                   <ArrowLeft className="w-5 h-5 mr-2" />
                   Voltar
                 </Button>
               </Link>
               <div>
-                <h1 className="text-2xl font-bold text-slate-900">Pizza Millano Pizzaria</h1>
-                <p className="text-sm text-slate-500">{user?.full_name || user?.email}</p>
+                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Pizza Millano Pizzaria</h1>
+                <p className="text-sm text-slate-500 dark:text-slate-400">{user?.full_name || user?.email}</p>
               </div>
             </div>
             <Button variant="ghost" size="icon" onClick={handleLogout}>
-              <LogOut className="w-5 h-5 text-slate-600" />
+              <LogOut className="w-5 h-5 text-slate-600 dark:text-slate-300" />
             </Button>
           </div>
         </div>
@@ -82,25 +82,25 @@ export default function Orders() {
       <div className="max-w-7xl mx-auto px-4 py-6 pb-24">
         {/* Stats */}
         <div className="grid grid-cols-2 gap-3 mb-6">
-          <Card className="p-4 bg-white border-slate-200">
+          <Card className="p-4 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
                 <DollarSign className="w-5 h-5 text-green-600" />
               </div>
               <div>
-                <p className="text-xs text-slate-500">Hoje</p>
-                <p className="text-lg font-bold text-slate-900">R$ {todayTotal.toFixed(2)}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Hoje</p>
+                <p className="text-lg font-bold text-slate-900 dark:text-white">R$ {todayTotal.toFixed(2)}</p>
               </div>
             </div>
           </Card>
-          <Card className="p-4 bg-white border-slate-200">
+          <Card className="p-4 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
                 <Clock className="w-5 h-5 text-amber-600" />
               </div>
               <div>
-                <p className="text-xs text-slate-500">Ativos</p>
-                <p className="text-lg font-bold text-slate-900">{pendingCount}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Ativos</p>
+                <p className="text-lg font-bold text-slate-900 dark:text-white">{pendingCount}</p>
               </div>
             </div>
           </Card>
@@ -113,7 +113,7 @@ export default function Orders() {
           ) : orders.length === 0 ? (
             <div className="text-center py-12">
               <Package className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-              <p className="text-slate-500">Nenhum pedido ainda</p>
+              <p className="text-slate-500 dark:text-slate-400">Nenhum pedido ainda</p>
             </div>
           ) : (
             orders.map(order => {
@@ -122,16 +122,16 @@ export default function Orders() {
               
               return (
                 <Link key={order.id} to={createPageUrl('OrderDetail') + `?id=${order.id}`}>
-                  <Card className="p-4 bg-white border-slate-200 hover:border-slate-300 transition-all">
+                  <Card className="p-4 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-300 transition-all">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-semibold text-slate-900">{order.customer_name}</h3>
+                          <h3 className="font-semibold text-slate-900 dark:text-white">{order.customer_name}</h3>
                           {order.delivery_type === 'delivery' && (
                             <Truck className="w-4 h-4 text-slate-400" />
                           )}
                         </div>
-                        <p className="text-sm text-slate-500">{order.customer_phone}</p>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">{order.customer_phone}</p>
                       </div>
                       <Badge className={`${config.color} border flex items-center gap-1`}>
                         <Icon className="w-3 h-3" />
@@ -140,10 +140,10 @@ export default function Orders() {
                     </div>
                     
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-slate-500">
+                      <span className="text-slate-500 dark:text-slate-400">
                         {format(new Date(order.created_date), "HH:mm", { locale: ptBR })}
                       </span>
-                      <span className="font-bold text-slate-900">R$ {order.total_amount?.toFixed(2)}</span>
+                      <span className="font-bold text-slate-900 dark:text-white">R$ {order.total_amount?.toFixed(2)}</span>
                     </div>
                   </Card>
                 </Link>
@@ -159,9 +159,9 @@ export default function Orders() {
       </div>
 
       {/* Fixed Action Button */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-slate-200">
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800">
         <Link to={createPageUrl('NewOrder')}>
-          <Button className="w-full h-14 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-lg shadow-lg">
+          <Button className="w-full h-14 bg-slate-900 dark:bg-slate-100 dark:text-slate-900 hover:bg-slate-800 text-white font-semibold text-lg shadow-lg">
             <Plus className="w-6 h-6 mr-2" />
             Novo Pedido
           </Button>

@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { safeLocalStorage, safeJsonParse } from '@/utils/storage';
 import { formatCurrency } from '@/utils/format';
+import { formatPhoneMask } from '@/utils/phone';
 import { orderService } from '@/services/orderService';
 import { settingsService } from '@/services/settingsService';
 import { isOpen } from '@/utils/businessHours';
@@ -22,7 +23,7 @@ import { toast } from 'sonner';
 
 const checkoutSchema = z.object({
   customer_name: z.string().min(3, 'Nome muito curto'),
-  customer_phone: z.string().min(10, 'Telefone inválido'),
+  customer_phone: z.string().min(18, 'Telefone inválido (necessário DDD + Número)'),
   delivery_type: z.enum(['delivery', 'pickup']),
   rua: z.string().optional(),
   numero: z.string().optional(),
@@ -59,10 +60,10 @@ export default function Checkout() {
 
   if (isLoadingSettings) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center">
         <div className="text-center">
           <div className="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-500 font-medium">Sincronizando com a loja...</p>
+          <p className="text-slate-500 dark:text-slate-400 font-medium">Sincronizando com a loja...</p>
         </div>
       </div>
     );
@@ -202,13 +203,13 @@ export default function Checkout() {
 
   if (!cart.length) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-6">
         <div className="text-center max-w-sm">
-          <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 mb-6">
+          <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 mb-6">
             <ShoppingCart className="w-16 h-16 text-slate-200 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-slate-900 mb-2">Carrinho Vazio</h2>
-            <p className="text-slate-500 text-sm mb-6">Escolha suas pizzas favoritas para continuar.</p>
-            <Button className="w-full bg-slate-900" onClick={() => navigate(createPageUrl('Menu'))}>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Carrinho Vazio</h2>
+            <p className="text-slate-500 dark:text-slate-400 text-sm mb-6">Escolha suas pizzas favoritas para continuar.</p>
+            <Button className="w-full bg-slate-900 dark:bg-slate-100 dark:text-slate-900" onClick={() => navigate(createPageUrl('Menu'))}>
               Ver Cardápio
             </Button>
           </div>
@@ -218,13 +219,13 @@ export default function Checkout() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-32">
-      <div className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-32">
+      <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-50 shadow-sm">
         <div className="max-w-3xl mx-auto px-4 py-4 flex items-center gap-3">
           <Link to={createPageUrl('Menu')}>
             <Button variant="ghost" size="icon"><ArrowLeft className="w-5 h-5" /></Button>
           </Link>
-          <h1 className="text-xl font-bold text-slate-900">Finalizar Pedido</h1>
+          <h1 className="text-xl font-bold text-slate-900 dark:text-white">Finalizar Pedido</h1>
         </div>
       </div>
 
@@ -232,8 +233,8 @@ export default function Checkout() {
         <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 lg:grid-cols-5 gap-8">
           <div className="lg:col-span-3 space-y-6">
             <Card className="p-6 border-0 shadow-sm space-y-4">
-              <h2 className="font-bold text-slate-900 flex items-center gap-2">
-                <span className="w-6 h-6 bg-slate-900 text-white rounded-full flex items-center justify-center text-xs">1</span>
+              <h2 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <span className="w-6 h-6 bg-slate-900 dark:bg-slate-100 dark:text-slate-900 text-white rounded-full flex items-center justify-center text-xs">1</span>
                 Seus Dados
               </h2>
               <div className="grid grid-cols-1 gap-4">
@@ -244,15 +245,25 @@ export default function Checkout() {
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs uppercase font-bold text-slate-400 ml-1">WhatsApp *</Label>
-                  <Input {...register('customer_phone')} placeholder="(11) 99999-9999" className={errors.customer_phone ? 'border-red-500' : ''} />
+                  <Input 
+                    {...register('customer_phone', {
+                      onChange: (e) => {
+                        const formatted = formatPhoneMask(e.target.value);
+                        e.target.value = formatted;
+                        setValue('customer_phone', formatted);
+                      }
+                    })} 
+                    placeholder="+55 (11) 99999-9999" 
+                    className={errors.customer_phone ? 'border-red-500' : ''} 
+                  />
                   {errors.customer_phone && <p className="text-[10px] text-red-500 font-medium pl-1">{errors.customer_phone.message}</p>}
                 </div>
               </div>
             </Card>
 
             <Card className="p-6 border-0 shadow-sm space-y-4">
-              <h2 className="font-bold text-slate-900 flex items-center gap-2">
-                <span className="w-6 h-6 bg-slate-900 text-white rounded-full flex items-center justify-center text-xs">2</span>
+              <h2 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <span className="w-6 h-6 bg-slate-900 dark:bg-slate-100 dark:text-slate-900 text-white rounded-full flex items-center justify-center text-xs">2</span>
                 Forma de Entrega
               </h2>
               <div className="flex gap-2">
@@ -304,8 +315,8 @@ export default function Checkout() {
             </Card>
 
             <Card className="p-6 border-0 shadow-sm space-y-4">
-              <h2 className="font-bold text-slate-900 flex items-center gap-2">
-                <span className="w-6 h-6 bg-slate-900 text-white rounded-full flex items-center justify-center text-xs">3</span>
+              <h2 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <span className="w-6 h-6 bg-slate-900 dark:bg-slate-100 dark:text-slate-900 text-white rounded-full flex items-center justify-center text-xs">3</span>
                 Pagamento
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
@@ -368,7 +379,7 @@ export default function Checkout() {
           </div>
 
           <div className="lg:col-span-2 space-y-6">
-            <Card className="p-6 border-0 shadow-xl bg-slate-900 text-white sticky top-24">
+            <Card className="p-6 border-0 shadow-xl bg-slate-900 dark:bg-slate-100 dark:text-slate-900 text-white sticky top-24">
               <h3 className="font-bold text-xs uppercase tracking-widest text-slate-400 mb-6">Resumo do Pedido</h3>
               <div className="space-y-4 mb-8">
                 {cart.map((item, i) => (
@@ -399,11 +410,11 @@ export default function Checkout() {
 
               <div className="space-y-4">
                 <div className="space-y-1">
-                  <Label className="text-[10px] uppercase font-bold text-slate-500">Observações</Label>
+                  <Label className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400">Observações</Label>
                   <Textarea
                     {...register('notes')}
                     placeholder="Ex: Tirar cebola, campainha estragada..."
-                    className="bg-slate-800 border-0 text-white placeholder:text-slate-600 h-20 resize-none text-xs"
+                    className="bg-slate-800 border-0 text-white placeholder:text-slate-600 dark:text-slate-300 h-20 resize-none text-xs"
                   />
                 </div>
 

@@ -3,10 +3,13 @@ import { lazy } from 'react';
 // Área Pública
 const Checkout = lazy(() => import('./pages/Checkout'));
 const Home = lazy(() => import('./pages/Home'));
-const Menu = lazy(() => import('./pages/Menu'));
+
 const MyOrders = lazy(() => import('./pages/MyOrders'));
 const NewOrder = lazy(() => import('./pages/NewOrder'));
 const TrackOrder = lazy(() => import('./pages/TrackOrder'));
+const Wizard = lazy(() => import('./components/wizard/PizzaWizard'));
+const TermsOfUse = lazy(() => import('./pages/TermsOfUse'));
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
 
 // Área Admin (Lazy Loaded para não pesar o bundle público)
 const Kitchen = lazy(() => import('./pages/Kitchen'));
@@ -31,14 +34,17 @@ export const PAGES = {
     "Checkout": Checkout,
     "Home": Home,
     "Kitchen": Kitchen,
-    "Menu": Menu,
+
     "MyOrders": MyOrders,
     "NewOrder": NewOrder,
+    "Wizard": Wizard,
     "OrderDetail": OrderDetail,
     "Orders": Orders,
     "Reports": Reports,
     "Stock": Stock,
     "TrackOrder": TrackOrder,
+    "TermsOfUse": TermsOfUse,
+    "PrivacyPolicy": PrivacyPolicy,
     "Customers": Customers,
     "MenuManagement": MenuManagement,
     "Settings": Settings,

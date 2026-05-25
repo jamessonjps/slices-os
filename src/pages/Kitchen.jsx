@@ -69,7 +69,7 @@ const statusConfig = {
   preparing: { label: 'Preparando', color: 'bg-blue-500', nextLabel: 'Marcar Pronto' },
   ready: { label: 'Pronto', color: 'bg-green-500', nextLabel: 'Saiu p/ Entrega' },
   out_for_delivery: { label: 'Em Entrega', color: 'bg-purple-500', nextLabel: 'Concluir' },
-  completed: { label: 'Concluído', color: 'bg-slate-500', nextLabel: 'Concluído' }
+  completed: { label: 'Concluído', color: 'bg-slate-50 dark:bg-slate-9500', nextLabel: 'Concluído' }
 };
 
 /**
@@ -155,7 +155,7 @@ function EditOrderDialog({ order, open, onClose, onSave, waPhone, settings }) {
           <div>
             <div className="flex items-center justify-between mb-2">
               <Label className="text-sm font-semibold text-slate-900 dark:text-white">Itens no Pedido</Label>
-              <Button variant="outline" size="sm" onClick={() => addItem('item')} className="h-7 text-xs border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800">
+              <Button variant="outline" size="sm" onClick={() => addItem('item')} className="h-7 text-xs border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-800">
                 <Plus className="w-3 h-3 mr-1" /> Adicionar Item
               </Button>
             </div>
@@ -510,7 +510,7 @@ function KitchenContent() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900">
+    <div className="min-h-screen bg-slate-900 dark:bg-slate-100 dark:text-slate-900">
       <EditOrderDialog
         order={editingOrder}
         open={!!editingOrder}
@@ -593,9 +593,9 @@ function KitchenContent() {
           <div className="text-center py-12 text-slate-400">Carregando...</div>
         ) : orders.length === 0 ? (
           <div className="text-center py-12">
-            <CheckCircle className="w-16 h-16 text-slate-600 mx-auto mb-4" />
+            <CheckCircle className="w-16 h-16 text-slate-600 dark:text-slate-300 mx-auto mb-4" />
             <p className="text-xl text-slate-400">Nenhum pedido ativo</p>
-            <p className="text-sm text-slate-500 mt-2">Todos os pedidos foram concluídos! {'🎉'}</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">Todos os pedidos foram concluídos! {'🎉'}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -762,7 +762,7 @@ function OrderCard({ order, onAdvance, onToggleItem, onEdit, onPrint, updating }
           )}
         </div>
         {order.delivery_type === 'delivery' && (
-          <Truck className="w-4 h-4 text-slate-500" />
+          <Truck className="w-4 h-4 text-slate-500 dark:text-slate-400" />
         )}
       </div>
 
@@ -813,7 +813,7 @@ function OrderCard({ order, onAdvance, onToggleItem, onEdit, onPrint, updating }
       )}
 
       {order.notes && (
-        <div className="bg-slate-900/50 p-3 rounded-xl mb-4 border-l-2 border-amber-500">
+        <div className="bg-slate-900 dark:bg-slate-100 dark:text-slate-900/50 p-3 rounded-xl mb-4 border-l-2 border-amber-500">
           <p className="text-xs text-slate-300 italic leading-relaxed">"{order.notes}"</p>
         </div>
       )}

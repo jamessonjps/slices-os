@@ -168,19 +168,19 @@ export default function NewOrder() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-24">
-      <div className="bg-white border-b border-slate-200 sticky top-0 z-50">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-24">
+      <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-50">
         <div className="max-w-3xl mx-auto px-4 py-4 flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <h1 className="text-xl font-bold text-slate-900">Novo Pedido</h1>
+          <h1 className="text-xl font-bold text-slate-900 dark:text-white">Novo Pedido</h1>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="max-w-3xl mx-auto px-4 py-6 space-y-6">
-        <Card className="p-4 bg-white border-slate-200">
-          <h2 className="font-semibold text-slate-900 mb-4 text-sm uppercase tracking-wider">Dados do Cliente</h2>
+        <Card className="p-4 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+          <h2 className="font-semibold text-slate-900 dark:text-white mb-4 text-sm uppercase tracking-wider">Dados do Cliente</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1">
               <Label>Nome Completo *</Label>
@@ -193,8 +193,8 @@ export default function NewOrder() {
           </div>
         </Card>
 
-        <Card className="p-4 bg-white border-slate-200">
-          <h2 className="font-semibold text-slate-900 mb-3 text-sm uppercase tracking-wider">Forma de Entrega</h2>
+        <Card className="p-4 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+          <h2 className="font-semibold text-slate-900 dark:text-white mb-3 text-sm uppercase tracking-wider">Forma de Entrega</h2>
           <div className="grid grid-cols-2 gap-2">
             <Button type="button" variant={deliveryType === 'delivery' ? 'default' : 'outline'} className="h-12" onClick={() => setDeliveryType('delivery')}>
               Entregar em Casa
@@ -206,8 +206,8 @@ export default function NewOrder() {
         </Card>
 
         {deliveryType === 'delivery' && (
-          <Card className="p-4 bg-white border-slate-200">
-            <h2 className="font-semibold text-slate-900 mb-4 text-sm uppercase tracking-wider">Endereço de Entrega</h2>
+          <Card className="p-4 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+            <h2 className="font-semibold text-slate-900 dark:text-white mb-4 text-sm uppercase tracking-wider">Endereço de Entrega</h2>
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
@@ -231,18 +231,18 @@ export default function NewOrder() {
           </Card>
         )}
 
-        <Card className="p-4 bg-white border-slate-200">
-          <div className="flex items-center justify-between mb-4 border-b border-slate-100 pb-2">
-            <h2 className="font-semibold text-slate-900 text-sm uppercase tracking-wider">Pizzas</h2>
+        <Card className="p-4 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+          <div className="flex items-center justify-between mb-4 border-b border-slate-100 dark:border-slate-800 pb-2">
+            <h2 className="font-semibold text-slate-900 dark:text-white text-sm uppercase tracking-wider">Pizzas</h2>
             <Button type="button" variant="ghost" size="sm" onClick={addPizza} className="text-blue-600 hover:text-blue-700">
               <Plus className="w-4 h-4 mr-1" /> Adicionar Outra
             </Button>
           </div>
           <div className="space-y-6">
             {pizzas.map((pizza, index) => (
-              <div key={index} className="relative bg-slate-50/50 rounded-xl p-4 border border-slate-100">
+              <div key={index} className="relative bg-slate-50 dark:bg-slate-950/50 rounded-xl p-4 border border-slate-100 dark:border-slate-800">
                 {pizzas.length > 1 && (
-                  <button type="button" onClick={() => removePizza(index)} className="absolute -top-2 -right-2 bg-white border border-red-100 rounded-full p-1 text-red-500 shadow-sm hover:bg-red-50">
+                  <button type="button" onClick={() => removePizza(index)} className="absolute -top-2 -right-2 bg-white dark:bg-slate-900 border border-red-100 rounded-full p-1 text-red-500 shadow-sm hover:bg-red-50">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 )}
@@ -250,7 +250,7 @@ export default function NewOrder() {
                   <div className="space-y-1">
                     <Label>Tamanho *</Label>
                     <Select value={pizza.size} onValueChange={(v) => updatePizza(index, 'size', v)}>
-                      <SelectTrigger className="bg-white"><SelectValue /></SelectTrigger>
+                      <SelectTrigger className="bg-white dark:bg-slate-900"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="6">Pequena (6 fatias)</SelectItem>
                         <SelectItem value="8">Média (8 fatias)</SelectItem>
@@ -260,7 +260,7 @@ export default function NewOrder() {
                   </div>
                   <div className="space-y-1">
                     <Label>Preço (R$)</Label>
-                    <Input type="number" value={pizza.price} onChange={(e) => updatePizza(index, 'price', parseFloat(e.target.value))} className="bg-white" />
+                    <Input type="number" value={pizza.price} onChange={(e) => updatePizza(index, 'price', parseFloat(e.target.value))} className="bg-white dark:bg-slate-900" />
                   </div>
                 </div>
                 
@@ -268,7 +268,7 @@ export default function NewOrder() {
                   <div className="space-y-1">
                     <Label>{pizza.is_half ? 'Primeiro Sabor *' : 'Sabor da Pizza *'}</Label>
                     <Select value={pizza.flavor1} onValueChange={(v) => updatePizza(index, 'flavor1', v)}>
-                      <SelectTrigger className="bg-white"><SelectValue placeholder="Escolha um sabor" /></SelectTrigger>
+                      <SelectTrigger className="bg-white dark:bg-slate-900"><SelectValue placeholder="Escolha um sabor" /></SelectTrigger>
                       <SelectContent>
                         {pizzaItems.map(p => <SelectItem key={p.id} value={p.name}>{p.name}</SelectItem>)}
                       </SelectContent>
@@ -276,15 +276,15 @@ export default function NewOrder() {
                   </div>
 
                   <div className="flex items-center gap-2 py-1">
-                    <input type="checkbox" checked={pizza.is_half} onChange={(e) => updatePizza(index, 'is_half', e.target.checked)} className="w-4 h-4 rounded text-slate-900" id={`half-${index}`} />
-                    <Label htmlFor={`half-${index}`} className="text-xs font-medium text-slate-600">Pizza Meio a Meio</Label>
+                    <input type="checkbox" checked={pizza.is_half} onChange={(e) => updatePizza(index, 'is_half', e.target.checked)} className="w-4 h-4 rounded text-slate-900 dark:text-white" id={`half-${index}`} />
+                    <Label htmlFor={`half-${index}`} className="text-xs font-medium text-slate-600 dark:text-slate-300">Pizza Meio a Meio</Label>
                   </div>
 
                   {pizza.is_half && (
                     <div className="space-y-1 animate-in fade-in slide-in-from-top-1 duration-200">
                       <Label>Segundo Sabor</Label>
                       <Select value={pizza.flavor2} onValueChange={(v) => updatePizza(index, 'flavor2', v)}>
-                        <SelectTrigger className="bg-white"><SelectValue placeholder="Escolha o segundo sabor" /></SelectTrigger>
+                        <SelectTrigger className="bg-white dark:bg-slate-900"><SelectValue placeholder="Escolha o segundo sabor" /></SelectTrigger>
                         <SelectContent>
                           {pizzaItems.map(p => <SelectItem key={p.id} value={p.name}>{p.name}</SelectItem>)}
                         </SelectContent>
@@ -297,9 +297,9 @@ export default function NewOrder() {
           </div>
         </Card>
 
-        <Card className="p-4 bg-white border-slate-200">
-          <div className="flex items-center justify-between mb-4 border-b border-slate-100 pb-2">
-            <h2 className="font-semibold text-slate-900 text-sm uppercase tracking-wider">Bebidas & Adicionais</h2>
+        <Card className="p-4 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+          <div className="flex items-center justify-between mb-4 border-b border-slate-100 dark:border-slate-800 pb-2">
+            <h2 className="font-semibold text-slate-900 dark:text-white text-sm uppercase tracking-wider">Bebidas & Adicionais</h2>
             <Button type="button" variant="ghost" size="sm" onClick={addDrink} className="text-blue-600 hover:text-blue-700">
               <Plus className="w-4 h-4 mr-1" /> Adicionar Item
             </Button>
@@ -309,11 +309,11 @@ export default function NewOrder() {
           ) : (
             <div className="space-y-3">
               {drinks.map((drink, index) => (
-                <div key={index} className="flex items-end gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                <div key={index} className="flex items-end gap-3 bg-slate-50 dark:bg-slate-950 p-3 rounded-lg border border-slate-100 dark:border-slate-800">
                   <div className="flex-1 space-y-1">
                     <Label className="text-[10px] uppercase text-slate-400">Item</Label>
                     <Select value={drink.name} onValueChange={(v) => updateDrink(index, 'name', v)}>
-                      <SelectTrigger className="bg-white h-9"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                      <SelectTrigger className="bg-white dark:bg-slate-900 h-9"><SelectValue placeholder="Selecione" /></SelectTrigger>
                       <SelectContent>
                         {drinkItems.map(d => <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>)}
                       </SelectContent>
@@ -321,11 +321,11 @@ export default function NewOrder() {
                   </div>
                   <div className="w-20 space-y-1">
                     <Label className="text-[10px] uppercase text-slate-400">Qtd</Label>
-                    <Input type="number" min="1" value={drink.quantity} onChange={(e) => updateDrink(index, 'quantity', parseInt(e.target.value))} className="bg-white h-9" />
+                    <Input type="number" min="1" value={drink.quantity} onChange={(e) => updateDrink(index, 'quantity', parseInt(e.target.value))} className="bg-white dark:bg-slate-900 h-9" />
                   </div>
                   <div className="w-24 space-y-1">
                     <Label className="text-[10px] uppercase text-slate-400">Preço (un)</Label>
-                    <Input type="number" value={drink.price} onChange={(e) => updateDrink(index, 'price', parseFloat(e.target.value))} className="bg-white h-9" />
+                    <Input type="number" value={drink.price} onChange={(e) => updateDrink(index, 'price', parseFloat(e.target.value))} className="bg-white dark:bg-slate-900 h-9" />
                   </div>
                   <Button type="button" variant="ghost" size="icon" onClick={() => removeDrink(index)} className="text-red-400 h-9 w-9">
                     <Trash2 className="w-4 h-4" />
@@ -336,8 +336,8 @@ export default function NewOrder() {
           )}
         </Card>
 
-        <Card className="p-4 bg-white border-slate-200">
-          <h2 className="font-semibold text-slate-900 mb-4 text-sm uppercase tracking-wider">Pagamento</h2>
+        <Card className="p-4 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+          <h2 className="font-semibold text-slate-900 dark:text-white mb-4 text-sm uppercase tracking-wider">Pagamento</h2>
           <div className="grid grid-cols-3 gap-2">
             {[{v:'cash',l:'Dinheiro'},{v:'card',l:'Cartão'},{v:'pix',l:'PIX'}].map(opt => (
               <Button key={opt.v} type="button" variant={paymentMethod === opt.v ? 'default' : 'outline'} className="h-12" onClick={() => setPaymentMethod(opt.v)}>
@@ -347,12 +347,12 @@ export default function NewOrder() {
           </div>
         </Card>
 
-        <Card className="p-4 bg-white border-slate-200">
+        <Card className="p-4 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
           <Label className="text-sm uppercase tracking-wider mb-2 block">Observações do Pedido</Label>
           <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Ex: Sem cebola, trocar refrigerante..." rows={3} />
         </Card>
 
-        <Card className="p-6 bg-slate-900 text-white shadow-xl">
+        <Card className="p-6 bg-slate-900 dark:bg-slate-100 dark:text-slate-900 text-white shadow-xl">
           <div className="space-y-3">
             {deliveryType === 'delivery' && (
               <div className="flex justify-between items-center text-slate-400 text-xs">
@@ -368,7 +368,7 @@ export default function NewOrder() {
         </Card>
       </form>
 
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-slate-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
         <div className="max-w-3xl mx-auto">
           <Button
             onClick={handleSubmit}

@@ -73,21 +73,21 @@ export default function Stock() {
   const lowStockProducts = products.filter(p => p.quantity <= (p.min_quantity || 0));
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="bg-white border-b border-slate-200 sticky top-0 z-50">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+      <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link to={createPageUrl('AdminHome')}>
               <Button variant="ghost" size="icon"><ArrowLeft className="w-5 h-5" /></Button>
             </Link>
             <div>
-              <h1 className="text-xl font-bold text-slate-900">Estoque</h1>
-              <p className="text-xs text-slate-500">{products.length} itens cadastrados</p>
+              <h1 className="text-xl font-bold text-slate-900 dark:text-white">Estoque</h1>
+              <p className="text-xs text-slate-500 dark:text-slate-400">{products.length} itens cadastrados</p>
             </div>
           </div>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-slate-900 hover:bg-slate-800" onClick={() => {
+              <Button className="bg-slate-900 dark:bg-slate-100 dark:text-slate-900 hover:bg-slate-800" onClick={() => {
                 setEditingProduct(null);
                 setFormCategory('ingrediente');
                 setFormUnit('kg');
@@ -144,7 +144,7 @@ export default function Stock() {
                     <Input name="price" type="number" step="0.01" defaultValue={editingProduct?.price} />
                   </div>
                 </div>
-                <Button type="submit" className="w-full bg-slate-900 hover:bg-slate-800">
+                <Button type="submit" className="w-full bg-slate-900 dark:bg-slate-100 dark:text-slate-900 hover:bg-slate-800">
                   {editingProduct ? 'Atualizar' : 'Adicionar'}
                 </Button>
               </form>
@@ -180,13 +180,13 @@ export default function Stock() {
                   <div className="flex items-start justify-between">
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-bold text-slate-900 truncate">{product.name}</h3>
+                        <h3 className="font-bold text-slate-900 dark:text-white truncate">{product.name}</h3>
                         <Badge variant="secondary" className="text-[10px] uppercase">{product.category}</Badge>
                       </div>
                       <p className={`text-lg font-bold ${isLowStock ? 'text-red-600' : 'text-slate-700'}`}>
                         {product.quantity} <span className="text-sm font-normal">{product.unit}</span>
                       </p>
-                      <p className="text-[10px] text-slate-500 mt-1 uppercase tracking-tighter">
+                      <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-tighter">
                         Mínimo: {product.min_quantity} {product.unit} • Custo: R$ {product.price?.toFixed(2)}
                       </p>
                     </div>

@@ -109,8 +109,8 @@ export default function Reports() {
   const deliveryData = Object.entries(deliveryStats).map(([name, value]) => ({ name, value }));
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="bg-white border-b border-slate-200 sticky top-0 z-50">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+      <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -120,8 +120,8 @@ export default function Reports() {
                 </Button>
               </Link>
               <div>
-                <h1 className="text-xl font-bold text-slate-900">Relatórios de Vendas</h1>
-                <p className="text-sm text-slate-500">Análise detalhada do período</p>
+                <h1 className="text-xl font-bold text-slate-900 dark:text-white">Relatórios de Vendas</h1>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Análise detalhada do período</p>
               </div>
             </div>
           </div>
@@ -170,8 +170,8 @@ export default function Reports() {
                 <DollarSign className="w-6 h-6 text-green-600" />
               </div>
               <div>
-                <p className="text-sm text-slate-500">Faturamento</p>
-                <p className="text-2xl font-bold text-slate-900">R$ {totalRevenue.toFixed(2)}</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Faturamento</p>
+                <p className="text-2xl font-bold text-slate-900 dark:text-white">R$ {totalRevenue.toFixed(2)}</p>
               </div>
             </div>
           </Card>
@@ -181,8 +181,8 @@ export default function Reports() {
                 <ShoppingBag className="w-6 h-6 text-blue-600" />
               </div>
               <div>
-                <p className="text-sm text-slate-500">Pedidos Concluídos</p>
-                <p className="text-2xl font-bold text-slate-900">{totalOrders}</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Pedidos Concluídos</p>
+                <p className="text-2xl font-bold text-slate-900 dark:text-white">{totalOrders}</p>
               </div>
             </div>
           </Card>
@@ -192,8 +192,8 @@ export default function Reports() {
                 <TrendingUp className="w-6 h-6 text-amber-600" />
               </div>
               <div>
-                <p className="text-sm text-slate-500">Ticket Médio</p>
-                <p className="text-2xl font-bold text-slate-900">R$ {avgTicket.toFixed(2)}</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Ticket Médio</p>
+                <p className="text-2xl font-bold text-slate-900 dark:text-white">R$ {avgTicket.toFixed(2)}</p>
               </div>
             </div>
           </Card>
@@ -201,7 +201,7 @@ export default function Reports() {
 
         {/* Revenue Chart */}
         <Card className="p-4">
-          <h3 className="font-semibold text-slate-900 mb-4">Faturamento por Dia</h3>
+          <h3 className="font-semibold text-slate-900 dark:text-white mb-4">Faturamento por Dia</h3>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={revenueData}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -217,7 +217,7 @@ export default function Reports() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Top Products */}
           <Card className="p-4">
-            <h3 className="font-semibold text-slate-900 mb-4">Produtos Mais Vendidos</h3>
+            <h3 className="font-semibold text-slate-900 dark:text-white mb-4">Produtos Mais Vendidos</h3>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={topProducts} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" />
@@ -231,7 +231,7 @@ export default function Reports() {
 
           {/* Least Products */}
           <Card className="p-4">
-            <h3 className="font-semibold text-slate-900 mb-4">Produtos Menos Vendidos</h3>
+            <h3 className="font-semibold text-slate-900 dark:text-white mb-4">Produtos Menos Vendidos</h3>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={leastProducts} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" />
@@ -245,7 +245,7 @@ export default function Reports() {
 
           {/* Peak Hours */}
           <Card className="p-4">
-            <h3 className="font-semibold text-slate-900 mb-4">Horários de Pico</h3>
+            <h3 className="font-semibold text-slate-900 dark:text-white mb-4">Horários de Pico</h3>
             <div className="space-y-3">
               {peakHours.map((h, i) => (
                 <div key={h.hour} className="flex items-center justify-between">
@@ -254,8 +254,8 @@ export default function Reports() {
                       {i + 1}
                     </div>
                     <div>
-                      <p className="font-medium text-slate-900">{h.hour}:00 - {h.hour + 1}:00</p>
-                      <p className="text-sm text-slate-500">{h.orders} pedidos</p>
+                      <p className="font-medium text-slate-900 dark:text-white">{h.hour}:00 - {h.hour + 1}:00</p>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">{h.orders} pedidos</p>
                     </div>
                   </div>
                   <Clock className="w-5 h-5 text-slate-400" />
@@ -266,7 +266,7 @@ export default function Reports() {
 
           {/* Delivery Types */}
           <Card className="p-4">
-            <h3 className="font-semibold text-slate-900 mb-4">Tipos de Entrega</h3>
+            <h3 className="font-semibold text-slate-900 dark:text-white mb-4">Tipos de Entrega</h3>
             <ResponsiveContainer width="100%" height={250}>
               <PieChart>
                 <Pie

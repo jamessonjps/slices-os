@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { ShieldAlert, Trash2, ArrowLeft, CheckCircle } from 'lucide-react';
@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { customerService } from '@/services/customerService';
+import { formatPhoneMask, unmaskPhone } from '@/utils/phone';
 
 export default function DeleteAccount() {
   const [phone, setPhone] = useState('');
@@ -67,10 +68,10 @@ export default function DeleteAccount() {
                   </label>
                   <Input 
                     type="tel" 
-                    placeholder="Ex: 11999999999"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className="h-14 rounded-2xl text-lg border-slate-200"
+                    placeholder="+55 (11) 99999-9999"
+                    value={formatPhoneMask(phone)}
+                    onChange={(e) => setPhone(unmaskPhone(e.target.value))}
+                    className="h-14 rounded-2xl text-lg border-slate-200 dark:border-slate-800"
                     required
                   />
                 </div>

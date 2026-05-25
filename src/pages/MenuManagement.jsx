@@ -224,30 +224,30 @@ export default function MenuManagement() {
 
   // ─── Render ──────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       {/* Header */}
-      <div className="bg-white border-b border-slate-200 sticky top-0 z-50">
+      <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Link to={createPageUrl('AdminHome')}>
-                <Button variant="ghost" className="text-slate-600 bg-slate-100 hover:bg-slate-200 px-4">
+                <Button variant="ghost" className="text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 px-4">
                   <ArrowLeft className="w-5 h-5 mr-2" />
                   Voltar
                 </Button>
               </Link>
               <div>
-                <h1 className="text-xl font-bold text-slate-900">Gerenciar Cardápio</h1>
-                <p className="text-xs text-slate-500">
+                <h1 className="text-xl font-bold text-slate-900 dark:text-white">Gerenciar Cardápio</h1>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   {items.length} itens • {totalAtivos} ativos • {totalInativos} inativos
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="outline" onClick={openCatCreate} className="text-slate-600 border-slate-300">
+              <Button variant="outline" onClick={openCatCreate} className="text-slate-600 dark:text-slate-300 border-slate-300">
                 <Plus className="w-4 h-4 mr-1" /> Categoria
               </Button>
-              <Button onClick={openCreateDialog} className="bg-slate-900 hover:bg-slate-800">
+              <Button onClick={openCreateDialog} className="bg-slate-900 dark:bg-slate-100 dark:text-slate-900 hover:bg-slate-800">
                 <Plus className="w-4 h-4 mr-2" /> Novo Item
               </Button>
             </div>
@@ -260,7 +260,7 @@ export default function MenuManagement() {
               placeholder="Buscar por nome ou ingrediente..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 bg-slate-50 border-slate-200"
+              className="pl-10 bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800"
             />
           </div>
         </div>
@@ -278,19 +278,19 @@ export default function MenuManagement() {
             const activeCount = catItems.filter(i => i.available).length;
 
             return (
-              <div key={cat.value} className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+              <div key={cat.value} className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
                 {/* Category Header */}
-                <div className="flex items-center justify-between px-5 py-4 hover:bg-slate-50 transition-colors">
+                <div className="flex items-center justify-between px-5 py-4 hover:bg-slate-50 dark:bg-slate-950 transition-colors">
                   <button
                     onClick={() => toggleCategory(cat.value)}
                     className="flex items-center gap-3 flex-1 text-left"
                   >
-                    <div className="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center">
-                      <Icon className="w-5 h-5 text-slate-600" />
+                    <div className="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                      <Icon className="w-5 h-5 text-slate-600 dark:text-slate-300" />
                     </div>
                     <div>
-                      <h2 className="font-bold text-slate-900">{cat.label}</h2>
-                      <p className="text-xs text-slate-500">
+                      <h2 className="font-bold text-slate-900 dark:text-white">{cat.label}</h2>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
                         {catItems.length} itens {'\u2022'} {activeCount} ativos
                       </p>
                     </div>
@@ -311,7 +311,7 @@ export default function MenuManagement() {
 
                 {/* Items Table */}
                 {isExpanded && (
-                  <div className="border-t border-slate-100">
+                  <div className="border-t border-slate-100 dark:border-slate-800">
                     {catItems.length === 0 ? (
                       <div className="text-center py-8">
                         <p className="text-sm text-slate-400 italic">Nenhum item nesta categoria</p>
@@ -320,7 +320,7 @@ export default function MenuManagement() {
                       <div className="overflow-x-auto">
                         <table className="w-full">
                           <thead>
-                            <tr className="bg-slate-50 text-[11px] uppercase tracking-wider text-slate-500">
+                            <tr className="bg-slate-50 dark:bg-slate-950 text-[11px] uppercase tracking-wider text-slate-500 dark:text-slate-400">
                               <th className="text-left px-5 py-3 font-semibold">Nome</th>
                               <th className="text-left px-3 py-3 font-semibold hidden md:table-cell">Descrição</th>
                               <th className="text-right px-3 py-3 font-semibold">Preço(s)</th>
@@ -333,15 +333,15 @@ export default function MenuManagement() {
                           </thead>
                           <tbody className="divide-y divide-slate-100">
                             {catItems.map(item => (
-                              <tr key={item.id} className={`hover:bg-slate-50 transition-colors ${!item.available ? 'opacity-50' : ''}`}>
+                              <tr key={item.id} className={`hover:bg-slate-50 dark:bg-slate-950 transition-colors ${!item.available ? 'opacity-50' : ''}`}>
                                 {/* Nome */}
                                 <td className="px-5 py-3">
-                                  <p className="font-semibold text-slate-900 text-sm">{item.name}</p>
+                                  <p className="font-semibold text-slate-900 dark:text-white text-sm">{item.name}</p>
                                 </td>
 
                                 {/* Descrição */}
                                 <td className="px-3 py-3 hidden md:table-cell">
-                                  <p className="text-xs text-slate-500 line-clamp-1 max-w-[200px]">
+                                  <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1 max-w-[200px]">
                                     {item.description || '—'}
                                   </p>
                                 </td>
@@ -351,17 +351,17 @@ export default function MenuManagement() {
                                   {item.type === 'pizza' ? (
                                     <div className="space-y-0.5">
                                       {item.price_small != null && (
-                                        <p className="text-[11px] text-slate-500">P: R$ {item.price_small?.toFixed(2)}</p>
+                                        <p className="text-[11px] text-slate-500 dark:text-slate-400">P: R$ {item.price_small?.toFixed(2)}</p>
                                       )}
                                       {item.price_medium != null && (
-                                        <p className="text-sm font-bold text-slate-900">M: R$ {item.price_medium?.toFixed(2)}</p>
+                                        <p className="text-sm font-bold text-slate-900 dark:text-white">M: R$ {item.price_medium?.toFixed(2)}</p>
                                       )}
                                       {item.price_large != null && (
-                                        <p className="text-[11px] text-slate-500">G: R$ {item.price_large?.toFixed(2)}</p>
+                                        <p className="text-[11px] text-slate-500 dark:text-slate-400">G: R$ {item.price_large?.toFixed(2)}</p>
                                       )}
                                     </div>
                                   ) : (
-                                    <p className="text-sm font-bold text-slate-900">R$ {item.price?.toFixed(2)}</p>
+                                    <p className="text-sm font-bold text-slate-900 dark:text-white">R$ {item.price?.toFixed(2)}</p>
                                   )}
                                 </td>
 
@@ -400,7 +400,7 @@ export default function MenuManagement() {
                                     <Button
                                       variant="ghost"
                                       size="sm"
-                                      className="h-8 w-8 p-0 text-slate-500 hover:text-blue-600"
+                                      className="h-8 w-8 p-0 text-slate-500 dark:text-slate-400 hover:text-blue-600"
                                       onClick={() => openEditDialog(item)}
                                     >
                                       <Edit2 className="w-3.5 h-3.5" />
@@ -474,8 +474,8 @@ export default function MenuManagement() {
                     onClick={() => setCatForm(f => ({ ...f, icon: name }))}
                     className={`w-10 h-10 rounded-lg flex items-center justify-center border transition-all ${
                       catForm.icon === name 
-                        ? 'bg-slate-900 text-white border-slate-900 dark:bg-white dark:text-slate-900' 
-                        : 'bg-slate-100 text-slate-500 border-slate-200 dark:bg-slate-800 dark:border-slate-600 dark:text-slate-300'
+                        ? 'bg-slate-900 dark:bg-slate-100 dark:text-slate-900 text-white border-slate-900 dark:bg-white dark:text-slate-900' 
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-800 dark:bg-slate-800 dark:border-slate-600 dark:text-slate-300'
                     }`}
                   >
                     <IconComp className="w-5 h-5" />
@@ -484,11 +484,11 @@ export default function MenuManagement() {
               </div>
             </div>
             <div className="flex gap-2 pt-2">
-              <Button onClick={handleSaveCat} className="flex-1 bg-slate-900 hover:bg-slate-800">
+              <Button onClick={handleSaveCat} className="flex-1 bg-slate-900 dark:bg-slate-100 dark:text-slate-900 hover:bg-slate-800">
                 {editingCat ? 'Salvar' : 'Criar Categoria'}
               </Button>
               {!editingCat && (
-                <Button variant="outline" onClick={resetCategories} className="text-xs text-slate-500">
+                <Button variant="outline" onClick={resetCategories} className="text-xs text-slate-500 dark:text-slate-400">
                   Restaurar
                 </Button>
               )}
@@ -764,7 +764,7 @@ function MenuItemDialog({ open, onClose, editingItem, onSubmit, isLoading, categ
           {/* Botão Submit */}
           <Button
             type="submit"
-            className="w-full bg-slate-900 hover:bg-slate-800 h-12 text-base"
+            className="w-full bg-slate-900 dark:bg-slate-100 dark:text-slate-900 hover:bg-slate-800 h-12 text-base"
             disabled={isLoading}
           >
             {isLoading ? 'Salvando...' : editingItem ? 'Salvar Alterações' : 'Criar Item'}

@@ -13,6 +13,10 @@ import { Button } from '@/components/ui/button';
 import { ShieldAlert } from 'lucide-react';
 import ErrorBoundary from '@/components/ErrorBoundary';
 
+// Providers do Pizza Wizard
+import { MenuProvider } from '@/contexts/MenuContext';
+import { CartProvider } from '@/contexts/CartContext';
+
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
 const MainPage = mainPageKey ? Pages[mainPageKey] : <></>;
@@ -163,10 +167,14 @@ function App() {
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
-        <Router>
-          <NavigationTracker />
-          <AuthenticatedApp />
-        </Router>
+        <MenuProvider>
+          <CartProvider>
+            <Router>
+              <NavigationTracker />
+              <AuthenticatedApp />
+            </Router>
+          </CartProvider>
+        </MenuProvider>
         <Toaster />
         <SonnerToaster position="top-center" richColors />
       </QueryClientProvider>

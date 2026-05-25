@@ -83,8 +83,8 @@ export default function Customers() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="bg-white border-b border-slate-200 sticky top-0 z-50">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+      <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -94,8 +94,8 @@ export default function Customers() {
                 </Button>
               </Link>
               <div>
-                <h1 className="text-xl font-bold text-slate-900">Clientes</h1>
-                <p className="text-sm text-slate-500">{customers.length} clientes cadastrados</p>
+                <h1 className="text-xl font-bold text-slate-900 dark:text-white">Clientes</h1>
+                <p className="text-sm text-slate-500 dark:text-slate-400">{customers.length} clientes cadastrados</p>
               </div>
             </div>
           </div>
@@ -124,7 +124,7 @@ export default function Customers() {
         ) : filteredCustomers.length === 0 ? (
           <div className="text-center py-12">
             <User className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-            <p className="text-slate-500">Nenhum cliente encontrado</p>
+            <p className="text-slate-500 dark:text-slate-400">Nenhum cliente encontrado</p>
           </div>
         ) : (
           <div className="grid gap-4">
@@ -141,11 +141,11 @@ export default function Customers() {
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
                         <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center">
-                          <User className="w-5 h-5 text-slate-600" />
+                          <User className="w-5 h-5 text-slate-600 dark:text-slate-300" />
                         </div>
                         <div>
-                          <h3 className="font-bold text-slate-900">{customer.name}</h3>
-                          <div className="flex items-center gap-3 text-sm text-slate-500">
+                          <h3 className="font-bold text-slate-900 dark:text-white">{customer.name}</h3>
+                          <div className="flex items-center gap-3 text-sm text-slate-500 dark:text-slate-400">
                             <span className="flex items-center gap-1">
                               <Phone className="w-3 h-3" />
                               {customer.phone}
@@ -157,7 +157,7 @@ export default function Customers() {
                         </div>
                       </div>
                       {customer.notes && (
-                        <p className="text-sm text-slate-600 italic bg-amber-50 p-2 rounded">
+                        <p className="text-sm text-slate-600 dark:text-slate-300 italic bg-amber-50 p-2 rounded">
                           {customer.notes}
                         </p>
                       )}
@@ -168,11 +168,11 @@ export default function Customers() {
                           {stats.totalOrders} pedidos
                         </Badge>
                       </div>
-                      <p className="text-sm font-bold text-slate-900">
+                      <p className="text-sm font-bold text-slate-900 dark:text-white">
                         R$ {stats.totalSpent.toFixed(2)}
                       </p>
                       {stats.lastOrder && (
-                        <p className="text-xs text-slate-500">
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
                           Último: {format(new Date(stats.lastOrder), 'dd/MM/yyyy', { locale: ptBR })}
                         </p>
                       )}
@@ -193,11 +193,11 @@ export default function Customers() {
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center">
-                    <User className="w-6 h-6 text-slate-600" />
+                    <User className="w-6 h-6 text-slate-600 dark:text-slate-300" />
                   </div>
                   <div>
                     <h2 className="text-xl">{selectedCustomer.name}</h2>
-                    <p className="text-sm text-slate-500 font-normal">{selectedCustomer.phone}</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 font-normal">{selectedCustomer.phone}</p>
                   </div>
                 </DialogTitle>
               </DialogHeader>
@@ -236,7 +236,7 @@ export default function Customers() {
                       className="h-20"
                     />
                   ) : (
-                    <p className="text-sm text-slate-600 bg-slate-50 p-3 rounded">
+                    <p className="text-sm text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-950 p-3 rounded">
                       {selectedCustomer.notes || 'Nenhuma nota registrada'}
                     </p>
                   )}
@@ -244,21 +244,21 @@ export default function Customers() {
 
                 {/* Addresses */}
                 <div>
-                  <h3 className="font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                  <h3 className="font-semibold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
                     <MapPin className="w-4 h-4" />
                     Endereços
                   </h3>
                   {getCustomerAddresses(selectedCustomer.id).length === 0 ? (
-                    <p className="text-sm text-slate-500">Nenhum endereço cadastrado</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Nenhum endereço cadastrado</p>
                   ) : (
                     <div className="space-y-2">
                       {getCustomerAddresses(selectedCustomer.id).map(addr => (
-                        <Card key={addr.id} className="p-3 bg-slate-50">
-                          <p className="text-sm text-slate-900">
+                        <Card key={addr.id} className="p-3 bg-slate-50 dark:bg-slate-950">
+                          <p className="text-sm text-slate-900 dark:text-white">
                             {addr.street}, {addr.number}
                             {addr.complement && ` - ${addr.complement}`}
                           </p>
-                          <p className="text-sm text-slate-600">
+                          <p className="text-sm text-slate-600 dark:text-slate-300">
                             {addr.district}
                             {addr.city && ` • ${addr.city}`}
                           </p>
@@ -270,7 +270,7 @@ export default function Customers() {
 
                 {/* Orders History */}
                 <div>
-                  <h3 className="font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                  <h3 className="font-semibold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
                     <Package className="w-4 h-4" />
                     Histórico de Pedidos ({getCustomerOrders(selectedCustomer).length})
                   </h3>
@@ -284,18 +284,18 @@ export default function Customers() {
                         <Card className="p-3 hover:border-slate-400 transition-colors">
                           <div className="flex justify-between items-start">
                             <div className="flex-1">
-                              <p className="text-sm font-medium text-slate-900">
+                              <p className="text-sm font-medium text-slate-900 dark:text-white">
                                 Pedido #{order.id.slice(0, 8)}
                               </p>
-                              <p className="text-xs text-slate-500">
+                              <p className="text-xs text-slate-500 dark:text-slate-400">
                                 {format(new Date(order.created_date), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
                               </p>
-                              <p className="text-xs text-slate-600 mt-1">
+                              <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">
                                 {order.pizzas?.length || 0} pizza(s) • {order.drinks?.reduce((sum, d) => sum + d.quantity, 0) || 0} bebida(s)
                               </p>
                             </div>
                             <div className="text-right">
-                              <p className="text-sm font-bold text-slate-900">
+                              <p className="text-sm font-bold text-slate-900 dark:text-white">
                                 R$ {order.total_amount?.toFixed(2)}
                               </p>
                               <Badge variant="outline" className="text-xs">
