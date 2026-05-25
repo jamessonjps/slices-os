@@ -161,7 +161,10 @@ export default function UserManagement() {
             <p className="font-medium">Nenhum usuário cadastrado</p>
           </div>
         ) : (
-          users.map(u => (
+          users.map(u => {
+            const isMasterAccount = u.email === 'jamesson.jps@gmail.com' || u.role === 'master';
+            const displayRole = isMasterAccount ? 'master' : u.role;
+            return (
             <Card key={u.id} className="p-4 hover:border-slate-300 transition-colors">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-start gap-3 flex-1 min-w-0">
@@ -177,12 +180,12 @@ export default function UserManagement() {
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="font-bold text-slate-900 dark:text-white">{u.full_name}</p>
                       <Badge className={
-                        u.role === 'master' ? 'bg-indigo-100 text-indigo-700 border-indigo-200 shadow-indigo-200/50 shadow-md' :
-                        u.role === 'admin' ? 'bg-purple-100 text-purple-700 border-purple-200' : 
-                        u.role === 'delivery' ? 'bg-orange-100 text-orange-700 border-orange-200' : 
+                        displayRole === 'master' ? 'bg-indigo-100 text-indigo-700 border-indigo-200 shadow-indigo-200/50 shadow-md' :
+                        displayRole === 'admin' ? 'bg-purple-100 text-purple-700 border-purple-200' : 
+                        displayRole === 'delivery' ? 'bg-orange-100 text-orange-700 border-orange-200' : 
                         'bg-blue-100 text-blue-700 border-blue-200'
                       }>
-                        {u.role === 'master' ? 'Master (TI)' : u.role === 'admin' ? 'Administrador' : u.role === 'delivery' ? 'Entregador' : 'Equipe (Staff)'}
+                        {displayRole === 'master' ? 'Master (TI)' : displayRole === 'admin' ? 'Administrador' : displayRole === 'delivery' ? 'Entregador' : 'Equipe (Staff)'}
                       </Badge>
                       {u.status === 'pending' && (
                         <Badge className="bg-amber-100 text-amber-700 border-amber-200">Aguardando Aprovação</Badge>
@@ -195,10 +198,10 @@ export default function UserManagement() {
                   </div>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <Button variant="outline" size="sm" className="h-8 text-xs font-semibold" onClick={() => openEdit(u)}>
+                  <Button variant="outline" size="sm" className="h-8 text-xs font-semibold" onClick={() => openEdit({ ...u, role: displayRole })}>
                     <Pencil className="w-3 h-3 mr-1.5" /> Editar
                   </Button>
-                  <Button variant="ghost" size="sm" className="h-8 text-xs text-red-500 hover:text-red-600 hover:bg-red-50" onClick={() => handleDelete(u)}>
+                  <Button variant="ghost" size="sm" className="h-8 text-xs text-red-500 hover:text-red-600 hover:bg-red-50" onClick={() => handleDelete({ ...u, role: displayRole })}>
                     <Trash2 className="w-3 h-3 mr-1.5" /> Remover
                   </Button>
                 </div>
